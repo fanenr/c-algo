@@ -9,8 +9,8 @@ static void solution2(int n, int *nums);
 
 int main(void)
 {
-    int *nums;
     int n;
+    int *nums;
 
     scanf("%u", &n);
     nums = (int *)malloc(sizeof(int) * n);
@@ -27,7 +27,7 @@ static void solution1(int n, int *nums)
     TIME_ST();
 
     int temp;
-    int k = n / 2 - 1;
+    int k = n / 2;
 
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n - i - 1; j++)
@@ -37,20 +37,38 @@ static void solution1(int n, int *nums)
                 nums[j + 1] = temp;
             }
 
-    printf("val: %d\n", nums[k]);
-
     TIME_ED();
 
-    printf("time: %.3f\n", TIME_VAL());
+    printf("val: %d\n", nums[k]);
+    printf("time: %.3f\n\n", TIME_VAL());
+}
+
+static int down_order(const void *a, const void *b)
+{
+    const int *pa = a;
+    const int *pb = b;
+    return *pa - *pb;
 }
 
 static void solution2(int n, int *nums)
 {
     TIME_ST();
 
-    int k = n / 2 - 1;
+    int k = n / 2;
+    qsort(nums, k, sizeof(int), down_order);
+
+    for (int i = k; i < n; i++)
+        for (int j = k - 1; j >= 0; j--)
+            if (nums[i] < nums[j]) {
+                if (j < k - 1)
+                    nums[j + 1] = nums[i];
+                break;
+            } else if (j < k - 1) {
+                nums[j + 1] = nums[j];
+            }
 
     TIME_ED();
 
+    printf("val: %d\n", nums[k]);
     printf("time: %.3f\n", TIME_VAL());
 }
