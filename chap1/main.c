@@ -6,6 +6,7 @@
 
 static void solution1(int n, int *nums);
 static void solution2(int n, int *nums);
+static void solution3(int n, int *nums);
 
 int main(void)
 {
@@ -20,6 +21,7 @@ int main(void)
 
     solution1(n, nums);
     solution2(n, nums);
+    solution3(n, nums);
 }
 
 static void solution1(int n, int *nums)
@@ -66,6 +68,19 @@ static void solution2(int n, int *nums)
             } else if (j < k - 1) {
                 nums[j + 1] = nums[j];
             }
+
+    TIME_ED();
+
+    printf("val: %d\n", nums[k]);
+    printf("time: %.3f\n\n", TIME_VAL());
+}
+
+static void solution3(int n, int *nums)
+{
+    TIME_ST();
+
+    int k = n / 2;
+    qsort(nums, n, sizeof(int), down_order);
 
     TIME_ED();
 
