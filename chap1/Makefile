@@ -1,5 +1,5 @@
 main: main.c
-	gcc -o main main.c
+	gcc -g -o main main.c
 
 run: main
 	./main < input.txt
