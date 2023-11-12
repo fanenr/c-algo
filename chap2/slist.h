@@ -24,24 +24,28 @@ struct slist_s
 typedef struct slist_s slist;
 
 /*
- * empty a slist
+ * init the `list`
  */
-extern slist *slist_empty(slist *list);
+extern slist *slist_init(slist *list);
 
 /*
- * free a list
+ * free the `list`
  */
 extern void slist_free(slist *list);
 
 /*
- * insert
+ * insert a `node` after `pos` in the `list`
+ * if the `pos` is NULL, the `node` will be inserted at the beginning of the
+ * `list` insert will change `.size` of the `list` if `node` has been inserted
  */
-extern void slist_insert(slist *list, struct slist_n *pos,
-                         struct slist_n *node);
+extern slist *slist_insert(slist *restrict list, struct slist_n *restrict pos,
+                           struct slist_n *restrict node);
 
 /*
- * remove
+ * remove a node at `pos` in the `list`
+ * no node will be removed if the `pos` is NULL
+ * remove will change `.size` of the `list if `pos` has been removed
  */
-extern void slist_remove(slist *list, struct slist_n *pos);
+extern slist *slist_remove(slist *restrict list, struct slist_n *restrict pos);
 
 #endif
