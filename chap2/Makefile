@@ -1,7 +1,19 @@
-all: tests
+tests := slist
 
-slist.o: slist.c
-	gcc -g -c $<
+.PHONY: all $(tests)
+all: $(tests)
 
-tests: slist.o
-	make -C tests
+$(tests): %: tests/%
+
+$(tests:%=tests/%): tests/%: tests/%.o %.o
+	gcc -g -o $@ $^
+
+$(tests:%=tests/%.o): tests/%.o: tests/%.c %.h
+	gcc -g -o $@ -c $<
+
+$(tests:%=%.o): %.o: %.c %.h
+	gcc -g -o $@ -c $<
+
+.PHONY: clean
+clean:
+	-rm *.o tests/*.o $(tests:%=tests/%)
