@@ -28,6 +28,7 @@ int main()
 
     slist_remove(&list, node2);
     assert(list.head == NULL && list.size == 0);
-    
+
     slist_free(&list);
+    free(val2);
 }
