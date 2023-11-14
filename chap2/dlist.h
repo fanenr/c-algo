@@ -4,9 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/*
- * dlist node
- */
+/* dlist node */
 struct dlist_n
 {
     struct dlist_n *prev;
@@ -29,9 +27,7 @@ struct dlist_n
     } data;
 };
 
-/*
- * dlist container (header)
- */
+/* dlist container (header) */
 struct dlist_s
 {
     size_t size;
@@ -41,33 +37,33 @@ struct dlist_s
 typedef struct dlist_s dlist;
 
 /*
- * init the `list`
+ * init `list`.
  */
 extern dlist *dlist_init(dlist *list);
 
 /*
- * free the `list`
+ * release `list`.
  */
 extern void dlist_free(dlist *list);
 
 /*
- * malloc a node
+ * allocate a node.
  */
 extern struct dlist_n *dlist_node(void);
 
 /*
- * insert a `node` after `pos` in the `list`
- * if the `pos` is NULL, the `node` will be inserted at the beginning of the
- * `list` insert will change `.size` of the `list` if `node` has been inserted
+ * insert `node` after `pos` in `list`.
+ * if `pos` is NULL, `node` will be inserted at the beginning of `list`. the
+ * `.size` of `list` will be increased after `node` is inserted.
  */
 extern struct dlist_n *dlist_insert(dlist *restrict list,
                                     struct dlist_n *restrict pos,
                                     struct dlist_n *restrict node);
 
 /*
- * remove a node at `pos` in the `list`
- * no node will be removed if the `pos` is NULL
- * remove will change `.size` of the `list if `pos` has been removed
+ * remove the node at `pos` in `list`.
+ * no nodes will be removed if the `pos` is NULL. the `.size` of `list` will be
+ * decreased after the node at `pos` is removed.
  */
 extern void dlist_remove(dlist *restrict list, struct dlist_n *restrict pos);
 
