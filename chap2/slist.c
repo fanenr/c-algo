@@ -23,7 +23,7 @@ void slist_free(slist *list)
 struct slist_n *slist_node(void)
 {
     struct slist_n *node = malloc(sizeof(struct slist_n));
-    node->value = node->next = NULL;
+    node->data.ptr = node->next = NULL;
     return node;
 }
 

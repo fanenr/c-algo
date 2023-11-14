@@ -23,7 +23,7 @@ void dlist_free(dlist *list)
 struct dlist_n *dlist_node(void)
 {
     struct dlist_n *node = malloc(sizeof(struct dlist_n));
-    node->value = node->prev = node->next = NULL;
+    node->data.ptr = node->prev = node->next = NULL;
     return node;
 }
 

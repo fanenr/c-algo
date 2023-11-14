@@ -9,16 +9,15 @@ int main()
     slist_init(&list);
     assert(list.head == NULL && list.size == 0);
 
-    int val = 10;
     struct slist_n *node = slist_node();
-    node->value = &val;
+    node->data.i32 = 10;
     assert(slist_insert(&list, NULL, node) == node);
     assert(list.head == node && list.size == 1);
-    assert(list.head->value == &val);
+    assert(list.head->data.i32 == 10);
 
     int *val2 = malloc(sizeof(int));
     struct slist_n *node2 = slist_node();
-    node2->value = val2;
+    node2->data.ptr = val2;
     assert(slist_insert(&list, node, node2) == node2);
     assert(list.head == node && list.size == 2);
     assert(list.head->next == node2);
