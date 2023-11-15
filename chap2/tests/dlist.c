@@ -2,6 +2,12 @@
 #include <assert.h>
 #include <stdlib.h>
 
+static void test_init();
+static void test_free();
+static void test_node();
+static void test_insert();
+static void test_remove();
+
 int main()
 {
     dlist list;

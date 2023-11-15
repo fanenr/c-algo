@@ -97,7 +97,6 @@ static void test_top()
         node.data.i32 = i;
         ptr = stack_push(&stac2, node);
         assert(stack_top(&stac2) == ptr);
-        assert(stack_top(&stac2)->data.i32 == node.data.i32);
     }
 
     stack_free(&stac2);

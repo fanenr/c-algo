@@ -1,5 +1,4 @@
 #include "stack.h"
-#include <stdio.h>
 #include <stdlib.h>
 
 stack *stack_init(stack *stac)

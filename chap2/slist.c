@@ -1,6 +1,5 @@
 #include "slist.h"
 #include <stdlib.h>
-#include <string.h>
 
 slist *slist_init(slist *list)
 {
