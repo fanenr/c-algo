@@ -6,6 +6,8 @@
 
 /* stack expansion ratio */
 #define STACK_EXPAN_RATIO 1.5
+/* stack initial capacity */
+#define STACK_INIT_CAP 8
 
 /* stack node */
 struct stack_n
@@ -49,11 +51,6 @@ extern stack *stack_init(stack *stac);
 extern void stack_free(stack *stac);
 
 /*
- * allocate a node.
- */
-extern struct stack_n *stack_node();
-
-/*
  * push `node` into `stac`.
  * if the capacity of `stac` is not enough to accommodate one node, the
  * capacity of `stac` will be expanded to STACK_EXPAN_RATIO times (the
@@ -61,8 +58,7 @@ extern struct stack_n *stack_node();
  * if there is enough space, `node` will be pushed into `stac` and the `.size`
  * of `stac` will be increased.
  */
-extern struct stack_n *stack_push(stack *restrict stac,
-                                  struct stack_n *restrict node);
+extern struct stack_n *stack_push(stack *restrict stac, struct stack_n node);
 
 /*
  * get the top node of `stac`.
@@ -75,6 +71,6 @@ extern struct stack_n *stack_top(stack *stac);
  * no nodes will be removed if `stac` is empty.
  * the `.size` of `stac` will be decreased after the top node is poped.
  */
-extern void stack_pop(stack *stac);
+extern struct stack_n stack_pop(stack *stac);
 
 #endif
