@@ -1,4 +1,4 @@
-tests := slist dlist
+tests := slist dlist stack
 
 .PHONY: all $(tests)
 all: $(tests)
