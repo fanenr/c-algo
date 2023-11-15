@@ -61,7 +61,7 @@ extern void stack_free(stack *stac);
 extern struct stack_n *stack_push(stack *restrict stac, struct stack_n node);
 
 /*
- * get the top node of `stac`.
+ * get ref of the top node of `stac`.
  * NULL will be returned if `stac` is empty.
  */
 extern struct stack_n *stack_top(stack *stac);
