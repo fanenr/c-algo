@@ -1,6 +1,5 @@
 #include "dlist.h"
 #include <stdlib.h>
-#include <string.h>
 
 dlist *dlist_init(dlist *list)
 {

@@ -1,8 +1,8 @@
 #ifndef STACK_H
 #define STACK_H
 
-#include "slist.h"
 #include <stddef.h>
+#include <stdint.h>
 
 /* stack expansion ratio */
 #define STACK_EXPAN_RATIO 1.5
