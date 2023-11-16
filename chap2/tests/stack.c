@@ -1,13 +1,13 @@
 #include "../stack.h"
 #include <assert.h>
 
-static void test_init();
-static void test_free();
-static void test_push();
-static void test_top();
-static void test_pop();
+static void test_init(void);
+static void test_free(void);
+static void test_push(void);
+static void test_top(void);
+static void test_pop(void);
 
-int main()
+int main(void)
 {
     test_init();
     test_free();
@@ -16,7 +16,7 @@ int main()
     test_pop();
 }
 
-static void test_init()
+static void test_init(void)
 {
     /* init a stack */
     stack stac1;
@@ -25,11 +25,9 @@ static void test_init()
     assert(stac1.size == 0);
     assert(stac1.capacity == 0);
     assert(stac1.head == NULL);
-
-    stack_free(&stac1);
 }
 
-static void test_free()
+static void test_free(void)
 {
     /* free a empty stack */
     stack stac1;
@@ -58,7 +56,7 @@ static void test_free()
     assert(stac2.head == NULL);
 }
 
-static void test_push()
+static void test_push(void)
 {
     /* try to push nodes into stack */
     stack stac1;
@@ -77,15 +75,13 @@ static void test_push()
     stack_free(&stac1);
 }
 
-static void test_top()
+static void test_top(void)
 {
     /* NULL will be returned if stack is empty */
     stack stac1;
     stack_init(&stac1);
 
     assert(stack_top(&stac1) == NULL);
-
-    stack_free(&stac1);
 
     /* pointer of the top node will be returned if stack has nodes */
     stack stac2;
@@ -102,15 +98,16 @@ static void test_top()
     stack_free(&stac2);
 }
 
-static void test_pop()
+static void test_pop(void)
 {
     /* a empty stack_n will be returned if stack is empty */
     stack stac1;
     stack_init(&stac1);
 
     assert(stack_pop(&stac1).data.ptr == NULL);
-
-    stack_free(&stac1);
+    assert(stac1.capacity == 0);
+    assert(stac1.head == NULL);
+    assert(stac1.size == 0);
 
     /* a copy of the top node will be returned if stack has nodes */
     stack stac2;
@@ -128,6 +125,10 @@ static void test_pop()
         assert(copy.data.i32 == i);
         assert(stac2.size == i);
     }
+
+    assert(stac1.capacity == 0);
+    assert(stac1.head == NULL);
+    assert(stac1.size == 0);
 
     stack_free(&stac2);
 }

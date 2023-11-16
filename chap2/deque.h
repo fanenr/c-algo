@@ -7,7 +7,6 @@
 /* deque node */
 struct deque_n
 {
-    struct deque_n *prev;
     struct deque_n *next;
     union {
         uint8_t u8;
@@ -32,6 +31,7 @@ struct deque_s
 {
     size_t size;
     struct deque_n *head;
+    struct deque_n *tail;
 };
 
 typedef struct deque_s deque;
