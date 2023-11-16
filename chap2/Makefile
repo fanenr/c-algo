@@ -1,4 +1,4 @@
-tests := slist dlist stack queue
+tests := slist dlist stack queue deque
 
 .PHONY: all $(tests)
 all: $(tests)
@@ -13,6 +13,13 @@ $(tests:%=tests/%.o): tests/%.o: tests/%.c %.h
 
 $(tests:%=%.o): %.o: %.c %.h
 	gcc -g -o $@ -c $<
+
+
+.PHONY: test_all $(tests:%=test_%)
+test_all: $(tests:%=test_%)
+
+$(tests:%=test_%): test_%: tests/%
+	$<
 
 .PHONY: clean
 clean:

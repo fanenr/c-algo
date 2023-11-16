@@ -15,7 +15,7 @@ void stack_free(stack *stac)
     return;
 }
 
-struct stack_n *stack_push(stack *restrict stac, struct stack_n node)
+struct stack_n *stack_push(stack *stac, struct stack_n node)
 {
     if (stac->size < stac->capacity) /* sapce is enough */
         goto push;
