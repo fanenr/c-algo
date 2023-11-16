@@ -67,7 +67,10 @@ static void test_push(void)
     for (int i = 0; i < 1000; i++) {
         node.data.i32 = i;
         ptr = stack_push(&stac1, node);
+
+        assert(stac1.size == i + 1);
         assert(ptr->data.i32 == node.data.i32);
+        assert(ptr == stac1.head + stac1.size - 1);
     }
 
     assert(stac1.size == 1000);
@@ -92,6 +95,7 @@ static void test_top(void)
     for (int i = 0; i < 1000; i++) {
         node.data.i32 = i;
         ptr = stack_push(&stac2, node);
+
         assert(stack_top(&stac2) == ptr);
     }
 
@@ -122,6 +126,7 @@ static void test_pop(void)
 
     for (int i = 999; i >= 0; i--) {
         copy = stack_pop(&stac2);
+
         assert(copy.data.i32 == i);
         assert(stac2.size == i);
     }

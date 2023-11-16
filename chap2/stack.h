@@ -58,7 +58,7 @@ extern void stack_free(stack *stac);
  * if there is enough space, `node` will be pushed into `stac` and the `.size`
  * of `stac` will be increased.
  */
-extern struct stack_n *stack_push(stack *restrict stac, struct stack_n node);
+extern struct stack_n *stack_push(stack *stac, struct stack_n node);
 
 /*
  * get ref of the top node of `stac`.

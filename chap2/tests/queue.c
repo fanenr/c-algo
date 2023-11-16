@@ -72,15 +72,29 @@ static void test_node(void)
 
 static void test_push(void)
 {
-    /* try to push some nodes into queue */
+    /* try to push some nodes into deque */
     queue que1;
     queue_init(&que1);
 
-    struct queue_n *node, *ptr;
-    for (int i = 0; i < 1000; i++) {
+    struct queue_n *node, *ptr, *head;
+
+    node = queue_node();
+    queue_push(&que1, node);
+    head = que1.head;
+
+    assert(que1.size == 1);
+    assert(que1.head == node);
+    assert(que1.tail == node);
+
+    for (int i = 1; i < 1000; i++) {
         node = queue_node();
         node->data.i32 = i;
         ptr = queue_push(&que1, node);
+
+        assert(ptr == node);
+        assert(que1.tail == ptr);
+        assert(que1.head == head);
+        assert(que1.size == i + 1);
         assert(ptr->data.i32 == node->data.i32);
     }
 
@@ -104,6 +118,7 @@ static void test_top(void)
         node = queue_node();
         node->data.i32 = i;
         queue_push(&que2, node);
+
         assert(queue_top(&que2)->data.i32 == 0);
     }
 
@@ -134,6 +149,7 @@ static void test_pop(void)
 
     for (int i = 0; i < 1000; i++) {
         copy = queue_pop(&que2);
+
         assert(copy.next == NULL);
         assert(copy.data.i32 == i);
         assert(que2.size == 999 - i);
