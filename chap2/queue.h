@@ -31,6 +31,7 @@ struct queue_s
 {
     size_t size;
     struct queue_n *head;
+    struct queue_n *tail;
 };
 
 typedef struct queue_s queue;

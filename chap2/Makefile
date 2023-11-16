@@ -1,4 +1,4 @@
-tests := slist dlist stack
+tests := slist dlist stack queue
 
 .PHONY: all $(tests)
 all: $(tests)
