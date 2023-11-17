@@ -46,20 +46,23 @@ void slist_remove(slist *restrict list, struct slist_n *restrict pos)
     if (pos == NULL)
         return;
 
-    struct slist_n *rm = list->head;
-    if (pos == rm) {
-        list->head = rm->next;
-        free(rm);
+    struct slist_n *prev, *next;
+    next = pos->next;
+
+    /* pos is head */
+    if (pos == list->head) {
+        free(pos);
+        list->head = next;
         goto end;
     }
 
-    struct slist_n *prev = list->head;
+    /* find prev node of pos */
+    prev = list->head;
     while (pos != prev->next)
         prev = prev->next;
 
-    rm = prev->next;
-    prev->next = rm->next;
-    free(rm);
+    free(pos);
+    prev->next = next;
 
 end:
     list->size -= 1;
