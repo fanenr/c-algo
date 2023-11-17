@@ -36,14 +36,12 @@ struct queue_n *queue_push(queue *restrict que, struct queue_n *restrict node)
         que->tail = node;
     }
 
-    que->size += 1;
+    que->size++;
     return node;
 }
 
 struct queue_n *queue_top(queue *que)
 {
-    if (que->size == 0)
-        return NULL;
     return que->head;
 }
 
@@ -66,7 +64,7 @@ struct queue_n queue_pop(queue *que)
     que->head = new_head;
 
     if (--que->size == 0)
-        que->head = que->tail = NULL;
+        que->tail = NULL;
 
     return ret;
 }

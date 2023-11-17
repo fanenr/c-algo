@@ -37,7 +37,7 @@ struct slist_n *slist_insert(slist *restrict list, struct slist_n *restrict pos,
         pos->next = node;
     }
 
-    list->size += 1;
+    list->size++;
     return node;
 }
 
@@ -65,6 +65,6 @@ void slist_remove(slist *restrict list, struct slist_n *restrict pos)
     prev->next = next;
 
 end:
-    list->size -= 1;
+    list->size--;
     return;
 }

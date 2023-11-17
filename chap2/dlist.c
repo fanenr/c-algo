@@ -43,7 +43,7 @@ struct dlist_n *dlist_insert(dlist *restrict list, struct dlist_n *restrict pos,
         pos->next = node;
     }
 
-    list->size += 1;
+    list->size++;
     return node;
 }
 
@@ -66,6 +66,6 @@ void dlist_remove(dlist *restrict list, struct dlist_n *restrict pos)
     free(pos);
 
 end:
-    list->size -= 1;
+    list->size--;
     return;
 }
