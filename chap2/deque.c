@@ -37,7 +37,7 @@ struct deque_n *deque_push_end(deque *restrict que,
         que->tail = node;
     }
 
-    que->size += 1;
+    que->size++;
     return node;
 }
 
@@ -52,14 +52,12 @@ struct deque_n *deque_push_head(deque *restrict que,
         que->head = node;
     }
 
-    que->size += 1;
+    que->size++;
     return node;
 }
 
 struct deque_n *deque_top(deque *que)
 {
-    if (que->size == 0)
-        return NULL;
     return que->head;
 }
 
@@ -82,7 +80,7 @@ struct deque_n deque_pop(deque *que)
     que->head = new_head;
 
     if (--que->size == 0)
-        que->head = que->tail = NULL;
+        que->tail = NULL;
 
     return ret;
 }

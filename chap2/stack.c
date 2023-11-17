@@ -43,9 +43,8 @@ push:
 
 struct stack_n *stack_top(stack *stac)
 {
-    if (stac->size == 0)
-        return NULL;
-    return stac->head + stac->size - 1;
+    size_t off = stac->size != 0 ? stac->size - 1 : 0;
+    return stac->head + off;
 }
 
 struct stack_n stack_pop(stack *stac)
