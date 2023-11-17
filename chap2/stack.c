@@ -38,7 +38,6 @@ struct stack_n *stack_push(stack *stac, struct stack_n node)
 
 push:
     stac->head[stac->size++] = node;
-
     return stac->head + stac->size - 1;
 }
 

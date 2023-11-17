@@ -2,44 +2,138 @@
 #include <assert.h>
 #include <stdlib.h>
 
-static void test_init();
-static void test_free();
-static void test_node();
-static void test_insert();
-static void test_remove();
+static void test_init(void);
+static void test_free(void);
+static void test_node(void);
+static void test_insert(void);
+static void test_remove(void);
 
 int main()
 {
-    dlist list;
+    test_init();
+    test_free();
+    test_node();
+    test_insert();
+    test_remove();
+}
 
-    dlist_init(&list);
-    assert(list.head == NULL && list.size == 0);
+static void test_init(void)
+{
+    dlist list1;
+    dlist_init(&list1);
 
-    struct dlist_n *node = dlist_node();
-    node->data.i32 = 10;
-    assert(dlist_insert(&list, NULL, node) == node);
-    assert(list.head == node && list.size == 1);
-    assert(node->prev == NULL && node->next == NULL);
-    assert(node->data.i32 == 10);
+    assert(list1.size == 0);
+    assert(list1.head == NULL);
+}
 
-    int *val2 = malloc(sizeof(int));
-    struct dlist_n *node2 = dlist_node();
-    node2->data.ptr = val2;
-    assert(dlist_insert(&list, node, node2) == node2);
-    assert(list.head == node && list.size == 2);
-    assert(list.head->next == node2);
-    assert(node->next == node2 && node2->prev == node && node2->next == NULL);
+static void test_free(void)
+{
+    /* free a empty dlist */
+    dlist list1;
+    dlist_init(&list1);
 
-    struct dlist_n *node3 = dlist_node();
-    dlist_insert(&list, node, node3);
-    assert(list.head == node && list.size == 3);
-    assert(node->next == node3 && node3->prev == node);
-    assert(node3->next == node2 && node2->prev == node3 && node2->next == NULL);
+    dlist_free(&list1);
 
-    dlist_remove(&list, node);
-    assert(list.head == node3 && list.size == 2);
-    assert(node3->prev == NULL && node3->next == node2);
+    assert(list1.size == 0);
+    assert(list1.head == NULL);
 
-    dlist_free(&list);
-    free(val2);
+    /* free a dlist with some nodes */
+    dlist list2;
+    dlist_init(&list2);
+
+    struct dlist_n *node, *tail;
+    tail = NULL;
+
+    for (int i = 0; i < 100; i++) {
+        node = dlist_node();
+        node->data.i32 = i;
+        tail = dlist_insert(&list2, tail, node);
+    }
+
+    dlist_free(&list2);
+
+    assert(list2.size == 0);
+    assert(list2.head == NULL);
+}
+
+static void test_node(void)
+{
+    struct dlist_n *node;
+    node = dlist_node();
+
+    assert(node->prev == NULL);
+    assert(node->next == NULL);
+    assert(node->data.ptr == NULL);
+
+    free(node);
+}
+
+static void test_insert(void)
+{
+    dlist list1;
+    dlist_init(&list1);
+
+    /* tail insertion */
+    struct dlist_n *node, *tail, *head;
+    tail = head = NULL;
+
+    for (int i = 0; i < 1000; i++) {
+        node = dlist_node();
+        node->data.i32 = i;
+        tail = dlist_insert(&list1, tail, node);
+
+        assert(list1.size == i + 1);
+    }
+
+    dlist_free(&list1);
+
+    /* head insertion */
+    dlist list2;
+    dlist_init(&list2);
+
+    for (int i = 0; i < 1000; i++) {
+        node = dlist_node();
+        node->data.i32 = i;
+        head = dlist_insert(&list2, NULL, node);
+
+        assert(node == head);
+        assert(list2.head == head);
+        assert(list2.size == i + 1);
+    }
+
+    dlist_free(&list2);
+}
+
+static void test_remove(void)
+{
+    dlist list1;
+    dlist_init(&list1);
+
+    /* remove NULL */
+    dlist_remove(&list1, NULL);
+
+    assert(list1.size == 0);
+    assert(list1.head == NULL);
+
+    struct dlist_n *node, *tail;
+    tail = NULL;
+
+    for (int i = 0; i < 1000; i++) {
+        node = dlist_node();
+        node->data.i32 = i;
+        tail = dlist_insert(&list1, tail, node);
+    }
+
+    for (int i = 0; i < 1000; i++) {
+        assert(list1.head->data.i32 == i);
+
+        dlist_remove(&list1, list1.head);
+
+        assert(list1.size == 999 - i);
+    }
+
+    assert(list1.size == 0);
+    assert(list1.head == NULL);
+
+    dlist_free(&list1);
 }
