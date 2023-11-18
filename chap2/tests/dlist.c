@@ -8,7 +8,7 @@ static void test_node(void);
 static void test_insert(void);
 static void test_remove(void);
 
-int main()
+int main(void)
 {
     test_init();
     test_free();
