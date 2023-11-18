@@ -43,22 +43,22 @@ slist in2post(char *src, size_t len)
     for (int i = 0; i < len; i++) {
         switch (src[i]) {
         case '0' ... '9':
-            endi = endf = src + i;
             tmpf = strtod(src + i, &endf);
             tmpi = strtol(src + i, &endi, 10);
 
             save_expr_node(&list, enode, list_node, list_tail);
 
-            if (endf != src + i) { /* got a floating */
+            if (endf != src + i && *endi == '.') { /* got a floating */
                 enode->data.floating = tmpf;
                 enode->type = EXPR_NODE_FLOAT;
+                i = endf - src - 1;
             } else if (endi != src + i) { /* got an integer */
                 enode->data.integer = tmpi;
                 enode->type = EXPR_NODE_INT;
+                i = endi - src - 1;
             } else {
                 goto err;
             }
-
             break;
 
         case '+':
