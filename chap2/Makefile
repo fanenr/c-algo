@@ -1,34 +1,20 @@
-tests := slist dlist stack queue deque
+targets := slist dlist stack queue deque
+objects := $(targets:%=%.o)
 
-.PHONY: all $(tests)
-all: $(tests)
+.PHONY: all
+all: $(objects)
 
-$(tests): %: tests/%
+$(objects): %.o: %.c %.h
+	gcc -g -c $<
 
-$(tests:%=tests/%): tests/%: tests/%.o %.o
-	gcc -g -o $@ $^
-
-$(tests:%=tests/%.o): tests/%.o: tests/%.c %.h
-	gcc -g -o $@ -c $<
-
-$(tests:%=%.o): %.o: %.c %.h
-	gcc -g -o $@ -c $<
-
-.PHONY: test_all $(tests:%=test_%)
-test_all: $(tests:%=test_%)
-
-$(tests:%=test_%): test_%: tests/%
-	$<
+.PHONY: test
+test:
+	cd tests && make
 
 .PHONY: sample
-sample: samples/expr
-
-samples/post_expr: samples/expr.o stack.o slist.o
-	gcc -g -o $@ $^
-
-samples/post_expr.o: samples/expr.c stack.h slist.h
-	gcc -g -o $@ -c $<
+sample:
+	cd samples && make
 
 .PHONY: clean
 clean:
-	-rm *.o tests/*.o $(tests:%=tests/%)
+	-rm *.o **/*.o $(targets:%=tests/%)

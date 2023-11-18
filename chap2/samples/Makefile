@@ -1,0 +1,16 @@
+targets := test_expr
+
+.PHONY: all
+all: $(targets)
+
+test_expr: test_expr.o expr.o ../slist.o ../stack.o
+	gcc -g -o $@ $^
+
+test_expr.o: test_expr.c expr.h
+	gcc -g -c $<
+
+expr.o: expr.c expr.h
+	gcc -g -c $<
+
+../slist.o ../stack.o: ../%.o: ../%.c ../%.h
+	cd .. && make $(subst ../,,$@)
