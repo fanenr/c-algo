@@ -14,12 +14,20 @@ $(tests:%=tests/%.o): tests/%.o: tests/%.c %.h
 $(tests:%=%.o): %.o: %.c %.h
 	gcc -g -o $@ -c $<
 
-
 .PHONY: test_all $(tests:%=test_%)
 test_all: $(tests:%=test_%)
 
 $(tests:%=test_%): test_%: tests/%
 	$<
+
+.PHONY: sample
+sample: samples/expr
+
+samples/post_expr: samples/expr.o stack.o slist.o
+	gcc -g -o $@ $^
+
+samples/post_expr.o: samples/expr.c stack.h slist.h
+	gcc -g -o $@ -c $<
 
 .PHONY: clean
 clean:
