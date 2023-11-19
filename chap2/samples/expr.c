@@ -126,6 +126,9 @@ slist in2post(const char *src, size_t len)
         case ' ':
             break;
 
+        case '\n':
+            break;
+
         case '\0':
             goto end;
 
