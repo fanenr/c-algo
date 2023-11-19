@@ -28,7 +28,7 @@ struct expr_node
  * read no more than `len` chars from `src` and try to convert it.
  * return NULL on failure and slist on success
  */
-extern slist in2post(char *src, size_t len);
+extern slist in2post(const char *src, size_t len);
 
 /*
  * free the `list`.
