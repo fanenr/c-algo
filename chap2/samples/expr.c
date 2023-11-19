@@ -17,7 +17,7 @@ static struct expr_node *alloc_expr_node()
     return node;
 }
 
-slist in2post(const char *src, size_t len)
+slist expr_in2post(const char *src, size_t len)
 {
     stack stac;
     slist list;
@@ -156,15 +156,113 @@ end:
 
 err:
     stack_free(&stac);
-    expr_slist_free(&list);
+    expr_free(&list);
     return list;
 }
 
-void expr_slist_free(slist *list)
+void expr_free(slist *list)
 {
     while (list->head != NULL) {
         free(list->head->data.ptr);
         slist_remove(list, list->head);
     }
     slist_free(list);
+}
+
+void expr_evaluate(const slist *restrict list,
+                   struct expr_node *restrict result)
+{
+    double tempf, tempf2;
+    struct slist_n *list_node;
+
+    stack stac;
+    stack_init(&stac);
+    struct expr_node *enode;
+    struct stack_n stac_node;
+
+    enum EXPR_NODE_TYPE operation;
+    enum EXPR_NODE_TYPE result_type = EXPR_NODE_INT;
+
+    list_node = list->head;
+    while (list_node != NULL) {
+        enode = list_node->data.ptr;
+
+        switch (enode->type) {
+        case EXPR_NODE_INT:
+            tempf = (double)enode->data.integer;
+            operation = EXPR_NODE_INT;
+            break;
+
+        case EXPR_NODE_FLOAT:
+            tempf = enode->data.floating;
+            operation = EXPR_NODE_FLOAT;
+            result_type = EXPR_NODE_FLOAT;
+            break;
+
+        case EXPR_NODE_PLUS:
+        case EXPR_NODE_MINUS:
+        case EXPR_NODE_STAR:
+        case EXPR_NODE_SLASH:
+            operation = enode->type;
+            break;
+
+        case EXPR_NODE_NONE:
+        default:
+            goto err;
+        }
+
+        switch (operation) {
+        case EXPR_NODE_INT:
+        case EXPR_NODE_FLOAT:
+            stac_node.data.f64 = tempf;
+            stack_push(&stac, stac_node);
+            break;
+
+        default:
+            if (stac.size < 2)
+                goto err;
+
+            tempf2 = stack_pop(&stac).data.f64;
+            tempf = stack_pop(&stac).data.f64;
+
+            switch (operation) {
+            case EXPR_NODE_PLUS:
+                tempf += tempf2;
+                break;
+            case EXPR_NODE_MINUS:
+                tempf -= tempf2;
+                break;
+            case EXPR_NODE_STAR:
+                tempf *= tempf2;
+                break;
+            case EXPR_NODE_SLASH:
+                tempf /= tempf2;
+                break;
+            default:
+                break;
+            }
+
+            stac_node.data.f64 = tempf;
+            stack_push(&stac, stac_node);
+        }
+
+        list_node = list_node->next;
+    }
+
+    if (stac.size != 1)
+        goto err;
+
+    result->type = result_type;
+    if (result_type == EXPR_NODE_INT)
+        result->data.integer = (long)stack_pop(&stac).data.f64;
+    else
+        result->data.floating = stack_pop(&stac).data.f64;
+
+    stack_free(&stac);
+    return;
+
+err:
+    result->type = EXPR_NODE_NONE;
+    stack_free(&stac);
+    return;
 }
