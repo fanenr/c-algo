@@ -1,3 +1,5 @@
+/* deque */
+
 #ifndef DEQUE_H
 #define DEQUE_H
 
@@ -23,6 +25,7 @@ struct deque_n
         double f64;
 
         void *ptr;
+        char buf[8];
     } data;
 };
 

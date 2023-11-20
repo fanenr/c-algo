@@ -1,3 +1,5 @@
+/* double-linked list */
+
 #ifndef DLIST_H
 #define DLIST_H
 
@@ -24,6 +26,7 @@ struct dlist_n
         double f64;
 
         void *ptr;
+        char buf[8];
     } data;
 };
 
