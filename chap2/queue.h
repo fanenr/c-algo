@@ -1,3 +1,5 @@
+/* queue */
+
 #ifndef QUEUE_H
 #define QUEUE_H
 
@@ -23,6 +25,7 @@ struct queue_n
         double f64;
 
         void *ptr;
+        char buf[8];
     } data;
 };
 

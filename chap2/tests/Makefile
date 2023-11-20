@@ -7,6 +7,7 @@ all: $(tests)
 
 $(tests): test_%: %
 	./$<
+	@echo "$< test passed"
 
 $(targets): %: %.o ../%.o
 	gcc -g -o $@ $^

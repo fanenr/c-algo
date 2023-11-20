@@ -1,7 +1,11 @@
-targets := test_expr
+tasks := task_test_expr
 
 .PHONY: all
-all: $(targets)
+all: $(tasks)
+
+task_test_expr: test_expr
+	./test_expr < input.txt
+	@echo "$< task finished"
 
 test_expr: test_expr.o expr.o ../slist.o ../stack.o
 	gcc -g -o $@ $^

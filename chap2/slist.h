@@ -1,3 +1,5 @@
+/* single-linked list */
+
 #ifndef SLIST_H
 #define SLIST_H
 
@@ -23,6 +25,7 @@ struct slist_n
         double f64;
 
         void *ptr;
+        char buf[8];
     } data;
 };
 

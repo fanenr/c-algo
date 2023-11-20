@@ -1,3 +1,5 @@
+/* stack */
+
 #ifndef STACK_H
 #define STACK_H
 
@@ -27,6 +29,7 @@ struct stack_n
         double f64;
 
         void *ptr;
+        char buf[8];
     } data;
 };
 
