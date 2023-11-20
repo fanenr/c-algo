@@ -1,18 +1,18 @@
 /* binary-node tree */
 
-#ifndef TREE_H
-#define TREE_H
+#ifndef BNTREE_H
+#define BNTREE_H
 
 #include <stddef.h>
 #include <stdint.h>
 
-/* tree node */
-struct tree_n
+/* bntree node */
+struct bntree_n
 {
     size_t height;
-    struct tree_n *left;
-    struct tree_n *right;
-    struct tree_n *parent;
+    struct bntree_n *left;
+    struct bntree_n *right;
+    struct bntree_n *parent;
     union {
         uint8_t u8;
         uint16_t u16;
@@ -32,29 +32,29 @@ struct tree_n
     } data;
 };
 
-/* tree container (header) */
-struct tree_s
+/* bntree container (header) */
+struct bntree_s
 {
     size_t size;
-    struct tree_n *root;
+    struct bntree_n *root;
 };
 
-typedef struct tree_s tree;
+typedef struct bntree_s bntree;
 
 /*
  * init `tre`.
  */
-extern tree *deque_init(tree *tre);
+extern bntree *bntree_init(bntree *tre);
 
 /*
  * release `tre`.
  */
-extern void deque_free(tree *tre);
+extern void bntree_free(bntree *tre);
 
 /*
  * allocate a node.
  */
-extern struct tree_n *tree_node(void);
+extern struct bntree_n *bntree_node(void);
 
 /*
  * insert `node` as the left child node of `pos` in `tre`.
@@ -62,23 +62,23 @@ extern struct tree_n *tree_node(void);
  * `node` will take the place of the pos in the `tre`, and `pos` will become the
  * left child node of `node`.
  */
-extern struct tree_n *tree_insert_left(tree *restrict tre,
-                                       struct tree_n *restrict pos,
-                                       struct tree_n *restrict node);
+extern struct bntree_n *bntree_insert_left(bntree *restrict tre,
+                                       struct bntree_n *restrict pos,
+                                       struct bntree_n *restrict node);
 /*
  * insert `node` as the right child node of `pos` in `tre`.
  * no nodes will be inserted if `pos` is NULL. otherwise, after insertion,
  * `node` will take the place of the pos in the `tre`, and `pos` will become the
  * right child node of `node`.
  */
-extern struct tree_n *tree_insert_right(tree *restrict tre,
-                                        struct tree_n *restrict pos,
-                                        struct tree_n *restrict node);
+extern struct bntree_n *bntree_insert_right(bntree *restrict tre,
+                                        struct bntree_n *restrict pos,
+                                        struct bntree_n *restrict node);
 
 /*
  * remove the subtree with `pos` as the root node.
  * no nodes will be removed if `pos` is NULL.
  */
-extern void tree_remove(tree *restrict tre, struct tree_n *restrict pos);
+extern void bntree_remove(bntree *restrict tre, struct bntree_n *restrict pos);
 
 #endif
