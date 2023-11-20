@@ -1,4 +1,4 @@
-tests := bn_tree
+tests := bntree
 
 .PHONY: all $(tests)
 all: $(tests)
