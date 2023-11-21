@@ -1,26 +1,16 @@
-tests := bntree
+targets := bntree
+objects := $(targets:%=%.o)
 
-.PHONY: all $(tests)
-all: $(tests)
+.PHONY: all
+all: $(objects)
 
-$(tests): %: tests/%
+$(objects): %.o: %.c %.h
+	gcc -g -c $<
 
-$(tests:%=tests/%): tests/%: tests/%.o %.o
-	gcc -g -o $@ $^
-
-$(tests:%=tests/%.o): tests/%.o: tests/%.c %.h
-	gcc -g -o $@ -c $<
-
-$(tests:%=%.o): %.o: %.c %.h
-	gcc -g -o $@ -c $<
-
-
-.PHONY: test_all $(tests:%=test_%)
-test_all: $(tests:%=test_%)
-
-$(tests:%=test_%): test_%: tests/%
-	$<
+.PHONY: test
+test:
+	cd tests && make
 
 .PHONY: clean
 clean:
-	-rm *.o tests/*.o $(tests:%=tests/%)
+	-rm *.o **/*.o $(targets:%=tests/%)
