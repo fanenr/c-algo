@@ -25,11 +25,16 @@ struct bntree_n *bntree_insert_left(bntree *restrict tre,
                                     struct bntree_n *restrict pos,
                                     struct bntree_n *restrict node)
 {
-    if (pos == NULL)
-        return NULL;
-
-    node->left = pos->left;
-    pos->left = node;
+    if (pos == NULL) {
+        tre->root->parent = node;
+        node->left = tre->root;
+        tre->root = node;
+    } else {
+        pos->left->parent = node;
+        node->left = pos->left;
+        pos->left = node;
+        node->parent = pos;
+    }
 
     tre->size++;
     return node;
@@ -39,11 +44,16 @@ struct bntree_n *bntree_insert_right(bntree *restrict tre,
                                      struct bntree_n *restrict pos,
                                      struct bntree_n *restrict node)
 {
-    if (pos == NULL)
-        return NULL;
-
-    node->right = pos->right;
-    pos->right = node;
+    if (pos == NULL) {
+        tre->root->parent = node;
+        node->right = tre->root;
+        tre->root = node;
+    } else {
+        pos->right->parent = node;
+        node->right = pos->left;
+        pos->right = node;
+        node->parent = pos;
+    }
 
     tre->size++;
     return node;
