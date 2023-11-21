@@ -9,7 +9,6 @@
 /* bntree node */
 struct bntree_n
 {
-    size_t height;
     struct bntree_n *left;
     struct bntree_n *right;
     struct bntree_n *parent;
