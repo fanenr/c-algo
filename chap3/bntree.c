@@ -70,10 +70,12 @@ void bntree_remove(bntree *restrict tre, struct bntree_n *restrict pos)
     struct bntree_n *parent = pos->parent;
     free(pos);
 
-    if (parent->left == pos)
-        parent->left = NULL;
-    if (parent->right == pos)
-        parent->right = NULL;
+    if (parent != NULL) {
+        if (parent->left == pos)
+            parent->left = NULL;
+        if (parent->right == pos)
+            parent->right = NULL;
+    }
 
     tre->size--;
     return;
