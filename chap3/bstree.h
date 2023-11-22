@@ -32,13 +32,16 @@ struct bstree_n
 };
 
 /*
- * comp receives two parameters: a left node and a right node. and it
- * returns a negative number to mean that the left node is smaller than the
- * right node, a positive number to indicate that the left node is greater than
- * the right node, and zero to represent that the two nodes are equal.
+ * comp function receives two parameters: `node` and `other`, and it returns a
+ * negative number to mean that `node` is smaller than `other`, a positive
+ * number to mean that `node` is greater than `other`, and zero to mean that the
+ * two nodes are equal.
+ * the meaning of `node` here is the same as that of `node` in the find, insert,
+ * and remove functions, but `other` is the intermediate variable passed by
+ * these functions, so just focus on `node`.
  */
-typedef int (*bstree_comp)(const struct bstree_n *left,
-                           const struct bstree_n *right);
+typedef int (*bstree_comp)(const struct bstree_n *node,
+                           const struct bstree_n *other);
 
 /* bstree container (header) */
 struct bstree_s
@@ -69,7 +72,8 @@ extern struct bstree_n *bstree_node(void);
 
 /*
  * find `node` in `tree`.
- * `node` will be returned if found, and NULL will be returned if not.
+ * a pointer of node which equal to `node` in `tree` will be returned if `node`
+ * is found, and NULL will be returned if not.
  */
 extern struct bstree_n *bstree_find(bstree *restrict tree,
                                     struct bstree_n *restrict node);
