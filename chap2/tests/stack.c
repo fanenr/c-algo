@@ -29,7 +29,7 @@ static void test_init(void)
 
 static void test_free(void)
 {
-    /* free a empty stack */
+    /* free an empty stack */
     stack stac1;
     stack_init(&stac1);
 
@@ -104,7 +104,7 @@ static void test_top(void)
 
 static void test_pop(void)
 {
-    /* a empty stack_n will be returned if stack is empty */
+    /* an empty stack_n will be returned if stack is empty */
     stack stac1;
     stack_init(&stac1);
 

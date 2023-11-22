@@ -31,7 +31,7 @@ static void test_init(void)
 
 static void test_free(void)
 {
-    /* free a empty queue */
+    /* free an empty queue */
     queue que1;
     queue_init(&que1);
 
@@ -127,7 +127,7 @@ static void test_top(void)
 
 static void test_pop(void)
 {
-    /* a empty queue_n will be returned if queue is empty */
+    /* an empty queue_n will be returned if queue is empty */
     queue que1;
     queue_init(&que1);
 

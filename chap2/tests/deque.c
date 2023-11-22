@@ -33,7 +33,7 @@ static void test_init(void)
 
 static void test_free(void)
 {
-    /* free a empty deque */
+    /* free an empty deque */
     deque que1;
     deque_init(&que1);
 
@@ -160,7 +160,7 @@ static void test_top(void)
 
 static void test_pop(void)
 {
-    /* a empty deque_n will be returned if deque is empty */
+    /* an empty deque_n will be returned if deque is empty */
     deque que1;
     deque_init(&que1);
 

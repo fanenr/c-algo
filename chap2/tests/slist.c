@@ -28,7 +28,7 @@ static void test_init(void)
 
 static void test_free(void)
 {
-    /* free a empty slist */
+    /* free an empty slist */
     slist list1;
     slist_init(&list1);
 

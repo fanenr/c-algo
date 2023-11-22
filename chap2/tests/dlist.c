@@ -28,7 +28,7 @@ static void test_init(void)
 
 static void test_free(void)
 {
-    /* free a empty dlist */
+    /* free an empty dlist */
     dlist list1;
     dlist_init(&list1);
 
