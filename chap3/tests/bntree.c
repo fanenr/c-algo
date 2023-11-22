@@ -34,7 +34,7 @@ static void test_init(void)
 
 static void test_free(void)
 {
-    /* release a empty bntree */
+    /* release an empty bntree */
     bntree tree1;
     bntree_init(&tree1);
     bntree_free(&tree1);
