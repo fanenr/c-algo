@@ -4,14 +4,14 @@
 
 #define BUFF_SIZE 1024
 
-static void test_in2post();
+static void test_in2post(void);
 
 int main(void)
 {
     test_in2post();
 }
 
-void test_in2post()
+void test_in2post(void)
 {
     slist list;
     char buf[BUFF_SIZE];

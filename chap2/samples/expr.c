@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static struct expr_node *alloc_expr_node()
+static struct expr_node *alloc_expr_node(void)
 {
     struct expr_node *node;
     node = malloc(sizeof(struct expr_node));
