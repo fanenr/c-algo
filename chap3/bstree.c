@@ -115,9 +115,9 @@ void bstree_remove(bstree *restrict tree, struct bstree_n *restrict node)
     int degree = ((find->left == NULL) << 1) | (find->right == NULL);
 
     switch (degree) {
-    case 0:                 /* leaf node */
+    case 0:                     /* leaf node */
         free(find);
-        if (parent == NULL) /* remove root */
+        if (find == tree->root) /* remove root */
             tree->root = NULL;
         else if (parent->left == find)
             parent->left = NULL;
@@ -129,7 +129,7 @@ void bstree_remove(bstree *restrict tree, struct bstree_n *restrict node)
     case 1: /* has right node */
         temp = find->right;
         free(find);
-        if (parent == NULL) /* remove root */
+        if (find == tree->root) /* remove root */
             tree->root = temp;
         else if (parent->left == find)
             parent->left = temp;
@@ -141,7 +141,7 @@ void bstree_remove(bstree *restrict tree, struct bstree_n *restrict node)
     case 2: /* has left node */
         temp = find->left;
         free(find);
-        if (parent == NULL) /* remove root */
+        if (find == tree->root) /* remove root */
             tree->root = temp;
         else if (parent->left == find)
             parent->left = temp;
