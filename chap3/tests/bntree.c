@@ -105,6 +105,8 @@ static void insert_helper(bntree *tree)
             temp++;
         }
     }
+
+    return;
 }
 
 static void test_insert_left(void)
