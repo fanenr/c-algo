@@ -17,12 +17,14 @@ static void bstree_free_helper(struct bstree_n *node)
     bstree_free_helper(node->left);
     bstree_free_helper(node->right);
     free(node);
+    return;
 }
 
 void bstree_free(bstree *tree)
 {
     bstree_free_helper(tree->root);
     bstree_init(tree, tree->comp);
+    return;
 }
 
 struct bstree_n *bstree_node(void)
@@ -186,4 +188,6 @@ void bstree_remove(bstree *restrict tree, struct bstree_n *restrict node)
         tree->size--;
         break;
     }
+
+    return;
 }

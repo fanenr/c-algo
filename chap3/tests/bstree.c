@@ -37,6 +37,7 @@ static void insert_helper(bstree *tree, int num, int max)
 {
     srand(time(NULL));
     struct bstree_n *node;
+
     for (int i = 0; i < num; i++) {
         node = bstree_node();
         node->data.i32 = rand() % max;
@@ -45,6 +46,7 @@ static void insert_helper(bstree *tree, int num, int max)
             i--;                                 /* generate again */
         }
     }
+    
     return;
 }
 

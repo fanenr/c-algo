@@ -12,6 +12,7 @@ void bntree_free(bntree *tree)
 {
     bntree_remove(tree, tree->root);
     bntree_init(tree);
+    return;
 }
 
 struct bntree_n *bntree_node(void)
