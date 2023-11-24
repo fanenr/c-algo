@@ -1,5 +1,6 @@
 #include "bstree.h"
 #include <stdlib.h>
+#include <string.h>
 
 bstree *bstree_init(bstree *tree, bstree_comp comp)
 {
@@ -9,9 +10,18 @@ bstree *bstree_init(bstree *tree, bstree_comp comp)
     return tree;
 }
 
+static void bstree_free_helper(struct bstree_n *node)
+{
+    if (node == NULL)
+        return;
+    bstree_free_helper(node->left);
+    bstree_free_helper(node->right);
+    free(node);
+}
+
 void bstree_free(bstree *tree)
 {
-    bstree_remove(tree, tree->root);
+    bstree_free_helper(tree->root);
     bstree_init(tree, tree->comp);
 }
 
@@ -28,10 +38,12 @@ struct bstree_n *bstree_find(bstree *restrict tree,
     bstree_comp comp = tree->comp;
     int comp_val;
 
-    if (curr == NULL || node == NULL)
+    if (node == NULL)
         return NULL;
 
     while (curr != NULL) {
+        if (node == curr) /* node in tree */
+            return curr;
         comp_val = comp(node, curr);
         if (comp_val == 0)
             return curr;
@@ -51,8 +63,14 @@ struct bstree_n *bstree_insert(bstree *restrict tree,
     bstree_comp comp = tree->comp;
     int comp_val;
 
-    if (curr == NULL || node == NULL)
+    if (node == NULL)
         return NULL;
+
+    if (curr == NULL) {
+        tree->root = node;
+        tree->size++;
+        return node;
+    }
 
     for (;;) {
         comp_val = comp(node, curr);
@@ -106,13 +124,16 @@ static struct bstree_n *bstree_find_max(struct bstree_n *root)
 
 void bstree_remove(bstree *restrict tree, struct bstree_n *restrict node)
 {
-    struct bstree_n *find, *temp, *parent;
+    int degree;
+    struct bstree_n *find, *parent;
+    struct bstree_n *temp;
+
     find = bstree_find(tree, node);
     if (find == NULL)
         return;
 
     parent = find->parent;
-    int degree = ((find->left == NULL) << 1) | (find->right == NULL);
+    degree = ((find->left != NULL) << 1) | (find->right != NULL);
 
     switch (degree) {
     case 0:                     /* leaf node */
@@ -135,6 +156,7 @@ void bstree_remove(bstree *restrict tree, struct bstree_n *restrict node)
             parent->left = temp;
         else if (parent->right == find)
             parent->right = temp;
+        temp->parent = parent;
         tree->size--;
         break;
 
@@ -147,13 +169,21 @@ void bstree_remove(bstree *restrict tree, struct bstree_n *restrict node)
             parent->left = temp;
         else if (parent->right == find)
             parent->right = temp;
+        temp->parent = parent;
         tree->size--;
         break;
 
     case 3: /* has tow nodes */
         temp = bstree_find_min(find->right);
         find->data = temp->data;
-        bstree_remove(tree, temp);
+        if (temp->parent->left == temp)
+            temp->parent->left = temp->right;
+        else if (temp->parent->right == temp)
+            temp->parent->right = temp->right;
+        if (temp->right != NULL)
+            temp->right->parent = temp->parent;
+        free(temp);
+        tree->size--;
         break;
     }
 }

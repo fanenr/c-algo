@@ -1,4 +1,4 @@
-targets := bntree
+targets := bntree bstree
 objects := $(targets:%=%.o)
 
 .PHONY: all
