@@ -1,8 +1,7 @@
-#include <stdio.h>
+#include "../common.h"
 #include <stdlib.h>
 #include <assert.h>
-
-#include "../common.h"
+#include <stdio.h>
 
 static void solution1(int n, int *nums);
 static void solution2(int n, int *nums);
@@ -13,7 +12,7 @@ int main(void)
     int n;
     int *nums;
 
-    scanf("%u", &n);
+    scanf("%d", &n);
     nums = (int *)malloc(sizeof(int) * n);
     assert(nums != NULL);
     for (int i = 0; i < n; i++)

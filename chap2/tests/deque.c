@@ -96,7 +96,7 @@ static void test_push_end(void)
         assert(ptr == node);
         assert(que1.tail == ptr);
         assert(que1.head == head);
-        assert(que1.size == i + 1);
+        assert(que1.size == i + 1U);
         assert(ptr->data.i32 == node->data.i32);
     }
 
@@ -127,7 +127,7 @@ static void test_push_head(void)
         assert(ptr == node);
         assert(que1.head == ptr);
         assert(que1.tail == tail);
-        assert(que1.size == i + 1);
+        assert(que1.size == i + 1U);
         assert(ptr->data.i32 == node->data.i32);
     }
 
@@ -185,7 +185,7 @@ static void test_pop(void)
 
         assert(copy.next == NULL);
         assert(copy.data.i32 == i);
-        assert(que2.size == 999 - i);
+        assert(que2.size == 999U - i);
     }
 
     assert(que2.size == 0);

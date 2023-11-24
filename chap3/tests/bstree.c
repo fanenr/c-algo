@@ -9,8 +9,8 @@ static void test_free(void);
 static void test_node(void);
 static void test_insert(void);
 static void test_remove(void);
-static void traverse(const struct bstree_n *node);
 static void insert_helper(bstree *tree, int num, int max);
+static void traverse(const struct bstree_n *node) __attribute__((unused));
 static int comp(const struct bstree_n *node, const struct bstree_n *other);
 
 int main(void)
@@ -46,7 +46,7 @@ static void insert_helper(bstree *tree, int num, int max)
             i--;                                 /* generate again */
         }
     }
-    
+
     return;
 }
 
@@ -132,7 +132,7 @@ static void test_remove(void)
     for (int i = 0; i < 10; i++) {
         bstree_remove(&tree1, tree1.root);
 
-        assert(tree1.size == 9 - i);
+        assert(tree1.size == 9UL - i);
     }
 
     bstree_free(&tree1);

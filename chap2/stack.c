@@ -50,7 +50,7 @@ struct stack_n *stack_top(stack *stac)
 struct stack_n stack_pop(stack *stac)
 {
     struct stack_n ret, *ptr;
-    ret.data.ptr = NULL;
+    ret.ptr = NULL;
 
     if (stac->size == 0) /* stack is empty */
         return ret;

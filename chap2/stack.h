@@ -30,7 +30,7 @@ struct stack_n
 
         void *ptr;
         char buf[8];
-    } data;
+    };
 };
 
 /* stack container (header) */

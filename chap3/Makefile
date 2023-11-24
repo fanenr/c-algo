@@ -1,3 +1,8 @@
+LDFLAGS   = -g
+MAKEFLAGS = --no-print-directory
+CFLAGS    = -Wall -Wextra -Werror -ggdb -std=gnu11
+export CFLAGS LDFLAGS MAKEFLAGS
+
 targets := bntree bstree
 objects := $(targets:%=%.o)
 
@@ -5,12 +10,13 @@ objects := $(targets:%=%.o)
 all: $(objects)
 
 $(objects): %.o: %.c %.h
-	gcc -g -c $<
+	gcc -c $< $(CFLAGS)
 
 .PHONY: test
-test:
+test: $(objects)
 	cd tests && make
 
 .PHONY: clean
 clean:
-	-rm *.o **/*.o $(targets:%=tests/%)
+	-rm -f *.o
+	-cd tests && make clean
