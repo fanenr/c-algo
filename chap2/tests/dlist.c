@@ -82,7 +82,7 @@ static void test_insert(void)
         node->data.i32 = i;
         tail = dlist_insert(&list1, tail, node);
 
-        assert(list1.size == i + 1);
+        assert(list1.size == i + 1U);
     }
 
     dlist_free(&list1);
@@ -98,7 +98,7 @@ static void test_insert(void)
 
         assert(node == head);
         assert(list2.head == head);
-        assert(list2.size == i + 1);
+        assert(list2.size == i + 1U);
     }
 
     dlist_free(&list2);
@@ -129,7 +129,7 @@ static void test_remove(void)
 
         dlist_remove(&list1, list1.head);
 
-        assert(list1.size == 999 - i);
+        assert(list1.size == 999U - i);
     }
 
     assert(list1.size == 0);

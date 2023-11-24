@@ -8,13 +8,16 @@ task_test_expr: test_expr
 	@echo "$< task finished"
 
 test_expr: test_expr.o expr.o ../slist.o ../stack.o
-	gcc -g -o $@ $^
+	gcc -o $@ $^ $(LDFLAGS)
 
 test_expr.o: test_expr.c expr.h
-	gcc -g -c $<
+	gcc -c $< $(CFLAGS)
 
 expr.o: expr.c expr.h
-	gcc -g -c $<
+	gcc -c $< $(CFLAGS)
 
 ../slist.o ../stack.o: ../%.o: ../%.c ../%.h
 	cd .. && make $(subst ../,,$@)
+
+clean:
+	-rm -f *.o test_expr

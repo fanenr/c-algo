@@ -48,7 +48,7 @@ slist expr_in2post(const char *src, size_t len)
     lnode->data.ptr = enode;                                                   \
     ltail = slist_insert(plist, ltail, lnode);
 
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         switch (src[i]) {
         case '0' ... '9':
             tmpf = strtod(src + i, &endf);
@@ -76,17 +76,17 @@ slist expr_in2post(const char *src, size_t len)
                 stac_top = stack_top(&stac);
                 if (stac_top == NULL)
                     break;
-                if (stac_top->data.u8 == '(')
+                if (stac_top->u8 == '(')
                     break;
-                if (stac_top->data.u8 == '+' || stac_top->data.u8 == '-')
+                if (stac_top->u8 == '+' || stac_top->u8 == '-')
                     break;
 
                 stac_node = stack_pop(&stac);
                 save_expr_node(&list, enode, list_node, list_tail);
-                enode->type = (enum EXPR_NODE_TYPE)stac_node.data.u8;
+                enode->type = (enum EXPR_NODE_TYPE)stac_node.u8;
             }
 
-            stac_node.data.u8 = src[i];
+            stac_node.u8 = src[i];
 
             /* check symbol bit */
             if (last_read == LAST_READ_START ||
@@ -104,8 +104,9 @@ slist expr_in2post(const char *src, size_t len)
             /* check invalid symbol */
             if (last_read == LAST_READ_START || last_read == LAST_READ_BRACKET)
                 goto err;
+            __attribute__((fallthrough));
         case '(':
-            stac_node.data.u8 = src[i];
+            stac_node.u8 = src[i];
             stack_push(&stac, stac_node);
             last_read = src[i] == '(' ? LAST_READ_BRACKET : LAST_READ_OPERATOR;
             break;
@@ -113,13 +114,13 @@ slist expr_in2post(const char *src, size_t len)
         case ')':
             while (stac.size != 0) {
                 stac_node = stack_pop(&stac);
-                if (stac_node.data.u8 == '(')
+                if (stac_node.u8 == '(')
                     break;
 
                 save_expr_node(&list, enode, list_node, list_tail);
-                enode->type = (enum EXPR_NODE_TYPE)stac_node.data.u8;
+                enode->type = (enum EXPR_NODE_TYPE)stac_node.u8;
             }
-            if (stac_node.data.u8 != '(')
+            if (stac_node.u8 != '(')
                 goto err;
             break;
 
@@ -147,7 +148,7 @@ end:
     while (stac.size != 0) {
         stac_node = stack_pop(&stac);
         save_expr_node(&list, enode, list_node, list_tail);
-        enode->type = (enum EXPR_NODE_TYPE)stac_node.data.u8;
+        enode->type = (enum EXPR_NODE_TYPE)stac_node.u8;
     }
     stack_free(&stac);
     return list;
@@ -214,7 +215,7 @@ void expr_evaluate(const slist *restrict list,
         switch (operation) {
         case EXPR_NODE_INT:
         case EXPR_NODE_FLOAT:
-            stac_node.data.f64 = tempf;
+            stac_node.f64 = tempf;
             stack_push(&stac, stac_node);
             break;
 
@@ -222,8 +223,8 @@ void expr_evaluate(const slist *restrict list,
             if (stac.size < 2)
                 goto err;
 
-            tempf2 = stack_pop(&stac).data.f64;
-            tempf = stack_pop(&stac).data.f64;
+            tempf2 = stack_pop(&stac).f64;
+            tempf = stack_pop(&stac).f64;
 
             switch (operation) {
             case EXPR_NODE_PLUS:
@@ -242,7 +243,7 @@ void expr_evaluate(const slist *restrict list,
                 break;
             }
 
-            stac_node.data.f64 = tempf;
+            stac_node.f64 = tempf;
             stack_push(&stac, stac_node);
         }
 
@@ -254,9 +255,9 @@ void expr_evaluate(const slist *restrict list,
 
     result->type = result_type;
     if (result_type == EXPR_NODE_INT)
-        result->data.integer = (long)stack_pop(&stac).data.f64;
+        result->data.integer = (long)stack_pop(&stac).f64;
     else
-        result->data.floating = stack_pop(&stac).data.f64;
+        result->data.floating = stack_pop(&stac).f64;
 
     stack_free(&stac);
     return;

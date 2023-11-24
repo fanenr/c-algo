@@ -45,7 +45,7 @@ static void test_free(void)
 
     struct stack_n node;
     for (int i = 0; i < 100; i++) {
-        node.data.i32 = i;
+        node.i32 = i;
         stack_push(&stac2, node);
     }
 
@@ -65,11 +65,11 @@ static void test_push(void)
     struct stack_n node, *ptr;
 
     for (int i = 0; i < 1000; i++) {
-        node.data.i32 = i;
+        node.i32 = i;
         ptr = stack_push(&stac1, node);
 
-        assert(stac1.size == i + 1);
-        assert(ptr->data.i32 == node.data.i32);
+        assert(stac1.size == i + 1U);
+        assert(ptr->i32 == node.i32);
         assert(ptr == stac1.head + stac1.size - 1);
     }
 
@@ -93,7 +93,7 @@ static void test_top(void)
     struct stack_n node, *ptr;
 
     for (int i = 0; i < 1000; i++) {
-        node.data.i32 = i;
+        node.i32 = i;
         ptr = stack_push(&stac2, node);
 
         assert(stack_top(&stac2) == ptr);
@@ -108,7 +108,7 @@ static void test_pop(void)
     stack stac1;
     stack_init(&stac1);
 
-    assert(stack_pop(&stac1).data.ptr == NULL);
+    assert(stack_pop(&stac1).ptr == NULL);
     assert(stac1.capacity == 0);
     assert(stac1.head == NULL);
     assert(stac1.size == 0);
@@ -120,15 +120,15 @@ static void test_pop(void)
     struct stack_n node, copy;
 
     for (int i = 0; i < 1000; i++) {
-        node.data.i32 = i;
+        node.i32 = i;
         stack_push(&stac2, node);
     }
 
     for (int i = 999; i >= 0; i--) {
         copy = stack_pop(&stac2);
 
-        assert(copy.data.i32 == i);
-        assert(stac2.size == i);
+        assert(copy.i32 == i);
+        assert(stac2.size == i + 0U);
     }
 
     assert(stac1.capacity == 0);

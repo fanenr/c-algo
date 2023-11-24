@@ -1,6 +1,7 @@
 #include "bstree.h"
 #include <stdlib.h>
 #include <string.h>
+#include <sys/cdefs.h>
 
 bstree *bstree_init(bstree *tree, bstree_comp comp)
 {
@@ -113,7 +114,8 @@ static struct bstree_n *bstree_find_min(struct bstree_n *root)
     return min;
 }
 
-static struct bstree_n *bstree_find_max(struct bstree_n *root)
+__attribute__((unused)) static struct bstree_n *
+bstree_find_max(struct bstree_n *root)
 {
     if (root == NULL)
         return NULL;
