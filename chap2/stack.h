@@ -49,6 +49,13 @@ typedef struct stack_s stack;
 extern stack *stack_init(stack *stac);
 
 /*
+ * preset the space of `cap` elements for `stac`. if `cap` is less than the
+ * capacity of `stac`, it will return directly.
+ * NULL will be returned if resize the capacity of `stac` failed.
+ */
+extern stack *stack_reserve(stack *stac, size_t cap);
+
+/*
  * release `stac`.
  */
 extern void stack_free(stack *stac);
