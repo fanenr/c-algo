@@ -1,5 +1,4 @@
 #include "vector.h"
-#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -15,7 +14,8 @@ vector *vector_reserve(vector *vec, size_t cap)
     if (cap <= vec->capacity)
         return vec;
 
-    struct vector_n *head = realloc(vec->head, cap);
+    struct vector_n *head = vec->head;
+    head = realloc(head, cap * sizeof(struct vector_n));
     if (head == NULL)
         return NULL;
 
@@ -52,7 +52,7 @@ struct vector_n *vector_insert(vector *vec, size_t pos, struct vector_n node)
         else                             /* expand vector */
             cap = VECTOR_EXPAN_RATIO * cap;
 
-        head = realloc(vec->head, cap * sizeof(struct vector_n));
+        head = realloc(head, cap * sizeof(struct vector_n));
         if (head == NULL)
             return NULL;
 

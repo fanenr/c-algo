@@ -8,6 +8,21 @@ stack *stack_init(stack *stac)
     return stac;
 }
 
+stack *stack_reserve(stack *stac, size_t cap)
+{
+    if (cap <= stac->capacity)
+        return stac;
+
+    struct stack_n *head = stac->head;
+    head = realloc(head, cap * sizeof(struct stack_n));
+    if (head == NULL)
+        return NULL;
+
+    stac->head = head;
+    stac->capacity = cap;
+    return stac;
+}
+
 void stack_free(stack *stac)
 {
     free(stac->head);
@@ -17,28 +32,25 @@ void stack_free(stack *stac)
 
 struct stack_n *stack_push(stack *stac, struct stack_n node)
 {
-    if (stac->size < stac->capacity) /* sapce is enough */
-        goto push;
+    size_t cap = stac->capacity;
+    struct stack_n *head = stac->head;
 
-    /* reallocate space to hold new node */
-    struct stack_n *new_head;
-    size_t new_cap = stac->capacity;
+    if (cap < stac->size + 1) { /* expand space */
+        if (cap == 0)           /* stack is empty */
+            cap = STACK_INIT_CAP;
+        else                    /* expand stack */
+            cap = STACK_EXPAN_RATIO * cap;
 
-    if (new_cap == 0) /* stack is empty */
-        new_cap = STACK_INIT_CAP;
-    else              /* expand stack */
-        new_cap = STACK_EXPAN_RATIO * new_cap;
+        head = realloc(head, cap * sizeof(struct stack_n));
+        if (head == NULL)
+            return NULL;
 
-    new_head = realloc(stac->head, new_cap * sizeof(struct stack_n));
-    if (new_head == NULL)
-        return NULL;
+        stac->head = head;
+        stac->capacity = cap;
+    }
 
-    stac->head = new_head;
-    stac->capacity = new_cap;
-
-push:
-    stac->head[stac->size++] = node;
-    return stac->head + stac->size - 1;
+    head[stac->size++] = node;
+    return head + stac->size - 1;
 }
 
 struct stack_n *stack_top(stack *stac)
@@ -49,15 +61,13 @@ struct stack_n *stack_top(stack *stac)
 
 struct stack_n stack_pop(stack *stac)
 {
-    struct stack_n ret, *ptr;
+    struct stack_n ret;
     ret.ptr = NULL;
 
     if (stac->size == 0) /* stack is empty */
         return ret;
 
-    ptr = stack_top(stac);
-    ret = *ptr;
-
+    ret = *stack_top(stac);
     stac->size--;
     return ret;
 }
