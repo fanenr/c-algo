@@ -40,7 +40,7 @@ struct vector_n *vector_get(vector *vec, size_t pos)
 
 struct vector_n *vector_insert(vector *vec, size_t pos, struct vector_n node)
 {
-    if (pos >= vec->size)
+    if (pos > vec->size)
         return NULL;
 
     size_t cap = vec->capacity;
@@ -61,7 +61,8 @@ struct vector_n *vector_insert(vector *vec, size_t pos, struct vector_n node)
     }
 
     struct vector_n *move;
-    move = memmove(head + pos + 1, head + pos, vec->size - pos);
+    size_t mvsiz = (vec->size - pos) * sizeof(struct vector_n);
+    move = memmove(head + pos + 1, head + pos, mvsiz);
     if (move != head + pos + 1)
         return NULL;
 
@@ -72,7 +73,7 @@ struct vector_n *vector_insert(vector *vec, size_t pos, struct vector_n node)
 
 struct vector_n *vector_push_end(vector *vec, struct vector_n node)
 {
-    return vector_insert(vec, vec->size - 1, node);
+    return vector_insert(vec, vec->size, node);
 }
 
 struct vector_n *vector_remove(vector *vec, size_t pos)
@@ -83,7 +84,8 @@ struct vector_n *vector_remove(vector *vec, size_t pos)
     struct vector_n *move;
     struct vector_n *head = vec->head;
 
-    move = memmove(head + pos, head + pos + 1, vec->size - pos - 1);
+    size_t mvsiz = (vec->size - pos - 1) * sizeof(struct vector_n);
+    move = memmove(head + pos, head + pos + 1, mvsiz);
     if (move != head + pos)
         return NULL;
 
