@@ -3,9 +3,10 @@ MAKEFLAGS = --no-print-directory
 CFLAGS    = -Wall -Wextra -Werror -ggdb -std=gnu11
 export CFLAGS LDFLAGS MAKEFLAGS
 
-targets := slist dlist stack queue deque
+targets := vector slist dlist stack queue deque
 objects := $(targets:%=%.o)
 sources := $(shell find . -name "*.c")
+export targets objects
 
 .PHONY: all
 all: $(objects)

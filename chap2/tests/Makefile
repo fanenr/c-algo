@@ -1,5 +1,3 @@
-targets := slist dlist stack queue deque
-objects := $(targets:%=%.o)
 tests   := $(targets:%=test_%)
 
 .PHONY: all $(tests)
