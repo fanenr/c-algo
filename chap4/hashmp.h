@@ -46,7 +46,7 @@ struct hashmp_p
 #define HASHMP_KEY_STR 2
 
 /* hashmp initial capacity */
-#define HASHMP_INIT_CAP 8
+#define HASHMP_INIT_CAP 7
 
 /* hashmp container (header) */
 struct hashmp_s
@@ -67,9 +67,8 @@ typedef struct hashmp_s hashmp;
 extern hashmp *hashmp_init(hashmp *map, int type);
 
 /*
- * preset at least `cap` elements sapce for `map`.
- * if `cap` is not a prime number, then the next prime greater than it is
- * regarded as the new cap.
+ * preset `cap` elements sapce for `map`.
+ * it will return directly if `cap` is less than the capacity of `map`.
  */
 extern hashmp *hashmp_reserve(hashmp *map, size_t cap);
 
@@ -81,31 +80,31 @@ extern void hashmp_free(hashmp *map);
 /*
  * allocate a pair.
  */
-extern struct hashmp_n *hashmp_pair(void);
+extern struct hashmp_p *hashmp_pair(void);
 
 /*
  * compute the hash code of `key` (based on the `.ktype` of `map`).
  */
-extern size_t hashmp_hash(hashmp *map, union hashmp_k key);
+extern long hashmp_hash(hashmp *map, union hashmp_k key);
 
 /*
  * find `key` in `map`.
  * a pointer of the first pair which include `key` will be returned if find,
  * otherwise NULL will be returned.
  */
-extern struct hashmp_n *hashmp_find(hashmp *map, union hashmp_k key);
+extern struct hashmp_p *hashmp_find(hashmp *map, union hashmp_k key);
 
 /*
  * insert `pair` into `map`.
  * `pair` will be returned if insert successfully, otherwise NULL will be
  * returned.
  */
-extern struct hashmp_n *hashmp_insert(hashmp *map, struct hashmp_n *pair);
+extern struct hashmp_p *hashmp_insert(hashmp *map, struct hashmp_p *pair);
 
 /*
  * remove `pair` in `map`.
  * no pairs will be removed if `pair` is NULL.
  */
-extern void hashmp_remove(hashmp *map, struct hashmp_n *pair);
+extern void hashmp_remove(hashmp *map, struct hashmp_p *pair);
 
 #endif
