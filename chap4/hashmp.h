@@ -37,6 +37,7 @@ struct hashmp_p
 {
     union hashmp_k key;
     union hashmp_v val;
+    struct hashmp_p *prev;
     struct hashmp_p *next;
 };
 
@@ -46,7 +47,11 @@ struct hashmp_p
 #define HASHMP_KEY_STR 2
 
 /* hashmp initial capacity */
-#define HASHMP_INIT_CAP 7
+#define HASHMP_INIT_CAP 8
+/* hashmp load factor */
+#define HASHMP_LOAD_FACTOR 0.8
+/* hashmp expand ratio */
+#define HASHMP_EXPAN_RATIO 2.0
 
 /* hashmp container (header) */
 struct hashmp_s
@@ -54,7 +59,7 @@ struct hashmp_s
     int ktype;
     size_t size;
     size_t capacity;
-    struct hashmp_p *head;
+    struct hashmp_p **head;
 };
 
 typedef struct hashmp_s hashmp;
