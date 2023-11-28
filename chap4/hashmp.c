@@ -124,7 +124,8 @@ struct hashmp_p *hashmp_find(hashmp *map, union hashmp_k key)
     return pair;
 }
 
-struct hashmp_p *hashmp_find_next(hashmp *map, struct hashmp_p *pair)
+struct hashmp_p *hashmp_find_next(hashmp *restrict map,
+                                  struct hashmp_p *restrict pair)
 {
     if (pair == NULL)
         return NULL;
@@ -155,7 +156,8 @@ struct hashmp_p *hashmp_find_next(hashmp *map, struct hashmp_p *pair)
     return next;
 }
 
-struct hashmp_p *hashmp_insert(hashmp *map, struct hashmp_p *pair)
+struct hashmp_p *hashmp_insert(hashmp *restrict map,
+                               struct hashmp_p *restrict pair)
 {
     size_t cap = map->capacity;
 
@@ -187,7 +189,7 @@ struct hashmp_p *hashmp_insert(hashmp *map, struct hashmp_p *pair)
     return pair;
 }
 
-void hashmp_remove(hashmp *map, struct hashmp_p *pair)
+void hashmp_remove(hashmp *restrict map, struct hashmp_p *restrict pair)
 {
     struct hashmp_p *find = hashmp_find(map, pair->key);
 
