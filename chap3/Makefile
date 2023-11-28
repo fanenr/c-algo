@@ -5,6 +5,7 @@ export CFLAGS LDFLAGS MAKEFLAGS
 
 targets := bntree bstree
 objects := $(targets:%=%.o)
+export targets objects
 
 .PHONY: all
 all: $(objects)

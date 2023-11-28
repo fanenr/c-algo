@@ -1,5 +1,3 @@
-targets := bntree bstree
-objects := $(targets:%=%.o)
 tests   := $(targets:%=test_%)
 
 .PHONY: all $(tests)
