@@ -99,6 +99,12 @@ extern long hashmp_hash(hashmp *map, union hashmp_k key);
  */
 extern struct hashmp_p *hashmp_find(hashmp *map, union hashmp_k key);
 
+/* 
+ * find next pair whose key is equal to `pair.key`.
+ * `pair` must be in `map` (it can be returned from find).
+ */
+extern struct hashmp_p *hashmp_find_next(hashmp *map, struct hashmp_p *pair);
+
 /*
  * insert `pair` into `map`.
  * `pair` will be returned if insert successfully, otherwise NULL will be
