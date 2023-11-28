@@ -35,9 +35,16 @@ hashmp *hashmp_reserve(hashmp *map, size_t cap)
 
 void hashmp_free(hashmp *map)
 {
-    if (map->head != NULL)
+    if (map->head != NULL) {
+        struct hashmp_p *pair, *next;
         for (size_t i = 0; i < map->capacity; i++)
-            free(*(map->head + i));
+            for (pair = map->head[i]; pair != NULL;) {
+                next = pair->next;
+                free(pair);
+                pair = next;
+            }
+    }
+
     free(map->head);
     hashmp_init(map, map->ktype);
     return;
