@@ -19,7 +19,8 @@ hashmp *hashmp_reserve(hashmp *map, size_t cap)
     if (head == NULL)
         return NULL;
 
-    struct hashmp_p **dest = memcpy(head, map->head, map->capacity);
+    struct hashmp_p **dest =
+        memcpy(head, map->head, map->capacity * sizeof(struct hashmp_p *));
     if (dest != head) {
         free(head);
         return NULL;
@@ -34,6 +35,9 @@ hashmp *hashmp_reserve(hashmp *map, size_t cap)
 
 void hashmp_free(hashmp *map)
 {
+    if (map->head != NULL)
+        for (size_t i = 0; i < map->capacity; i++)
+            free(*(map->head + i));
     free(map->head);
     hashmp_init(map, map->ktype);
     return;
@@ -49,7 +53,7 @@ struct hashmp_p *hashmp_pair(void)
 static size_t hashmp_hash_sdbm(const char *str)
 {
     size_t hash = 0;
-    for (int i = 0; str[i] != 0; i++)
+    for (size_t i = 0; str[i] != 0; i++)
         hash = str[i] + (hash << 6) + (hash << 16) - hash;
     return hash;
 }
@@ -113,9 +117,39 @@ struct hashmp_p *hashmp_find(hashmp *map, union hashmp_k key)
     return pair;
 }
 
+struct hashmp_p *hashmp_find_next(hashmp *map, struct hashmp_p *pair)
+{
+    if (pair == NULL)
+        return NULL;
+
+    int type = map->ktype;
+    struct hashmp_p *next = pair->next;
+
+    switch (type) {
+    case HASHMP_KEY_INT:
+        for (; next != NULL; next = next->next)
+            if (next->key.i64 == pair->key.i64)
+                break;
+        break;
+    case HASHMP_KEY_FLT:
+        for (; next != NULL; next = next->next)
+            if (next->key.f64 == pair->key.f64)
+                break;
+        break;
+    case HASHMP_KEY_STR:
+        for (; next != NULL; next = next->next)
+            if (strcmp(next->key.str, pair->key.str) == 0)
+                break;
+        break;
+    default:
+        return NULL;
+    }
+
+    return next;
+}
+
 struct hashmp_p *hashmp_insert(hashmp *map, struct hashmp_p *pair)
 {
-    int type = map->ktype;
     size_t cap = map->capacity;
 
     if (cap * HASHMP_LOAD_FACTOR < map->size + 1) { /* expand sapce */
@@ -149,16 +183,25 @@ struct hashmp_p *hashmp_insert(hashmp *map, struct hashmp_p *pair)
 void hashmp_remove(hashmp *map, struct hashmp_p *pair)
 {
     struct hashmp_p *find = hashmp_find(map, pair->key);
+
+    for (; find != NULL; find = find->next)
+        if (find == pair)
+            break;
+
     if (find == NULL)
         return;
 
+    long hash = hashmp_hash(map, find->key);
     struct hashmp_p *prev, *next;
     prev = find->prev;
     next = find->next;
     free(find);
 
-    if (prev != NULL)
+    if (prev == NULL) /* remove head[hash] */
+        map->head[hash] = next;
+    else
         prev->next = next;
+
     if (next != NULL)
         next->prev = prev;
 
