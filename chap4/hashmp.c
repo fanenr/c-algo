@@ -79,7 +79,7 @@ long hashmp_hash(hashmp *map, union hashmp_k key)
         hash = (uint64_t)key.i64 % cap;
         break;
     case HASHMP_KEY_FLT:
-        hash = (uint64_t)key.f64 % cap;
+        hash = (uint64_t)key.i64 % cap;
         break;
     case HASHMP_KEY_STR:
         hash = hashmp_hash_sdbm(key.str) % cap;
