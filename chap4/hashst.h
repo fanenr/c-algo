@@ -68,14 +68,14 @@ extern long hashst_hash(hashst *set, union hashst_v val);
  * a pointer of the value which include `val` will be returned if find,
  * otherwise NULL will be returned.
  */
-extern union hashst_v *hashst_find(hashst *map, union hashst_v val);
+extern union hashst_v *hashst_find(hashst *set, union hashst_v val);
 
 /*
  * insert `val` into `set`.
  * `val` will be returned if insert successfully, otherwise NULL will be
  * returned.
  */
-extern union hashst_v *hashst_insert(hashst set, union hashst_v val);
+extern union hashst_v *hashst_insert(hashst *set, union hashst_v val);
 
 /*
  * remove `val` in `set`.
