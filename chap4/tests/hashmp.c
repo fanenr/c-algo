@@ -1,9 +1,6 @@
 #include "../hashmp.h"
 #include <assert.h>
-#include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
 
 static void test_init(void);
 static void test_reserve(void);
@@ -148,7 +145,9 @@ static void test_hash(void)
 
     hashmp_reserve(&map2, HASHMP_INIT_CAP);
 
-    assert(hashmp_hash(&map2, build_key(f64, 3.14)) == (uint64_t)3.14 % 8);
+    double key_f64 = 3.14;
+    assert(hashmp_hash(&map2, build_key(f64, 3.14)) ==
+           *(int64_t *)&key_f64 % 8);
 
     hashmp_free(&map2);
 

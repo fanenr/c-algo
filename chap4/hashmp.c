@@ -59,6 +59,8 @@ struct hashmp_p *hashmp_pair(void)
 
 static size_t hashmp_hash_sdbm(const char *str)
 {
+    if (str == NULL)
+        return 0;
     size_t hash = 0;
     for (size_t i = 0; str[i] != 0; i++)
         hash = str[i] + (hash << 6) + (hash << 16) - hash;
@@ -78,12 +80,15 @@ long hashmp_hash(hashmp *map, union hashmp_k key)
     case HASHMP_KEY_INT:
         hash = (uint64_t)key.i64 % cap;
         break;
+
     case HASHMP_KEY_FLT:
         hash = (uint64_t)key.i64 % cap;
         break;
+
     case HASHMP_KEY_STR:
         hash = hashmp_hash_sdbm(key.str) % cap;
         break;
+
     default:
         return -1;
     }
@@ -105,23 +110,31 @@ struct hashmp_p *hashmp_find(hashmp *map, union hashmp_k key)
     case HASHMP_KEY_INT:
         for (; pair != NULL; pair = pair->next)
             if (key.i64 == pair->key.i64)
-                break;
+                return pair;
         break;
+
     case HASHMP_KEY_FLT:
         for (; pair != NULL; pair = pair->next)
             if (key.f64 == pair->key.f64)
-                break;
+                return pair;
         break;
+
     case HASHMP_KEY_STR:
-        for (; pair != NULL; pair = pair->next)
-            if (strcmp(key.str, pair->key.str) == 0)
+        for (; pair != NULL; pair = pair->next) {
+            if (key.str == pair->key.str)
+                return pair;
+            if (key.str == NULL || pair->key.str == NULL)
                 break;
+            if (strcmp(key.str, pair->key.str) == 0)
+                return pair;
+        }
         break;
+
     default:
-        return NULL;
+        break;
     }
 
-    return pair;
+    return NULL;
 }
 
 struct hashmp_p *hashmp_find_next(hashmp *restrict map,
@@ -137,23 +150,31 @@ struct hashmp_p *hashmp_find_next(hashmp *restrict map,
     case HASHMP_KEY_INT:
         for (; next != NULL; next = next->next)
             if (next->key.i64 == pair->key.i64)
-                break;
+                return next;
         break;
+
     case HASHMP_KEY_FLT:
         for (; next != NULL; next = next->next)
             if (next->key.f64 == pair->key.f64)
-                break;
+                return next;
         break;
+
     case HASHMP_KEY_STR:
-        for (; next != NULL; next = next->next)
-            if (strcmp(next->key.str, pair->key.str) == 0)
+        for (; next != NULL; next = next->next) {
+            if (pair->key.str == next->key.str)
+                return next;
+            if (pair->key.str == NULL || next->key.str == NULL)
                 break;
+            if (strcmp(next->key.str, pair->key.str) == 0)
+                return next;
+        }
         break;
+
     default:
-        return NULL;
+        break;
     }
 
-    return next;
+    return NULL;
 }
 
 struct hashmp_p *hashmp_insert(hashmp *restrict map,
