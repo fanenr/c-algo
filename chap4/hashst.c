@@ -107,7 +107,7 @@ union hashst_v *hashst_find(hashst *set, union hashst_v val)
         break;
 
     default:
-        return NULL;
+        break;
     }
 
     return NULL;
