@@ -91,7 +91,7 @@ extern struct vector_n *vector_push_back(vector *vec, struct vector_n node);
 extern struct vector_n *vector_erase(vector *vec, size_t pos);
 
 static inline vector
-vector_new()
+vector_new(void)
 {
     vector vec;
     vector_init(&vec);
@@ -99,7 +99,7 @@ vector_new()
 }
 
 static inline size_t
-vector_len(const vector *vec)
+vector_size(const vector *vec)
 {
     return vec == NULL ? 0 : vec->size;
 }

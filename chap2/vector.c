@@ -16,10 +16,7 @@ vector_init(vector *vec)
 vector *
 vector_reserve(vector *vec, size_t cap)
 {
-    if (vec == NULL)
-        return NULL;
-
-    if (cap <= vec->capacity)
+    if (vec == NULL || cap <= vec->capacity)
         return vec;
 
     struct vector_n *data = vec->data;
