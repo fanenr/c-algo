@@ -7,14 +7,15 @@
 #include <stdint.h>
 
 /* vector expansion ratio */
-#define VECTOR_EXPAN_RATIO 1.5
+#define VECTOR_EXPAN_RATIO 2
 /* vector initial capacity */
-#define VECTOR_INIT_CAP 8
+#define VECTOR_INIT_CAP    8
 
 /* vector node */
 struct vector_n
 {
-    union {
+    union
+    {
         uint8_t u8;
         uint16_t u16;
         uint32_t u32;
@@ -34,14 +35,12 @@ struct vector_n
 };
 
 /* vector container (header) */
-struct vector_s
+typedef struct
 {
     size_t size;
     size_t capacity;
-    struct vector_n *head;
-};
-
-typedef struct vector_s vector;
+    struct vector_n *data;
+} vector;
 
 /*
  * init `vec`.
@@ -62,14 +61,15 @@ extern void vector_free(vector *vec);
 
 /*
  * get the pointer of element at `pos` in `vec`.
- * `pos` must be a valid index (0 <= pos < vec->size), otherwise NULL will be
- * returned.
+ * `pos` must be a valid index (0 <= pos < vec->size). a pointer of node at
+ * `pos` will be returned if `pos` is valid, otherwise NULL will be returned.
  */
-extern struct vector_n *vector_get(vector *vec, size_t pos);
+extern struct vector_n *vector_at(vector *vec, size_t pos);
 
 /*
  * insert `node` into `pos` of `vec`.
- * `pos` must be a valid index (0 <= pos < vec->size), otherwise NULL will be
+ * `pos` must be a valid index (0 <= pos < vec->size). a pointer of inserted
+ * node will be returned if insert successfully, otherwise NULL will be
  * returned.
  */
 extern struct vector_n *vector_insert(vector *vec, size_t pos,
@@ -77,14 +77,43 @@ extern struct vector_n *vector_insert(vector *vec, size_t pos,
 
 /*
  * push `node` into the end of `vec`.
+ * a pointer of inserted node will be returned if insert successfully,
+ * otherwise NULL will be returned.
  */
-extern struct vector_n *vector_push_end(vector *vec, struct vector_n node);
+extern struct vector_n *vector_push_back(vector *vec, struct vector_n node);
 
 /*
  * remove the element at `pos` in `vec`.
- * `pos` must be a valid index (0 <= pos < vec->size), otherwise NULL will be
+ * `pos` must be a valid index (0 <= pos < vec->size). a pointer of node at
+ * `pos` will be returned if erased successfully, otherwise NULL will be
  * returned.
  */
-extern struct vector_n *vector_remove(vector *vec, size_t pos);
+extern struct vector_n *vector_erase(vector *vec, size_t pos);
+
+static inline vector
+vector_new()
+{
+    vector vec;
+    vector_init(&vec);
+    return vec;
+}
+
+static inline size_t
+vector_len(const vector *vec)
+{
+    return vec == NULL ? 0 : vec->size;
+}
+
+static inline size_t
+vector_cap(const vector *vec)
+{
+    return vec == NULL ? 0 : vec->capacity;
+}
+
+static inline const struct vector_n *
+vector_data(const vector *vec)
+{
+    return vec == NULL ? 0 : vec->data;
+}
 
 #endif

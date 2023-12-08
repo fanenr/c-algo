@@ -5,34 +5,37 @@ static void test_init(void);
 static void test_reserve(void);
 static void insert_helper(vector *vec);
 static void test_free(void);
-static void test_get(void);
+static void test_at(void);
 static void test_insert(void);
-static void test_push_end(void);
-static void test_remove(void);
+static void test_push_back(void);
+static void test_erase(void);
 
-int main(void)
+int
+main(void)
 {
     test_init();
     test_reserve();
     test_free();
-    test_get();
+    test_at();
     test_insert();
-    test_push_end();
-    test_remove();
+    test_push_back();
+    test_erase();
     return 0;
 }
 
-static void test_init(void)
+static void
+test_init(void)
 {
     vector vec1;
     vector_init(&vec1);
 
     assert(vec1.size == 0);
-    assert(vec1.head == NULL);
+    assert(vec1.data == NULL);
     assert(vec1.capacity == 0);
 }
 
-static void test_reserve(void)
+static void
+test_reserve(void)
 {
     vector vec1;
     vector_init(&vec1);
@@ -55,20 +58,22 @@ static void test_reserve(void)
     vector_free(&vec2);
 }
 
-static void insert_helper(vector *vec)
+static void
+insert_helper(vector *vec)
 {
     struct vector_n node, *pos;
 
     for (int i = 0; i < 100; i++) {
         node.i32 = i;
-        pos = vector_push_end(vec, node);
+        pos = vector_push_back(vec, node);
 
         assert(vec->size == i + 1U);
-        assert(pos == vec->head + i);
+        assert(pos == vec->data + i);
     }
 }
 
-static void test_free(void)
+static void
+test_free(void)
 {
     /* release a empty vector */
     vector vec1;
@@ -77,7 +82,7 @@ static void test_free(void)
     vector_free(&vec1);
 
     assert(vec1.size == 0);
-    assert(vec1.head == NULL);
+    assert(vec1.data == NULL);
     assert(vec1.capacity == 0);
 
     /* release a vector with some nodes */
@@ -89,11 +94,12 @@ static void test_free(void)
     vector_free(&vec2);
 
     assert(vec2.size == 0);
-    assert(vec2.head == NULL);
+    assert(vec2.data == NULL);
     assert(vec2.capacity == 0);
 }
 
-static void test_get(void)
+static void
+test_at(void)
 {
     vector vec1;
     vector_init(&vec1);
@@ -102,16 +108,17 @@ static void test_get(void)
 
     struct vector_n *node;
     for (int i = 0; i < 100; i++) {
-        node = vector_get(&vec1, i);
+        node = vector_at(&vec1, i);
 
         assert(node->i32 == i);
-        assert(node == vec1.head + i);
+        assert(node == vec1.data + i);
     }
 
     vector_free(&vec1);
 }
 
-static void test_insert(void)
+static void
+test_insert(void)
 {
     vector vec1;
     vector_init(&vec1);
@@ -121,21 +128,22 @@ static void test_insert(void)
         node.i32 = i;
         pos = vector_insert(&vec1, 0, node);
 
-        assert(pos == vec1.head);
+        assert(pos == vec1.data);
         assert(vec1.size == 100U - i);
     }
 
     for (int i = 0; i < 100; i++) {
-        pos = vector_get(&vec1, i);
+        pos = vector_at(&vec1, i);
 
         assert(pos->i32 == i);
-        assert(pos == vec1.head + i);
+        assert(pos == vec1.data + i);
     }
 
     vector_free(&vec1);
 }
 
-static void test_push_end(void)
+static void
+test_push_back(void)
 {
     vector vec1;
     vector_init(&vec1);
@@ -145,7 +153,8 @@ static void test_push_end(void)
     vector_free(&vec1);
 }
 
-static void test_remove(void)
+static void
+test_erase(void)
 {
     vector vec1;
     vector_init(&vec1);
@@ -154,9 +163,9 @@ static void test_remove(void)
 
     struct vector_n *pos;
     for (int i = 0; i < 99; i++) {
-        pos = vector_remove(&vec1, 0);
+        pos = vector_erase(&vec1, 0);
 
-        assert(pos == vec1.head);
+        assert(pos == vec1.data);
         assert(pos->i32 == i + 1);
         assert(vec1.size == 99U - i);
     }
