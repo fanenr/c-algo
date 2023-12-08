@@ -24,7 +24,7 @@ static void test_init(void)
 
     assert(stac1.size == 0);
     assert(stac1.capacity == 0);
-    assert(stac1.head == NULL);
+    assert(stac1.data == NULL);
 }
 
 static void test_free(void)
@@ -37,7 +37,7 @@ static void test_free(void)
 
     assert(stac1.size == 0);
     assert(stac1.capacity == 0);
-    assert(stac1.head == NULL);
+    assert(stac1.data == NULL);
 
     /* free a stack with some nodes */
     stack stac2;
@@ -53,7 +53,7 @@ static void test_free(void)
 
     assert(stac2.size == 0);
     assert(stac2.capacity == 0);
-    assert(stac2.head == NULL);
+    assert(stac2.data == NULL);
 }
 
 static void test_push(void)
@@ -70,7 +70,7 @@ static void test_push(void)
 
         assert(stac1.size == i + 1U);
         assert(ptr->i32 == node.i32);
-        assert(ptr == stac1.head + stac1.size - 1);
+        assert(ptr == stac1.data + stac1.size - 1);
     }
 
     assert(stac1.size == 1000);
@@ -110,7 +110,7 @@ static void test_pop(void)
 
     assert(stack_pop(&stac1).ptr == NULL);
     assert(stac1.capacity == 0);
-    assert(stac1.head == NULL);
+    assert(stac1.data == NULL);
     assert(stac1.size == 0);
 
     /* a copy of the top node will be returned if stack has nodes */
@@ -132,7 +132,7 @@ static void test_pop(void)
     }
 
     assert(stac1.capacity == 0);
-    assert(stac1.head == NULL);
+    assert(stac1.data == NULL);
     assert(stac1.size == 0);
 
     stack_free(&stac2);

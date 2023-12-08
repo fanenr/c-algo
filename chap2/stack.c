@@ -1,70 +1,81 @@
 #include "stack.h"
 #include <stdlib.h>
 
-stack *stack_init(stack *stac)
+stack *
+stack_init(stack *stac)
 {
-    stac->head = NULL;
+    if (stac == NULL)
+        return NULL;
+
+    stac->data = NULL;
     stac->size = stac->capacity = 0;
     return stac;
 }
 
-stack *stack_reserve(stack *stac, size_t cap)
+stack *
+stack_reserve(stack *stac, size_t cap)
 {
-    if (cap <= stac->capacity)
+    if (stac == NULL || cap <= stac->capacity)
         return stac;
 
-    struct stack_n *head = stac->head;
-    head = realloc(head, cap * sizeof(struct stack_n));
-    if (head == NULL)
+    struct stack_n *data = stac->data;
+    data = realloc(data, cap * sizeof(struct stack_n));
+    if (data == NULL)
         return NULL;
 
-    stac->head = head;
     stac->capacity = cap;
+    stac->data = data;
     return stac;
 }
 
-void stack_free(stack *stac)
+void
+stack_free(stack *stac)
 {
-    free(stac->head);
+    if (stac == NULL)
+        return;
+
+    free(stac->data);
     stack_init(stac);
     return;
 }
 
-struct stack_n *stack_push(stack *stac, struct stack_n node)
+struct stack_n *
+stack_push(stack *stac, struct stack_n node)
 {
+    if (stac == NULL)
+        return NULL;
+
     size_t cap = stac->capacity;
-    struct stack_n *head = stac->head;
 
-    if (cap < stac->size + 1) { /* expand space */
-        if (cap == 0)           /* stack is empty */
-            cap = STACK_INIT_CAP;
-        else                    /* expand stack */
-            cap = STACK_EXPAN_RATIO * cap;
-
-        head = realloc(head, cap * sizeof(struct stack_n));
-        if (head == NULL)
+    if (cap < stac->size + 1) {
+        cap = cap == 0 ? STACK_INIT_CAP : cap * STACK_EXPAN_RATIO;
+        if (stack_reserve(stac, cap) != stac)
             return NULL;
-
-        stac->head = head;
         stac->capacity = cap;
     }
 
-    head[stac->size++] = node;
-    return head + stac->size - 1;
+    struct stack_n *data = stac->data;
+    data[stac->size++] = node;
+    return data + stac->size - 1;
 }
 
-struct stack_n *stack_top(stack *stac)
+struct stack_n *
+stack_top(stack *stac)
 {
+    if (stac == NULL)
+        return NULL;
+
     size_t off = stac->size != 0 ? stac->size - 1 : 0;
-    return stac->head + off;
+    return stac->data + off;
 }
 
-struct stack_n stack_pop(stack *stac)
+struct stack_n
+stack_pop(stack *stac)
 {
     struct stack_n ret;
     ret.ptr = NULL;
 
-    if (stac->size == 0) /* stack is empty */
+    if (stac == NULL || stac->size == 0)
         return ret;
 
     ret = *stack_top(stac);

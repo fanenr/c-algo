@@ -3,18 +3,20 @@
 #ifndef STACK_H
 #define STACK_H
 
+#include <bits/types/stack_t.h>
 #include <stddef.h>
 #include <stdint.h>
 
 /* stack expansion ratio */
 #define STACK_EXPAN_RATIO 1.5
 /* stack initial capacity */
-#define STACK_INIT_CAP 8
+#define STACK_INIT_CAP    8
 
 /* stack node */
 struct stack_n
 {
-    union {
+    union
+    {
         uint8_t u8;
         uint16_t u16;
         uint32_t u32;
@@ -38,7 +40,7 @@ struct stack_s
 {
     size_t size;
     size_t capacity;
-    struct stack_n *head;
+    struct stack_n *data;
 };
 
 typedef struct stack_s stack;
@@ -82,5 +84,31 @@ extern struct stack_n *stack_top(stack *stac);
  * the `.size` of `stac` will be decreased after the top node is poped.
  */
 extern struct stack_n stack_pop(stack *stac);
+
+static inline stack
+stack_new(void)
+{
+    stack stac;
+    stack_init(&stac);
+    return stac;
+}
+
+static inline size_t
+stack_size(const stack *stac)
+{
+    return stac == NULL ? 0 : stac->size;
+}
+
+static inline size_t
+stack_cap(const stack *stac)
+{
+    return stac == NULL ? 0 : stac->capacity;
+}
+
+static inline const struct stack_n *
+stack_data(const stack *stac)
+{
+    return stac == NULL ? 0 : stac->data;
+}
 
 #endif
