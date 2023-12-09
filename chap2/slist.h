@@ -5,12 +5,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
-/* slist node */
-struct slist_n
+struct slist_v
 {
-    struct slist_n *next;
-    union {
+    union
+    {
         uint8_t u8;
         uint16_t u16;
         uint32_t u32;
@@ -26,17 +26,22 @@ struct slist_n
 
         void *ptr;
         char buf[8];
-    } data;
+    };
+};
+
+/* slist node */
+struct slist_n
+{
+    struct slist_n *next;
+    struct slist_v data;
 };
 
 /* slist container (header) */
-struct slist_s
+typedef struct
 {
     size_t size;
     struct slist_n *head;
-};
-
-typedef struct slist_s slist;
+} slist;
 
 /*
  * init `list`.
@@ -54,19 +59,80 @@ extern void slist_free(slist *list);
 extern struct slist_n *slist_node(void);
 
 /*
- * insert `node` after `pos` in `list`.
- * if `pos` is NULL, `node` will be inserted at the beginning of `list`. the
- * `.size` of `list` will be increased after `node` is inserted.
+ * find the first node whose data equals to `data` from `spos` (include `spos`).
+ * a pointer of that found node will be returned if found, otherwise NULL will
+ * be returend.
  */
-extern struct slist_n *slist_insert(slist *restrict list,
-                                    struct slist_n *restrict pos,
-                                    struct slist_n *restrict node);
+extern struct slist_n *slist_find_from(slist *restrict list,
+                                       struct slist_n *restrict spos,
+                                       struct slist_v data);
+
+/*
+ * fine the first node whose data equals to `data` in `list`.
+ */
+extern struct slist_n *slist_find(slist *list, struct slist_v data);
+
+/*
+ * insert a node after `pos` into `list`.
+ * a pointer of inserted node will be returned if insert successfully, otherwise
+ * NULL will be returned.
+ */
+extern struct slist_n *slist_insert_after(slist *restrict list,
+                                          struct slist_n *restrict pos,
+                                          struct slist_v data);
+
+/*
+ * insert a node into the front of `list`.
+ * a pointer of inserted node will be returned if insert successfully, otherwise
+ * NULL will be returned.
+ */
+extern struct slist_n *slist_push_front(slist *restrict list,
+                                        struct slist_v data);
 
 /*
  * remove the node at `pos` in `list`.
- * no nodes will be removed if the `pos` is NULL. the `.size` of `list` will be
- * decreased after the node at `pos` is removed.
+ * `pos` will be returned if erased successfully, otherwise NULL will be
+ * returned.
  */
-extern void slist_remove(slist *restrict list, struct slist_n *restrict pos);
+extern struct slist_n *slist_erase(slist *restrict list,
+                                   struct slist_n *restrict pos);
+
+/*
+ * remove the first node whose data equals to `data` from `spos`
+ * (include `spos`).
+ */
+extern void slist_remove_from(slist *restrict list,
+                              struct slist_n *restrict spos,
+                              struct slist_v data);
+
+/*
+ * remove the first node whose data equals to `data` in `list`.
+ */
+extern void slist_remove(slist *list, struct slist_v data);
+
+/*
+ * remove the front node of `list`.
+ */
+extern void slist_pop_front(slist *list);
+
+static inline slist
+slist_new(void)
+{
+    slist list;
+    slist_init(&list);
+    return list;
+}
+
+static inline size_t
+slist_size(const slist *list)
+{
+    return list == NULL ? 0 : list->size;
+}
+
+static inline struct slist_n *
+slist_head(const slist *list)
+{
+    return list == NULL ? NULL : list->head;
+}
 
 #endif
