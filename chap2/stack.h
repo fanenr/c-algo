@@ -36,14 +36,13 @@ struct stack_n
 };
 
 /* stack container (header) */
-struct stack_s
+
+typedef struct
 {
     size_t size;
     size_t capacity;
     struct stack_n *data;
-};
-
-typedef struct stack_s stack;
+} stack;
 
 /*
  * init `stac`.

@@ -5,19 +5,21 @@
 static void test_init(void);
 static void test_free(void);
 static void test_node(void);
-static void test_insert(void);
-static void test_remove(void);
+static void test_insert_after(void);
+static void test_erase(void);
 
-int main(void)
+int
+main(void)
 {
     test_init();
     test_free();
     test_node();
-    test_insert();
-    test_remove();
+    test_insert_after();
+    test_erase();
 }
 
-static void test_init(void)
+static void
+test_init(void)
 {
     slist list1;
     slist_init(&list1);
@@ -26,7 +28,8 @@ static void test_init(void)
     assert(list1.head == NULL);
 }
 
-static void test_free(void)
+static void
+test_free(void)
 {
     /* free an empty slist */
     slist list1;
@@ -41,13 +44,13 @@ static void test_free(void)
     slist list2;
     slist_init(&list2);
 
-    struct slist_n *node, *tail;
+    struct slist_v val;
+    struct slist_n *tail;
     tail = NULL;
 
     for (int i = 0; i < 100; i++) {
-        node = slist_node();
-        node->data.i32 = i;
-        tail = slist_insert(&list2, tail, node);
+        val.i32 = i;
+        tail = slist_insert_after(&list2, tail, val);
     }
 
     slist_free(&list2);
@@ -56,7 +59,8 @@ static void test_free(void)
     assert(list2.head == NULL);
 }
 
-static void test_node(void)
+static void
+test_node(void)
 {
     struct slist_n *node;
     node = slist_node();
@@ -67,19 +71,20 @@ static void test_node(void)
     free(node);
 }
 
-static void test_insert(void)
+static void
+test_insert_after(void)
 {
     slist list1;
     slist_init(&list1);
 
     /* tail insertion */
-    struct slist_n *node, *tail, *head;
+    struct slist_v val;
+    struct slist_n *tail, *head;
     tail = head = NULL;
 
     for (int i = 0; i < 1000; i++) {
-        node = slist_node();
-        node->data.i32 = i;
-        tail = slist_insert(&list1, tail, node);
+        val.i32 = i;
+        tail = slist_insert_after(&list1, tail, val);
 
         assert(list1.size == i + 1U);
     }
@@ -91,11 +96,9 @@ static void test_insert(void)
     slist_init(&list2);
 
     for (int i = 0; i < 1000; i++) {
-        node = slist_node();
-        node->data.i32 = i;
-        head = slist_insert(&list2, NULL, node);
+        val.i32 = i;
+        head = slist_push_front(&list2, val);
 
-        assert(node == head);
         assert(list2.head == head);
         assert(list2.size == i + 1U);
     }
@@ -103,30 +106,31 @@ static void test_insert(void)
     slist_free(&list2);
 }
 
-static void test_remove(void)
+static void
+test_erase(void)
 {
     slist list1;
     slist_init(&list1);
 
     /* remove NULL */
-    slist_remove(&list1, NULL);
+    slist_erase(&list1, NULL);
 
     assert(list1.size == 0);
     assert(list1.head == NULL);
 
-    struct slist_n *node, *tail;
+    struct slist_v val;
+    struct slist_n *tail;
     tail = NULL;
 
     for (int i = 0; i < 1000; i++) {
-        node = slist_node();
-        node->data.i32 = i;
-        tail = slist_insert(&list1, tail, node);
+        val.i32 = i;
+        tail = slist_insert_after(&list1, tail, val);
     }
 
     for (int i = 0; i < 1000; i++) {
         assert(list1.head->data.i32 == i);
 
-        slist_remove(&list1, list1.head);
+        slist_erase(&list1, list1.head);
 
         assert(list1.size == 999U - i);
     }
