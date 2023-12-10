@@ -57,7 +57,7 @@ dlist_find_from(dlist *restrict list, struct dlist_n *restrict spos,
 }
 
 struct dlist_n *
-dlist_find(dlist *restrict list, struct dlist_v data)
+dlist_find(dlist *list, struct dlist_v data)
 {
     if (list == NULL || list->size == 0)
         return NULL;
@@ -93,7 +93,7 @@ dlist_insert(dlist *restrict list, struct dlist_n *restrict pos,
 }
 
 struct dlist_n *
-dlist_push_back(dlist *restrict list, struct dlist_v data)
+dlist_push_back(dlist *list, struct dlist_v data)
 {
     if (list == NULL)
         return NULL;
@@ -115,7 +115,7 @@ dlist_push_back(dlist *restrict list, struct dlist_v data)
 }
 
 struct dlist_n *
-dlist_push_front(dlist *restrict list, struct dlist_v data)
+dlist_push_front(dlist *list, struct dlist_v data)
 {
     if (list == NULL)
         return NULL;
@@ -178,7 +178,7 @@ dlist_remove_from(dlist *restrict list, struct dlist_n *restrict spos,
 }
 
 void
-dlist_remove(dlist *restrict list, struct dlist_v data)
+dlist_remove(dlist *list, struct dlist_v data)
 {
     if (list == NULL || list->size == 0)
         return;
@@ -188,7 +188,7 @@ dlist_remove(dlist *restrict list, struct dlist_v data)
 }
 
 void
-dlist_pop_back(dlist *restrict list)
+dlist_pop_back(dlist *list)
 {
     if (list == NULL || list->size == 0)
         return;
@@ -198,7 +198,7 @@ dlist_pop_back(dlist *restrict list)
 }
 
 void
-dlist_pop_front(dlist *restrict list)
+dlist_pop_front(dlist *list)
 {
     if (list == NULL || list->size == 0)
         return;

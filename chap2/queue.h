@@ -6,11 +6,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* queue node */
-struct queue_n
+struct queue_v
 {
-    struct queue_n *next;
-    union {
+    union
+    {
         uint8_t u8;
         uint16_t u16;
         uint32_t u32;
@@ -26,18 +25,22 @@ struct queue_n
 
         void *ptr;
         char buf[8];
-    } data;
+    };
+};
+
+/* queue node */
+struct queue_n
+{
+    struct queue_v data;
+    struct queue_n *next;
 };
 
 /* queue container (header) */
-struct queue_s
+typedef struct
 {
     size_t size;
     struct queue_n *head;
-    struct queue_n *tail;
-};
-
-typedef struct queue_s queue;
+} queue;
 
 /*
  * init `que`.
@@ -55,23 +58,33 @@ extern void queue_free(queue *que);
 extern struct queue_n *queue_node(void);
 
 /*
- * push `node` into `que`.
- * the `.size` of `que` will be increased after `node` is inserted.
+ * push a node into `que`.
  */
-extern struct queue_n *queue_push(queue *restrict que,
-                                  struct queue_n *restrict node);
+extern struct queue_n *queue_push(queue *que, struct queue_v data);
 
 /*
- * get ref of the head node of `que`.
- * NULL will be returned if `que` is empty.
- */
-extern struct queue_n *queue_top(queue *que);
-
-/*
- * pop the head node of `que`.
- * no nodes will be removed if `que` is empty.
- * the `.size` of `que` will be decreased after the top node is poped.
+ * pop a node from `que`.
  */
 extern struct queue_n queue_pop(queue *que);
+
+static inline queue
+queue_new(void)
+{
+    queue que;
+    queue_init(&que);
+    return que;
+}
+
+static inline size_t
+queue_size(const queue *que)
+{
+    return que == NULL ? 0 : que->size;
+}
+
+static inline struct queue_n *
+queue_head(const queue *que)
+{
+    return que == NULL ? NULL : que->head;
+}
 
 #endif

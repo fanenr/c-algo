@@ -12,7 +12,7 @@
 #define VECTOR_INIT_CAP    8
 
 /* vector node */
-struct vector_n
+struct vector_v
 {
     union
     {
@@ -32,6 +32,11 @@ struct vector_n
         void *ptr;
         char buf[8];
     };
+};
+
+struct vector_n
+{
+    struct vector_v data;
 };
 
 /* vector container (header) */
@@ -73,14 +78,14 @@ extern struct vector_n *vector_at(vector *vec, size_t pos);
  * returned.
  */
 extern struct vector_n *vector_insert(vector *vec, size_t pos,
-                                      struct vector_n node);
+                                      struct vector_v data);
 
 /*
  * push `node` into the end of `vec`.
  * a pointer of inserted node will be returned if insert successfully,
  * otherwise NULL will be returned.
  */
-extern struct vector_n *vector_push_back(vector *vec, struct vector_n node);
+extern struct vector_n *vector_push_back(vector *vec, struct vector_v data);
 
 /*
  * remove the element at `pos` in `vec`.

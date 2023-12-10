@@ -6,11 +6,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* deque node */
-struct deque_n
+struct deque_v
 {
-    struct deque_n *next;
-    union {
+    union
+    {
         uint8_t u8;
         uint16_t u16;
         uint32_t u32;
@@ -26,18 +25,25 @@ struct deque_n
 
         void *ptr;
         char buf[8];
-    } data;
+    };
+};
+
+/* deque node */
+struct deque_n
+{
+    struct deque_v data;
+    struct deque_n *prev;
+    struct deque_n *next;
 };
 
 /* deque container (header) */
-struct deque_s
+
+typedef struct
 {
     size_t size;
     struct deque_n *head;
     struct deque_n *tail;
-};
-
-typedef struct deque_s deque;
+} deque;
 
 /*
  * init `que`.
@@ -55,30 +61,64 @@ extern void deque_free(deque *que);
 extern struct deque_n *deque_node(void);
 
 /*
- * push `node` to the end of `que`.
- * the `.size` of `que` will be increased after `node` is pushed.
+ * insert a node before `pos` into `que`.
+ * a pointer of inserted node will be returned if insert successfully, otherwise
+ * NULL will be returned.
  */
-extern struct deque_n *deque_push_end(deque *restrict que,
-                                      struct deque_n *restrict node);
+extern struct deque_n *deque_insert(deque *restrict que,
+                                    struct deque_n *restrict pos,
+                                    struct deque_v data);
 
 /*
- * push `node` to the head of `que`.
- * the `.size` of `que` will be increased after `node` is pushed.
+ * insert a node into the end of `que`.
  */
-extern struct deque_n *deque_push_head(deque *restrict que,
-                                       struct deque_n *restrict node);
+extern struct deque_n *deque_push_back(deque *que, struct deque_v data);
 
 /*
- * get ref of the head node of `que`.
- * NULL will be returned if `que` is empty.
+ * insert a node into the front of `que`.
  */
-extern struct deque_n *deque_top(deque *que);
+extern struct deque_n *deque_push_front(deque *que, struct deque_v data);
 
 /*
- * pop the head node of `que`.
- * no nodes will be removed if `que` is empty.
- * the `.size` of `que` will be decreased after the top node is poped.
+ * remove the node at `pos` in `que`.
  */
-extern struct deque_n deque_pop(deque *que);
+extern struct deque_n *deque_erase(deque *restrict que,
+                                   struct deque_n *restrict pos);
+
+/*
+ * remove the last node of `que`.
+ */
+extern void deque_pop_back(deque *que);
+
+/*
+ * remove the front node of `que`.
+ */
+extern void deque_pop_front(deque *que);
+
+static inline deque
+deque_new(void)
+{
+    deque que;
+    deque_init(&que);
+    return que;
+}
+
+static inline size_t
+deque_size(const deque *que)
+{
+    return que == NULL ? 0 : que->size;
+}
+
+static inline struct deque_n *
+deque_head(const deque *que)
+{
+    return que == NULL ? NULL : que->head;
+}
+
+static inline struct deque_n *
+deque_tail(const deque *que)
+{
+    return que == NULL ? NULL : que->tail;
+}
 
 #endif

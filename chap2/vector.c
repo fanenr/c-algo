@@ -50,7 +50,7 @@ vector_at(vector *vec, size_t pos)
 }
 
 struct vector_n *
-vector_insert(vector *vec, size_t pos, struct vector_n node)
+vector_insert(vector *vec, size_t pos, struct vector_v data)
 {
     if (vec == NULL || pos > vec->size)
         return NULL;
@@ -64,24 +64,24 @@ vector_insert(vector *vec, size_t pos, struct vector_n node)
         vec->capacity = cap;
     }
 
-    struct vector_n *data = vec->data;
+    struct vector_n *head = vec->data;
     size_t mvsiz = (vec->size - pos) * sizeof(struct vector_n);
-    struct vector_n *move = memmove(data + pos + 1, data + pos, mvsiz);
-    if (move != data + pos + 1)
+    struct vector_n *move = memmove(head + pos + 1, head + pos, mvsiz);
+    if (move != head + pos + 1)
         return NULL;
 
-    data[pos] = node;
+    head[pos].data = data;
     vec->size++;
-    return data + pos;
+    return head + pos;
 }
 
 struct vector_n *
-vector_push_back(vector *vec, struct vector_n node)
+vector_push_back(vector *vec, struct vector_v data)
 {
     if (vec == NULL)
         return NULL;
 
-    return vector_insert(vec, vec->size, node);
+    return vector_insert(vec, vec->size, data);
 }
 
 struct vector_n *

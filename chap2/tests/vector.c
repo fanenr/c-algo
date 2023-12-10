@@ -61,11 +61,12 @@ test_reserve(void)
 static void
 insert_helper(vector *vec)
 {
-    struct vector_n node, *pos;
+    struct vector_v val;
+    struct vector_n *pos;
 
     for (int i = 0; i < 100; i++) {
-        node.i32 = i;
-        pos = vector_push_back(vec, node);
+        val.i32 = i;
+        pos = vector_push_back(vec, val);
 
         assert(vec->size == i + 1U);
         assert(pos == vec->data + i);
@@ -110,7 +111,7 @@ test_at(void)
     for (int i = 0; i < 100; i++) {
         node = vector_at(&vec1, i);
 
-        assert(node->i32 == i);
+        assert(node->data.i32 == i);
         assert(node == vec1.data + i);
     }
 
@@ -123,10 +124,11 @@ test_insert(void)
     vector vec1;
     vector_init(&vec1);
 
-    struct vector_n node, *pos;
+    struct vector_v val;
+    struct vector_n *pos;
     for (int i = 99; i >= 0; i--) {
-        node.i32 = i;
-        pos = vector_insert(&vec1, 0, node);
+        val.i32 = i;
+        pos = vector_insert(&vec1, 0, val);
 
         assert(pos == vec1.data);
         assert(vec1.size == 100U - i);
@@ -135,7 +137,7 @@ test_insert(void)
     for (int i = 0; i < 100; i++) {
         pos = vector_at(&vec1, i);
 
-        assert(pos->i32 == i);
+        assert(pos->data.i32 == i);
         assert(pos == vec1.data + i);
     }
 
@@ -166,11 +168,11 @@ test_erase(void)
         pos = vector_erase(&vec1, 0);
 
         assert(pos == vec1.data);
-        assert(pos->i32 == i + 1);
+        assert(pos->data.i32 == i + 1);
         assert(vec1.size == 99U - i);
     }
 
-    assert(pos->i32 == 99);
+    assert(pos->data.i32 == 99);
     assert(vec1.size == 1);
 
     /* must release */
