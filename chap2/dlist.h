@@ -31,9 +31,9 @@ struct dlist_v
 /* dlist node */
 struct dlist_n
 {
+    struct dlist_v data;
     struct dlist_n *prev;
     struct dlist_n *next;
-    struct dlist_v data;
 };
 
 /* dlist container (header) */
@@ -71,7 +71,7 @@ extern struct dlist_n *dlist_find_from(dlist *restrict list,
 /*
  * find the first node whose data equals to `data` in `list`.
  */
-extern struct dlist_n *dlist_find(dlist *restrict list, struct dlist_v data);
+extern struct dlist_n *dlist_find(dlist *list, struct dlist_v data);
 
 /*
  * insert a node before `pos` into `list`.
@@ -87,16 +87,14 @@ extern struct dlist_n *dlist_insert(dlist *restrict list,
  * a pointer of inserted node will be returned if insert successfully, otherwise
  * NULL will be returned.
  */
-extern struct dlist_n *dlist_push_back(dlist *restrict list,
-                                       struct dlist_v data);
+extern struct dlist_n *dlist_push_back(dlist *list, struct dlist_v data);
 
 /*
  * insert a node into the front of `list`.
  * a pointer of inserted node will be returned if insert successfully, otherwise
  * NULL will be returned.
  */
-extern struct dlist_n *dlist_push_front(dlist *restrict list,
-                                        struct dlist_v data);
+extern struct dlist_n *dlist_push_front(dlist *list, struct dlist_v data);
 
 /*
  * remove the node at `pos` in `list`.
@@ -116,17 +114,17 @@ extern void dlist_remove_from(dlist *restrict list,
 /*
  * remove the first node whose data equals to `data` in `list`.
  */
-extern void dlist_remove(dlist *restrict list, struct dlist_v data);
+extern void dlist_remove(dlist *list, struct dlist_v data);
 
 /*
  * remove the last node of `list`.
  */
-extern void dlist_pop_back(dlist *restrict list);
+extern void dlist_pop_back(dlist *list);
 
 /*
  * remove the front node of `list`.
  */
-extern void dlist_pop_front(dlist *restrict list);
+extern void dlist_pop_front(dlist *list);
 
 static inline dlist
 dlist_new(void)
