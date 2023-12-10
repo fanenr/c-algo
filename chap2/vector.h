@@ -110,7 +110,7 @@ vector_cap(const vector *vec)
     return vec == NULL ? 0 : vec->capacity;
 }
 
-static inline const struct vector_n *
+static inline struct vector_n *
 vector_data(const vector *vec)
 {
     return vec == NULL ? 0 : vec->data;

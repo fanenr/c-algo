@@ -6,12 +6,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* dlist node */
-struct dlist_n
+struct dlist_v
 {
-    struct dlist_n *prev;
-    struct dlist_n *next;
-    union {
+    union
+    {
         uint8_t u8;
         uint16_t u16;
         uint32_t u32;
@@ -27,17 +25,24 @@ struct dlist_n
 
         void *ptr;
         char buf[8];
-    } data;
+    };
+};
+
+/* dlist node */
+struct dlist_n
+{
+    struct dlist_n *prev;
+    struct dlist_n *next;
+    struct dlist_v data;
 };
 
 /* dlist container (header) */
-struct dlist_s
+typedef struct
 {
     size_t size;
     struct dlist_n *head;
-};
-
-typedef struct dlist_s dlist;
+    struct dlist_n *tail;
+} dlist;
 
 /*
  * init `list`.
@@ -55,19 +60,98 @@ extern void dlist_free(dlist *list);
 extern struct dlist_n *dlist_node(void);
 
 /*
- * insert `node` after `pos` in `list`.
- * if `pos` is NULL, `node` will be inserted at the beginning of `list`. the
- * `.size` of `list` will be increased after `node` is inserted.
+ * find the first node whose data equals to `data` from `spos` (include `spos`).
+ * a pointer of that found node will be returned if found, otherwise NULL will
+ * be returend.
+ */
+extern struct dlist_n *dlist_find_from(dlist *restrict list,
+                                       struct dlist_n *restrict spos,
+                                       struct dlist_v data);
+
+/*
+ * find the first node whose data equals to `data` in `list`.
+ */
+extern struct dlist_n *dlist_find(dlist *restrict list, struct dlist_v data);
+
+/*
+ * insert a node before `pos` into `list`.
+ * a pointer of inserted node will be returned if insert successfully, otherwise
+ * NULL will be returned.
  */
 extern struct dlist_n *dlist_insert(dlist *restrict list,
                                     struct dlist_n *restrict pos,
-                                    struct dlist_n *restrict node);
+                                    struct dlist_v data);
+
+/*
+ * insert a node into the end of `list`.
+ * a pointer of inserted node will be returned if insert successfully, otherwise
+ * NULL will be returned.
+ */
+extern struct dlist_n *dlist_push_back(dlist *restrict list,
+                                       struct dlist_v data);
+
+/*
+ * insert a node into the front of `list`.
+ * a pointer of inserted node will be returned if insert successfully, otherwise
+ * NULL will be returned.
+ */
+extern struct dlist_n *dlist_push_front(dlist *restrict list,
+                                        struct dlist_v data);
 
 /*
  * remove the node at `pos` in `list`.
- * no nodes will be removed if the `pos` is NULL. the `.size` of `list` will be
- * decreased after the node at `pos` is removed.
+ * `pos` will be returned if erased successfully, otherwise NULL will be
+ * returned.
  */
-extern void dlist_remove(dlist *restrict list, struct dlist_n *restrict pos);
+extern struct dlist_n *dlist_erase(dlist *restrict list,
+                                   struct dlist_n *restrict pos);
+
+/*
+ * remove the first node whose data equals to `data` from `spos`
+ * (include `spos`).
+ */
+extern void dlist_remove_from(dlist *restrict list,
+                              struct dlist_n *restrict spos,
+                              struct dlist_v data);
+/*
+ * remove the first node whose data equals to `data` in `list`.
+ */
+extern void dlist_remove(dlist *restrict list, struct dlist_v data);
+
+/*
+ * remove the last node of `list`.
+ */
+extern void dlist_pop_back(dlist *restrict list);
+
+/*
+ * remove the front node of `list`.
+ */
+extern void dlist_pop_front(dlist *restrict list);
+
+static inline dlist
+dlist_new(void)
+{
+    dlist list;
+    dlist_init(&list);
+    return list;
+}
+
+static inline size_t
+dlist_size(dlist *list)
+{
+    return list == NULL ? 0 : list->size;
+}
+
+static inline struct dlist_n *
+dlist_head(dlist *list)
+{
+    return list == NULL ? NULL : list->head;
+}
+
+static inline struct dlist_n *
+dlist_tail(dlist *list)
+{
+    return list == NULL ? NULL : list->tail;
+}
 
 #endif

@@ -68,7 +68,7 @@ extern struct slist_n *slist_find_from(slist *restrict list,
                                        struct slist_v data);
 
 /*
- * fine the first node whose data equals to `data` in `list`.
+ * find the first node whose data equals to `data` in `list`.
  */
 extern struct slist_n *slist_find(slist *list, struct slist_v data);
 
