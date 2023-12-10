@@ -3,12 +3,11 @@
 #ifndef STACK_H
 #define STACK_H
 
-#include <bits/types/stack_t.h>
 #include <stddef.h>
 #include <stdint.h>
 
 /* stack expansion ratio */
-#define STACK_EXPAN_RATIO 1.5
+#define STACK_EXPAN_RATIO 2
 /* stack initial capacity */
 #define STACK_INIT_CAP    8
 
@@ -104,7 +103,7 @@ stack_cap(const stack *stac)
     return stac == NULL ? 0 : stac->capacity;
 }
 
-static inline const struct stack_n *
+static inline struct stack_n *
 stack_data(const stack *stac)
 {
     return stac == NULL ? 0 : stac->data;

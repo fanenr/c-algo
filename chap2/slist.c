@@ -140,7 +140,7 @@ void
 slist_remove_from(slist *restrict list, struct slist_n *restrict spos,
                   struct slist_v data)
 {
-    if (list == NULL || spos == NULL)
+    if (list == NULL || spos == NULL || list->size == 0)
         return;
 
     struct slist_n *prev, *curr, *next;
