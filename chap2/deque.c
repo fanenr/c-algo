@@ -1,86 +1,157 @@
 #include "deque.h"
 #include <stdlib.h>
 
-deque *deque_init(deque *que)
+deque *
+deque_init(deque *que)
 {
+    if (que == NULL)
+        return NULL;
+
     que->size = 0;
     que->head = que->tail = NULL;
     return que;
 }
 
-void deque_free(deque *que)
+void
+deque_free(deque *que)
 {
-    struct deque_n *node, *next;
-    for (node = que->head; node != NULL; node = next) {
+    if (que == NULL)
+        return;
+
+    struct deque_n *node = que->head, *next;
+    for (; node != NULL; node = next) {
         next = node->next;
         free(node);
     }
+
     deque_init(que);
     return;
 }
 
-struct deque_n *deque_node(void)
+struct deque_n *
+deque_node(void)
 {
     struct deque_n *node = malloc(sizeof(struct deque_n));
-    node->data.ptr = node->next = NULL;
+    if (node == NULL)
+        return NULL;
+
+    node->data.ptr = node->next = node->prev = NULL;
     return node;
 }
 
-struct deque_n *deque_push_end(deque *restrict que,
-                               struct deque_n *restrict node)
+struct deque_n *
+deque_insert(deque *restrict que, struct deque_n *restrict pos,
+             struct deque_v data)
 {
-    if (que->size == 0) {
+    if (que == NULL || (pos == NULL && que->size != 0))
+        return NULL;
+
+    struct deque_n *node = deque_node();
+    if (node == NULL)
+        return NULL;
+
+    node->data = data;
+    node->next = pos;
+    if (pos != que->head) {
+        node->prev = pos->prev;
+        pos->prev->next = node;
+        pos->prev = node;
+    } else {
         que->head = node;
         que->tail = node;
-    } else {
+        pos->prev = node;
+    }
+
+    que->size++;
+    return node;
+}
+
+struct deque_n *
+deque_push_back(deque *que, struct deque_v data)
+{
+    if (que == NULL)
+        return NULL;
+
+    struct deque_n *node = deque_node();
+    if (node == NULL)
+        return NULL;
+
+    node->data = data;
+    node->prev = que->tail;
+    if (que->size != 0)
         que->tail->next = node;
-        que->tail = node;
-    }
+    else
+        que->head = node;
 
+    que->tail = node;
     que->size++;
     return node;
 }
 
-struct deque_n *deque_push_head(deque *restrict que,
-                                struct deque_n *restrict node)
+struct deque_n *
+deque_push_front(deque *que, struct deque_v data)
 {
-    if (que->size == 0) {
-        que->head = node;
-        que->tail = node;
-    } else {
-        node->next = que->head;
-        que->head = node;
-    }
+    if (que == NULL)
+        return NULL;
 
+    struct deque_n *node = deque_node();
+    if (node == NULL)
+        return NULL;
+
+    node->data = data;
+    node->next = que->head;
+    if (que->size != 0)
+        que->head->prev = node;
+    else
+        que->tail = node;
+
+    que->head = node;
     que->size++;
     return node;
 }
 
-struct deque_n *deque_top(deque *que)
+struct deque_n *
+deque_erase(deque *restrict que, struct deque_n *restrict pos)
 {
-    return que->head;
+    if (que == NULL || pos == NULL || que->size == 0)
+        return NULL;
+
+    struct deque_n *prev, *next;
+    prev = pos->prev, next = pos->next;
+
+    free(pos);
+
+    if (que->size == 1)
+        que->head = que->tail = NULL;
+    else if (pos == que->head)
+        que->head = next;
+    else if (pos == que->tail)
+        que->tail = prev;
+    else {
+        prev->next = next;
+        next->prev = prev;
+    }
+
+    que->size--;
+    return pos;
 }
 
-struct deque_n deque_pop(deque *que)
+void
+deque_pop_back(deque *que)
 {
-    struct deque_n ret, *ptr;
-    ret.data.ptr = ret.next = NULL;
+    if (que == NULL || que->size == 0)
+        return;
 
-    if (que->size == 0)
-        return ret;
+    deque_erase(que, que->tail);
+    return;
+}
 
-    ptr = deque_top(que);
-    ret = *ptr;
-    ret.next = NULL;
+void
+deque_pop_front(deque *que)
+{
+    if (que == NULL || que->size == 0)
+        return;
 
-    struct deque_n *new_head;
-    new_head = ptr->next;
-
-    free(ptr);
-    que->head = new_head;
-
-    if (--que->size == 0)
-        que->tail = NULL;
-
-    return ret;
+    deque_erase(que, que->head);
+    return;
 }

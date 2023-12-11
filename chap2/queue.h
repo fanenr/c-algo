@@ -65,7 +65,7 @@ extern struct queue_n *queue_push(queue *que, struct queue_v data);
 /*
  * pop a node from `que`.
  */
-extern struct queue_n queue_pop(queue *que);
+extern void queue_pop(queue *que);
 
 static inline queue
 queue_new(void)
