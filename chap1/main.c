@@ -7,7 +7,8 @@ static void solution1(int n, int *nums);
 static void solution2(int n, int *nums);
 static void solution3(int n, int *nums);
 
-int main(void)
+int
+main(void)
 {
     int n;
     int *nums;
@@ -23,7 +24,8 @@ int main(void)
     solution3(n, nums);
 }
 
-static void solution1(int n, int *nums)
+static void
+solution1(int n, int *nums)
 {
     TIME_ST();
 
@@ -44,14 +46,16 @@ static void solution1(int n, int *nums)
     printf("time: %.3f\n\n", TIME_VAL());
 }
 
-static int down_order(const void *a, const void *b)
+static int
+down_order(const void *a, const void *b)
 {
     const int *pa = a;
     const int *pb = b;
     return *pa - *pb;
 }
 
-static void solution2(int n, int *nums)
+static void
+solution2(int n, int *nums)
 {
     TIME_ST();
 
@@ -74,7 +78,8 @@ static void solution2(int n, int *nums)
     printf("time: %.3f\n\n", TIME_VAL());
 }
 
-static void solution3(int n, int *nums)
+static void
+solution3(int n, int *nums)
 {
     TIME_ST();
 
