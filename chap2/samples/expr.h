@@ -18,7 +18,8 @@ enum EXPR_NODE_TYPE
 struct expr_node
 {
     enum EXPR_NODE_TYPE type;
-    union {
+    union
+    {
         long integer;
         double floating;
     } data;
