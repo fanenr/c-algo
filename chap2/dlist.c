@@ -142,10 +142,10 @@ dlist_erase(dlist *restrict list, struct dlist_n *restrict pos)
     if (list == NULL || pos == NULL || list->size == 0)
         return NULL;
 
-    struct dlist_n *prev, *next;
-    prev = pos->prev, next = pos->next;
+    struct dlist_n *prev, *curr, *next;
+    prev = pos->prev, curr = pos, next = pos->next;
 
-    free(pos);
+    free(curr);
 
     if (list->size == 1)
         list->head = list->tail = NULL;

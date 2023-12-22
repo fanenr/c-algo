@@ -116,10 +116,10 @@ deque_erase(deque *restrict que, struct deque_n *restrict pos)
     if (que == NULL || pos == NULL || que->size == 0)
         return NULL;
 
-    struct deque_n *prev, *next;
-    prev = pos->prev, next = pos->next;
+    struct deque_n *prev, *curr, *next;
+    prev = pos->prev, curr = pos, next = pos->next;
 
-    free(pos);
+    free(curr);
 
     if (que->size == 1)
         que->head = que->tail = NULL;
