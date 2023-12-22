@@ -6,7 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-static struct expr_node *alloc_expr_node(void)
+static struct expr_node *
+alloc_expr_node(void)
 {
     struct expr_node *node;
     node = malloc(sizeof(struct expr_node));
@@ -17,7 +18,8 @@ static struct expr_node *alloc_expr_node(void)
     return node;
 }
 
-slist expr_in2post(const char *src, size_t len)
+slist
+expr_in2post(const char *src, size_t len)
 {
     stack stac;
     slist list;
@@ -33,10 +35,10 @@ slist expr_in2post(const char *src, size_t len)
     char *endi, *endf;
     struct expr_node *enode;
 
-#define LAST_READ_START 0
-#define LAST_READ_SYMBOL 1
-#define LAST_READ_NUMBER 2
-#define LAST_READ_BRACKET 3
+#define LAST_READ_START    0
+#define LAST_READ_SYMBOL   1
+#define LAST_READ_NUMBER   2
+#define LAST_READ_BRACKET  3
 #define LAST_READ_OPERATOR 4
 
     int symbol_bit = 1;
@@ -44,9 +46,8 @@ slist expr_in2post(const char *src, size_t len)
 
 #define save_expr_node(plist, enode, lnode, ltail)                             \
     enode = alloc_expr_node();                                                 \
-    lnode = slist_node();                                                      \
-    lnode->data.ptr = enode;                                                   \
-    ltail = slist_insert(plist, ltail, lnode);
+    lnode = slist_insert_after(plist, ltail, (struct slist_v){.ptr = enode});  \
+    ltail = lnode;
 
     for (size_t i = 0; i < len; i++) {
         switch (src[i]) {
@@ -56,13 +57,13 @@ slist expr_in2post(const char *src, size_t len)
             save_expr_node(&list, enode, list_node, list_tail);
 
             if (endf != src + i && *endi == '.') { /* got a floating */
-                enode->data.floating =
-                    last_read == LAST_READ_SYMBOL ? tmpf * symbol_bit : tmpf;
+                enode->data.floating
+                    = last_read == LAST_READ_SYMBOL ? tmpf * symbol_bit : tmpf;
                 enode->type = EXPR_NODE_FLOAT;
                 i = endf - src - 1;
             } else if (endi != src + i) { /* got an integer */
-                enode->data.integer =
-                    last_read == LAST_READ_SYMBOL ? tmpi * symbol_bit : tmpf;
+                enode->data.integer
+                    = last_read == LAST_READ_SYMBOL ? tmpi * symbol_bit : tmpf;
                 enode->type = EXPR_NODE_INT;
                 i = endi - src - 1;
             }
@@ -89,8 +90,8 @@ slist expr_in2post(const char *src, size_t len)
             stac_node.u8 = src[i];
 
             /* check symbol bit */
-            if (last_read == LAST_READ_START ||
-                last_read == LAST_READ_BRACKET) {
+            if (last_read == LAST_READ_START || last_read == LAST_READ_BRACKET)
+            {
                 symbol_bit = src[i] == '+' ? 1 : -1;
                 last_read = LAST_READ_SYMBOL;
             } else {
@@ -161,17 +162,18 @@ err:
     return list;
 }
 
-void expr_free(slist *list)
+void
+expr_free(slist *list)
 {
     while (list->head != NULL) {
         free(list->head->data.ptr);
-        slist_remove(list, list->head);
+        slist_erase(list, list->head);
     }
     slist_free(list);
 }
 
-void expr_evaluate(const slist *restrict list,
-                   struct expr_node *restrict result)
+void
+expr_evaluate(const slist *restrict list, struct expr_node *restrict result)
 {
     double tempf, tempf2;
     struct slist_n *list_node;

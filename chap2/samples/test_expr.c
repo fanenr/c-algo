@@ -6,12 +6,14 @@
 
 static void test_in2post(void);
 
-int main(void)
+int
+main(void)
 {
     test_in2post();
 }
 
-void test_in2post(void)
+void
+test_in2post(void)
 {
     slist list;
     char buf[BUFF_SIZE];
