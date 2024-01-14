@@ -3,101 +3,102 @@
 #include <string.h>
 
 vector *
-vector_init(vector *vec)
+vector_init (vector *vec)
 {
-    if (vec == NULL)
-        return NULL;
+  if (vec == NULL)
+    return NULL;
 
-    vec->data = NULL;
-    vec->size = vec->capacity = 0;
-    return vec;
+  vec->data = NULL;
+  vec->size = vec->capacity = 0;
+  return vec;
 }
 
 vector *
-vector_reserve(vector *vec, size_t cap)
+vector_reserve (vector *vec, size_t cap)
 {
-    if (vec == NULL || cap <= vec->capacity)
-        return vec;
-
-    struct vector_n *data = vec->data;
-    data = realloc(data, cap * sizeof(struct vector_n));
-    if (data == NULL)
-        return NULL;
-
-    vec->capacity = cap;
-    vec->data = data;
+  if (vec == NULL || cap <= vec->capacity)
     return vec;
+
+  struct vector_n *data = vec->data;
+  data = realloc (data, cap * sizeof (struct vector_n));
+  if (data == NULL)
+    return NULL;
+
+  vec->capacity = cap;
+  vec->data = data;
+  return vec;
 }
 
 void
-vector_free(vector *vec)
+vector_free (vector *vec)
 {
-    if (vec == NULL)
-        return;
-
-    free(vec->data);
-    vector_init(vec);
+  if (vec == NULL)
     return;
+
+  free (vec->data);
+  vector_init (vec);
+  return;
 }
 
 struct vector_n *
-vector_at(vector *vec, size_t pos)
+vector_at (vector *vec, size_t pos)
 {
-    if (vec == NULL || pos >= vec->size)
-        return NULL;
+  if (vec == NULL || pos >= vec->size)
+    return NULL;
 
-    return vec->data + pos;
+  return vec->data + pos;
 }
 
 struct vector_n *
-vector_insert(vector *vec, size_t pos, struct vector_v data)
+vector_insert (vector *vec, size_t pos, struct vector_v data)
 {
-    if (vec == NULL || pos > vec->size)
+  if (vec == NULL || pos > vec->size)
+    return NULL;
+
+  size_t cap = vec->capacity;
+
+  if (vec->capacity < vec->size + 1)
+    {
+      cap = cap == 0 ? VECTOR_INIT_CAP : cap * VECTOR_EXPAN_RATIO;
+      if (vector_reserve (vec, cap) != vec)
         return NULL;
-
-    size_t cap = vec->capacity;
-
-    if (vec->capacity < vec->size + 1) {
-        cap = cap == 0 ? VECTOR_INIT_CAP : cap * VECTOR_EXPAN_RATIO;
-        if (vector_reserve(vec, cap) != vec)
-            return NULL;
-        vec->capacity = cap;
+      vec->capacity = cap;
     }
 
-    struct vector_n *head = vec->data;
-    size_t mvsiz = (vec->size - pos) * sizeof(struct vector_n);
-    struct vector_n *move = memmove(head + pos + 1, head + pos, mvsiz);
-    if (move != head + pos + 1)
-        return NULL;
+  struct vector_n *head = vec->data;
+  size_t mvsiz = (vec->size - pos) * sizeof (struct vector_n);
+  struct vector_n *move = memmove (head + pos + 1, head + pos, mvsiz);
+  if (move != head + pos + 1)
+    return NULL;
 
-    head[pos].data = data;
-    vec->size++;
-    return head + pos;
+  head[pos].data = data;
+  vec->size++;
+  return head + pos;
 }
 
 struct vector_n *
-vector_push_back(vector *vec, struct vector_v data)
+vector_push_back (vector *vec, struct vector_v data)
 {
-    if (vec == NULL)
-        return NULL;
+  if (vec == NULL)
+    return NULL;
 
-    return vector_insert(vec, vec->size, data);
+  return vector_insert (vec, vec->size, data);
 }
 
 struct vector_n *
-vector_erase(vector *vec, size_t pos)
+vector_erase (vector *vec, size_t pos)
 {
-    if (pos >= vec->size)
-        return NULL;
+  if (pos >= vec->size)
+    return NULL;
 
-    struct vector_n *move;
-    struct vector_n *data = vec->data;
+  struct vector_n *move;
+  struct vector_n *data = vec->data;
 
-    size_t mvsiz = (vec->size - pos - 1) * sizeof(struct vector_n);
-    move = memmove(data + pos, data + pos + 1, mvsiz);
-    if (move != data + pos)
-        return NULL;
+  size_t mvsiz = (vec->size - pos - 1) * sizeof (struct vector_n);
+  move = memmove (data + pos, data + pos + 1, mvsiz);
+  if (move != data + pos)
+    return NULL;
 
-    vec->size--;
-    return data + pos;
+  vec->size--;
+  return data + pos;
 }
