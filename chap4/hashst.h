@@ -7,11 +7,12 @@
 #include <stdint.h>
 
 /* hashst value */
-union hashst_v {
-    int64_t i64;
-    double f64;
-    char *str;
-    /* void *obj; */
+union hashst_v
+{
+  int64_t i64;
+  double f64;
+  char *str;
+  /* void *obj; */
 };
 
 /* hashst value type */
@@ -32,10 +33,10 @@ union hashst_v {
 /* hashst container (header) */
 struct hashst_s
 {
-    int vtype;
-    size_t size;
-    size_t capacity;
-    union hashst_v *head;
+  int vtype;
+  size_t size;
+  size_t capacity;
+  union hashst_v *head;
 };
 
 typedef struct hashst_s hashst;
@@ -45,42 +46,42 @@ typedef struct hashst_s hashst;
  * A hashst must have one and only one value `type`, which will be used to
  * compute the hash code.
  */
-extern hashst *hashst_init(hashst *set, int type);
+extern hashst *hashst_init (hashst *set, int type);
 
 /*
  * preset `cap` elements sapce for `set`.
  * it will return directly if `cap` is less than the capacity of `set`.
  */
-extern hashst *hashst_reserve(hashst *set, size_t cap);
+extern hashst *hashst_reserve (hashst *set, size_t cap);
 
 /*
  * release `set`.
  */
-extern void hashst_free(hashst *set);
+extern void hashst_free (hashst *set);
 
 /*
  * compute the hash code of `val` (based on the `.vtype` of `set`).
  */
-extern long hashst_hash(hashst *set, union hashst_v val);
+extern long hashst_hash (hashst *set, union hashst_v val);
 
 /*
  * find `val` in `set`.
  * a pointer of the value which include `val` will be returned if find,
  * otherwise NULL will be returned.
  */
-extern union hashst_v *hashst_find(hashst *set, union hashst_v val);
+extern union hashst_v *hashst_find (hashst *set, union hashst_v val);
 
 /*
  * insert `val` into `set`.
  * `val` will be returned if insert successfully, otherwise NULL will be
  * returned.
  */
-extern union hashst_v *hashst_insert(hashst *set, union hashst_v val);
+extern union hashst_v *hashst_insert (hashst *set, union hashst_v val);
 
 /*
  * remove `val` in `set`.
  * no values will be removed if `val` is NULL.
  */
-extern void hashst_remove(hashst *set, union hashst_v val);
+extern void hashst_remove (hashst *set, union hashst_v val);
 
 #endif
