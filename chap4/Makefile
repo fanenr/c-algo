@@ -1,6 +1,5 @@
 LDFLAGS   = -g
-MAKEFLAGS = --no-print-directory
-CFLAGS    = -Wall -Wextra -Werror -ggdb -std=gnu11
+CFLAGS    = -Wall -Wextra -Werror -ggdb3 -std=gnu11
 export CFLAGS LDFLAGS MAKEFLAGS
 
 targets := hashmp hashst
