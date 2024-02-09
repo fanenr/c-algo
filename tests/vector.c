@@ -21,7 +21,7 @@ main (void)
   for (int i = 0; i < 1000; i++)
     bala_vector_push_back (&vec, (struct bala){ .a = i });
   for (int i = 0; i < 1000; i++)
-    printf ("%d ", bala_vector_at (&vec, i).a);
+    printf ("%d ", bala_vector_at (&vec, i)->a);
 
   vector_free (&vec);
 }

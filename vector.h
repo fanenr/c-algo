@@ -38,9 +38,9 @@ extern void *vector_insert (vector *vec, size_t pos, void *data, size_t ele)
     return vector_reserve (vec, cap, sizeof (TYPE));                          \
   }                                                                           \
                                                                               \
-  static inline TYPE PRE##_vector_at (vector *vec, size_t pos)                \
+  static inline TYPE *PRE##_vector_at (vector *vec, size_t pos)               \
   {                                                                           \
-    return *(TYPE *)vector_at (vec, pos, sizeof (TYPE));                      \
+    return vector_at (vec, pos, sizeof (TYPE));                               \
   }                                                                           \
                                                                               \
   static inline TYPE *PRE##_vector_remove (vector *vec, size_t pos)           \
