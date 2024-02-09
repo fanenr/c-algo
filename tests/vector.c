@@ -1,5 +1,5 @@
 #include "../vector.h"
-#include <stdio.h>
+#include <assert.h>
 
 struct bala
 {
@@ -20,8 +20,10 @@ main (void)
 
   for (int i = 0; i < 1000; i++)
     bala_vector_push_back (&vec, (struct bala){ .a = i });
+
+  assert (vec.len == 1000);
   for (int i = 0; i < 1000; i++)
-    printf ("%d ", bala_vector_at (&vec, i)->a);
+    assert (bala_vector_at (&vec, i)->a == i);
 
   vector_free (&vec);
 }

@@ -2,7 +2,7 @@ LDFLAGS = -g
 CFLAGS  = -Wall -Wextra -Werror -ggdb3 -std=gnu11
 export CFLAGS LDFLAGS
 
-targets := vector
+targets := vector list
 objects := $(targets:%=%.o)
 export targets objects
 

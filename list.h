@@ -37,4 +37,42 @@ extern list_n *list_push_front (list *lis, void *data, size_t ele)
 extern list_n *list_insert (list *lis, list_n *pos, void *data, size_t ele)
     __attribute__ ((nonnull (1, 2, 3)));
 
+#define LIST_DEFS(TYPE, PRE)                                                  \
+  typedef struct PRE##_list_n PRE##_list_n;                                   \
+                                                                              \
+  struct PRE##_list_n                                                         \
+  {                                                                           \
+    PRE##_list_n *prev;                                                       \
+    PRE##_list_n *next;                                                       \
+    TYPE data[];                                                              \
+  };                                                                          \
+                                                                              \
+  static inline PRE##_list_n *PRE##_list_at (list *lis, size_t pos)           \
+  {                                                                           \
+    return (PRE##_list_n *)list_at (lis, pos);                                \
+  }                                                                           \
+                                                                              \
+  static inline PRE##_list_n *PRE##_list_remove (list *lis,                   \
+                                                 PRE##_list_n *pos)           \
+  {                                                                           \
+    return (PRE##_list_n *)list_remove (lis, (list_n *)pos);                  \
+  }                                                                           \
+                                                                              \
+  static inline PRE##_list_n *PRE##_list_push_back (list *lis, TYPE data)     \
+  {                                                                           \
+    return (PRE##_list_n *)list_push_back (lis, &data, sizeof (TYPE));        \
+  }                                                                           \
+                                                                              \
+  static inline PRE##_list_n *PRE##_list_push_front (list *lis, TYPE data)    \
+  {                                                                           \
+    return (PRE##_list_n *)list_push_front (lis, &data, sizeof (TYPE));       \
+  }                                                                           \
+                                                                              \
+  static inline PRE##_list_n *PRE##_list_insert (                             \
+      list *lis, PRE##_list_n *pos, TYPE data)                                \
+  {                                                                           \
+    return (PRE##_list_n *)list_insert (lis, (list_n *)pos, &data,            \
+                                        sizeof (TYPE));                       \
+  }
+
 #endif
