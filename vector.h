@@ -3,17 +3,24 @@
 
 #include <stddef.h>
 
-#define VECTOR_EXPAN_RATIO 2
 #define VECTOR_INIT_CAP 8
+#define VECTOR_EXPAN_RATIO 2
 
-typedef struct vector vector;
-
-struct vector
+typedef struct vector
 {
   size_t cap;
   size_t len;
   void *data;
-};
+} vector;
+
+extern void vector_init (vector *vec);
+extern void vector_free (vector *vec);
+extern vector *vector_reserve (vector *vec, size_t cap, size_t ele);
+
+extern void *vector_at (vector *vec, size_t pos, size_t ele);
+extern void *vector_remove (vector *vec, size_t pos, size_t ele);
+extern void *vector_push_back (vector *vec, void *data, size_t ele);
+extern void *vector_insert (vector *vec, size_t pos, void *data, size_t ele);
 
 #define VECTOR_DEFS(TYPE, PRE)                                                \
   static inline vector *PRE##_vector_reserve (vector *vec, size_t cap)        \
@@ -41,14 +48,5 @@ struct vector
   {                                                                           \
     return vector_insert (vec, pos, &data, sizeof (TYPE));                    \
   }
-
-extern void vector_init (vector *vec);
-extern void vector_free (vector *vec);
-extern vector *vector_reserve (vector *vec, size_t cap, size_t ele);
-
-extern void *vector_at (vector *vec, size_t pos, size_t ele);
-extern void *vector_remove (vector *vec, size_t pos, size_t ele);
-extern void *vector_push_back (vector *vec, void *data, size_t ele);
-extern void *vector_insert (vector *vec, size_t pos, void *data, size_t ele);
 
 #endif
