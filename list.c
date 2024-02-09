@@ -72,9 +72,11 @@ list_push_back (list *lis, void *data, size_t ele)
   if (memcpy (node->data, data, ele) != node->data)
     return NULL;
 
-  lis->tail = node;
-  if (!lis->len)
+  if (lis->len)
+    lis->tail->next = node;
+  else
     lis->head = node;
+  lis->tail = node;
 
   lis->len++;
   return node;
@@ -92,9 +94,11 @@ list_push_front (list *lis, void *data, size_t ele)
   if (memcpy (node->data, data, ele) != node->data)
     return NULL;
 
-  lis->head = node;
-  if (!lis->len)
+  if (lis->len)
+    lis->head->prev = node;
+  else
     lis->tail = node;
+  lis->head = node;
 
   lis->len++;
   return node;
