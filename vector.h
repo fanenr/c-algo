@@ -33,35 +33,46 @@ extern void *vector_insert (vector *restrict vec, size_t pos,
                             void *restrict data, size_t ele)
     __attribute__ ((nonnull (1, 3)));
 
-#define VECTOR_DEFS(TYPE, PRE)                                                \
+#define VECTOR_DEF_RESERVE(TYPE, PRE)                                         \
   __attribute__ ((nonnull (1))) static inline vector *PRE##_vector_reserve (  \
       vector *vec, size_t cap)                                                \
   {                                                                           \
     return vector_reserve (vec, cap, sizeof (TYPE));                          \
-  }                                                                           \
-                                                                              \
+  }
+
+#define VECTOR_DEF_AT(TYPE, PRE)                                              \
   __attribute__ ((nonnull (1))) static inline TYPE *PRE##_vector_at (         \
       vector *vec, size_t pos)                                                \
   {                                                                           \
     return vector_at (vec, pos, sizeof (TYPE));                               \
-  }                                                                           \
-                                                                              \
+  }
+
+#define VECTOR_DEF_REMOVE(TYPE, PRE)                                          \
   __attribute__ ((nonnull (1))) static inline TYPE *PRE##_vector_remove (     \
       vector *vec, size_t pos)                                                \
   {                                                                           \
     return vector_remove (vec, pos, sizeof (TYPE));                           \
-  }                                                                           \
-                                                                              \
+  }
+
+#define VECTOR_DEF_PUSH_BACK(TYPE, PRE)                                       \
   __attribute__ ((nonnull (1))) static inline TYPE *PRE##_vector_push_back (  \
       vector *vec, TYPE data)                                                 \
   {                                                                           \
     return vector_push_back (vec, &data, sizeof (TYPE));                      \
-  }                                                                           \
-                                                                              \
+  }
+
+#define VECTOR_DEF_INSERT(TYPE, PRE)                                          \
   __attribute__ ((nonnull (1))) static inline TYPE *PRE##_vector_insert (     \
       vector *vec, size_t pos, TYPE data)                                     \
   {                                                                           \
     return vector_insert (vec, pos, &data, sizeof (TYPE));                    \
   }
+
+#define VECTOR_DEF_ALL(TYPE, PRE)                                             \
+  VECTOR_DEF_RESERVE (TYPE, PRE);                                             \
+  VECTOR_DEF_AT (TYPE, PRE);                                                  \
+  VECTOR_DEF_REMOVE (TYPE, PRE);                                              \
+  VECTOR_DEF_PUSH_BACK (TYPE, PRE);                                           \
+  VECTOR_DEF_INSERT (TYPE, PRE)
 
 #endif

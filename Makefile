@@ -1,6 +1,6 @@
-LDFLAGS = -g
+LDFLAGS = -g -lasan
 NOWARN  = -Wno-unused-variable -Wno-unused-function
-CFLAGS  = -Wall -Wextra $(NOWARN) -ggdb3 -std=gnu11
+CFLAGS  = -Wall -Wextra $(NOWARN) -ggdb3 -std=gnu11 -fsanitize=address
 export CFLAGS LDFLAGS
 
 targets := vector list
@@ -26,5 +26,4 @@ json:
 
 .PHONY: clean
 clean:
-	-rm -f *.o
-	-cd tests && make clean
+	-rm -f *.o && cd tests && make clean

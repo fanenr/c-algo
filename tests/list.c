@@ -1,7 +1,7 @@
 #include "../list.h"
 #include <assert.h>
 
-LIST_DEFS (int, i32);
+LIST_DEF_ALL (int, i32);
 
 int
 main (void)
