@@ -9,8 +9,8 @@ struct bala
   double d;
 };
 
-VECTOR_DEFS (int, i32);
-VECTOR_DEFS (struct bala, bala);
+VECTOR_DEF_ALL (int, i32);
+VECTOR_DEF_ALL (struct bala, bala);
 
 int
 main (void)
