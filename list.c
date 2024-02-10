@@ -37,7 +37,7 @@ list_at (list *lis, size_t pos)
 }
 
 list_n *
-list_remove (list *lis, list_n *pos)
+list_remove (list *restrict lis, list_n *restrict pos)
 {
   list_n *prev, *curr, *next;
   prev = pos->prev, curr = pos, next = pos->next;
@@ -61,7 +61,7 @@ list_remove (list *lis, list_n *pos)
 }
 
 list_n *
-list_push_back (list *lis, void *data, size_t ele)
+list_push_back (list *restrict lis, void *restrict data, size_t ele)
 {
   list_n *node = malloc (sizeof (list_n) + ele);
   if (!node)
@@ -83,7 +83,7 @@ list_push_back (list *lis, void *data, size_t ele)
 }
 
 list_n *
-list_push_front (list *lis, void *data, size_t ele)
+list_push_front (list *restrict lis, void *restrict data, size_t ele)
 {
   list_n *node = malloc (sizeof (list_n) + ele);
   if (!node)
@@ -105,7 +105,8 @@ list_push_front (list *lis, void *data, size_t ele)
 }
 
 list_n *
-list_insert (list *lis, list_n *pos, void *data, size_t ele)
+list_insert (list *restrict lis, list_n *restrict pos, void *restrict data,
+             size_t ele)
 {
   list_n *node = malloc (sizeof (list_n) + ele);
   if (!node)

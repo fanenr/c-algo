@@ -52,10 +52,10 @@ vector_remove (vector *vec, size_t pos, size_t ele)
   if (pos >= vec->len)
     return NULL;
 
+  void *rmpos = vec->data + pos * ele;
   if (pos == vec->len - 1)
     goto end;
 
-  void *rmpos = vec->data + pos * ele;
   void *mvst = rmpos + ele;
   size_t mvlen = (vec->len - pos - 1) * ele;
 
@@ -68,7 +68,7 @@ end:
 }
 
 void *
-vector_push_back (vector *vec, void *data, size_t ele)
+vector_push_back (vector *restrict vec, void *restrict data, size_t ele)
 {
   if (!vector_reserve (vec, vec->len + 1, ele))
     return NULL;
@@ -83,7 +83,8 @@ vector_push_back (vector *vec, void *data, size_t ele)
 }
 
 void *
-vector_insert (vector *vec, size_t pos, void *data, size_t ele)
+vector_insert (vector *restrict vec, size_t pos, void *restrict data,
+               size_t ele)
 {
   if (pos > vec->len)
     return NULL;
