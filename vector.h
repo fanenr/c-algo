@@ -26,10 +26,11 @@ extern void *vector_at (vector *vec, size_t pos, size_t ele)
 extern void *vector_remove (vector *vec, size_t pos, size_t ele)
     __attribute__ ((nonnull (1)));
 
-extern void *vector_push_back (vector *vec, void *data, size_t ele)
-    __attribute__ ((nonnull (1, 2)));
+extern void *vector_push_back (vector *restrict vec, void *restrict data,
+                               size_t ele) __attribute__ ((nonnull (1, 2)));
 
-extern void *vector_insert (vector *vec, size_t pos, void *data, size_t ele)
+extern void *vector_insert (vector *restrict vec, size_t pos,
+                            void *restrict data, size_t ele)
     __attribute__ ((nonnull (1, 3)));
 
 #define VECTOR_DEFS(TYPE, PRE)                                                \
