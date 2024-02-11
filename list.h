@@ -1,6 +1,7 @@
 #ifndef LIST_H
 #define LIST_H
 
+#include <stdalign.h>
 #include <stddef.h>
 
 typedef struct list_n list_n;
@@ -44,7 +45,7 @@ extern list_n *list_insert (list *restrict lis, list_n *restrict pos,
   {                                                                           \
     PRE##_list_n *prev;                                                       \
     PRE##_list_n *next;                                                       \
-    TYPE data[];                                                              \
+    alignas (max_align_t) TYPE data[];                                        \
   };
 
 #define LIST_DEF_AT(TYPE, PRE)                                                \
