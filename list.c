@@ -1,6 +1,28 @@
 #include "list.h"
+#include <stdalign.h>
 #include <stdlib.h>
 #include <string.h>
+
+static inline size_t
+data_offset (const list_i *info)
+{
+  if (alignof (list_n) >= info->align)
+    return 0;
+
+  return info->align - alignof (list_n);
+}
+
+static inline size_t
+data_size (const list_i *info)
+{
+  return info->size + data_offset (info);
+}
+
+static inline void *
+data_ptr (list_n *node, const list_i *info)
+{
+  return (void *)node + sizeof (list_n) + data_offset (info);
+}
 
 void
 list_init (list *lis)
@@ -21,28 +43,13 @@ list_free (list *lis)
   list_init (lis);
 }
 
-list_n *
-list_at (list *lis, size_t pos)
-{
-  if (pos >= lis->len)
-    return NULL;
-
-  list_n *ret = lis->head;
-  for (; pos; pos--)
-    ret = ret->next;
-
-  if (!pos)
-    return ret;
-  return NULL;
-}
-
-list_n *
-list_remove (list *restrict lis, list_n *restrict pos)
+void
+list_remove (list *lis, list_n *pos)
 {
   list_n *prev, *curr, *next;
-  prev = pos->prev, curr = pos, next = pos->next;
+  prev = pos->prev, next = pos->next;
 
-  free (curr);
+  free (pos);
 
   if (lis->len == 1)
     lis->head = lis->tail = NULL;
@@ -57,19 +64,33 @@ list_remove (list *restrict lis, list_n *restrict pos)
     }
 
   lis->len--;
-  return next;
 }
 
 list_n *
-list_push_back (list *restrict lis, void *restrict data, size_t ele)
+list_at (list *lis, size_t pos)
 {
-  list_n *node = malloc (sizeof (list_n) + ele);
+  if (pos >= lis->len)
+    return NULL;
+
+  list_n *ret = lis->head;
+  for (; pos; pos--)
+    ret = ret->next;
+
+  return ret;
+}
+
+list_n *
+list_push_back (list *lis, void *data, const list_i *info)
+{
+  size_t size = data_size (info);
+  list_n *node = malloc (sizeof (list_n) + size);
   if (!node)
     return NULL;
 
   node->next = NULL;
   node->prev = lis->tail;
-  if (memcpy (node->data, data, ele) != node->data)
+  node->data = data_ptr (node, info);
+  if (memcpy (node->data, data, info->size) != node->data)
     return NULL;
 
   if (lis->len)
@@ -83,15 +104,17 @@ list_push_back (list *restrict lis, void *restrict data, size_t ele)
 }
 
 list_n *
-list_push_front (list *restrict lis, void *restrict data, size_t ele)
+list_push_front (list *lis, void *data, const list_i *info)
 {
-  list_n *node = malloc (sizeof (list_n) + ele);
+  size_t size = data_size (info);
+  list_n *node = malloc (sizeof (list_n) + size);
   if (!node)
     return NULL;
 
   node->prev = NULL;
   node->next = lis->head;
-  if (memcpy (node->data, data, ele) != node->data)
+  node->data = data_ptr (node, info);
+  if (memcpy (node->data, data, info->size) != node->data)
     return NULL;
 
   if (lis->len)
@@ -105,16 +128,17 @@ list_push_front (list *restrict lis, void *restrict data, size_t ele)
 }
 
 list_n *
-list_insert (list *restrict lis, list_n *restrict pos, void *restrict data,
-             size_t ele)
+list_insert (list *lis, list_n *pos, void *data, const list_i *info)
 {
-  list_n *node = malloc (sizeof (list_n) + ele);
+  size_t size = data_size (info);
+  list_n *node = malloc (sizeof (list_n) + size);
   if (!node)
     return NULL;
 
   node->next = pos;
   node->prev = pos->prev;
-  if (memcpy (node->data, data, ele) != node->data)
+  node->data = data_ptr (node, info);
+  if (memcpy (node->data, data, info->size) != node->data)
     return NULL;
 
   if (pos != lis->head)
