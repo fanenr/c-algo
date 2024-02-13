@@ -4,13 +4,13 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define HASHMAP_STATE_USED 2
-#define HASHMAP_STATE_RMED 1
-#define HASHMAP_STATE_EMPTY 0
-
 #define HASHMAP_INIT_CAP 8
 #define HASHMAP_EXPAN_RATIO 2
 #define HASHMAP_LOAD_FACTOR 0.8
+
+#define HASHMAP_STATE_USED 2
+#define HASHMAP_STATE_RMED 1
+#define HASHMAP_STATE_EMPTY 0
 
 typedef struct hashmap_n
 {
