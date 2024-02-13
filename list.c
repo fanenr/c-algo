@@ -34,10 +34,11 @@ void
 list_free (list *lis)
 {
   list_n *node = lis->head, *next;
-  for (; node != NULL; node = next)
+  for (size_t i = lis->len; i; i--)
     {
       next = node->next;
       free (node);
+      node = next;
     }
 
   list_init (lis);
