@@ -62,7 +62,7 @@ hashmap_reserve (hashmap *map, size_t cap, size_t k_ele, size_t v_ele)
   if (ndat == NULL)
     return NULL;
 
-  for (size_t i = map->len; i < ncap; i++)
+  for (size_t i = map->cap; i < ncap; i++)
     {
       hashmap_n *node = get_node (map, i, k_ele, v_ele);
       node->state = HASHMAP_STATE_EMPTY;
@@ -125,7 +125,7 @@ hashmap_insert (hashmap *map, hashmap_hash_t *f_hash, hashmap_comp_t *f_comp,
                 void *key, void *val, size_t k_ele, size_t v_ele)
 {
   if (map->len * HASHMAP_LOAD_FACTOR >= map->cap)
-    if (!hashmap_reserve (map, map->len + 1, k_ele, v_ele))
+    if (!hashmap_reserve (map, map->cap * HASHMAP_EXPAN_RATIO, k_ele, v_ele))
       return NULL;
 
   long code = f_hash (key);
