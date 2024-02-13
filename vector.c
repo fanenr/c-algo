@@ -16,8 +16,29 @@ vector_free (vector *vec)
   return;
 }
 
+void
+vector_remove (vector *vec, size_t pos, const vector_i *info)
+{
+  if (pos >= vec->len)
+    return;
+
+  const size_t size = info->size;
+  void *rmpos = vec->data + pos * size;
+  if (pos == vec->len - 1)
+    goto end;
+
+  void *mvst = rmpos + size;
+  size_t mvlen = (vec->len - pos - 1) * size;
+
+  if (memmove (rmpos, mvst, mvlen) != rmpos)
+    return;
+
+end:
+  vec->len--;
+}
+
 vector *
-vector_reserve (vector *vec, size_t cap, size_t ele)
+vector_reserve (vector *vec, size_t cap, const vector_i *info)
 {
   if (vec->cap >= cap)
     return vec;
@@ -29,7 +50,7 @@ vector_reserve (vector *vec, size_t cap, size_t ele)
   while (ncap < cap)
     ncap *= VECTOR_EXPAN_RATIO;
 
-  void *ndat = realloc (vec->data, ncap * ele);
+  void *ndat = realloc (vec->data, ncap * info->size);
   if (ndat == NULL)
     return NULL;
 
@@ -39,43 +60,23 @@ vector_reserve (vector *vec, size_t cap, size_t ele)
 }
 
 void *
-vector_at (vector *vec, size_t pos, size_t ele)
+vector_at (vector *vec, size_t pos, const vector_i *info)
 {
   if (pos >= vec->len)
     return NULL;
-  return vec->data + pos * ele;
+  return vec->data + pos * info->size;
 }
 
 void *
-vector_remove (vector *vec, size_t pos, size_t ele)
+vector_push_back (vector *vec, void *data, const vector_i *info)
 {
-  if (pos >= vec->len)
+  if (!vector_reserve (vec, vec->len + 1, info))
     return NULL;
 
-  void *rmpos = vec->data + pos * ele;
-  if (pos == vec->len - 1)
-    goto end;
+  const size_t size = info->size;
+  void *inpos = vec->data + vec->len * size;
 
-  void *mvst = rmpos + ele;
-  size_t mvlen = (vec->len - pos - 1) * ele;
-
-  if (memmove (rmpos, mvst, mvlen) != rmpos)
-    return NULL;
-
-end:
-  vec->len--;
-  return rmpos;
-}
-
-void *
-vector_push_back (vector *restrict vec, void *restrict data, size_t ele)
-{
-  if (!vector_reserve (vec, vec->len + 1, ele))
-    return NULL;
-
-  void *inpos = vec->data + vec->len * ele;
-
-  if (memmove (inpos, data, ele) != inpos)
+  if (memcpy (inpos, data, size) != inpos)
     return NULL;
 
   vec->len++;
@@ -83,26 +84,26 @@ vector_push_back (vector *restrict vec, void *restrict data, size_t ele)
 }
 
 void *
-vector_insert (vector *restrict vec, size_t pos, void *restrict data,
-               size_t ele)
+vector_insert (vector *vec, size_t pos, void *data, const vector_i *info)
 {
   if (pos > vec->len)
     return NULL;
 
-  if (!vector_reserve (vec, vec->len + 1, ele))
+  if (!vector_reserve (vec, vec->len + 1, info))
     return NULL;
 
   if (pos == vec->len)
-    return vector_push_back (vec, data, ele);
+    return vector_push_back (vec, data, info);
 
-  void *inpos = vec->data + pos * ele;
-  void *mvde = inpos + ele;
-  size_t mvlen = (vec->len - pos) * ele;
+  const size_t size = info->size;
+  void *inpos = vec->data + pos * size;
+  void *mvde = inpos + size;
+  size_t mvlen = (vec->len - pos) * size;
 
   if (memmove (mvde, inpos, mvlen) != mvde)
     return NULL;
 
-  if (memmove (inpos, data, ele) != inpos)
+  if (memcpy (inpos, data, size) != inpos)
     return NULL;
 
   vec->len++;
