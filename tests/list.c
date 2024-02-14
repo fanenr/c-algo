@@ -17,7 +17,7 @@ main (void)
   i32_list_n *node = i32_list_at (&lis, 0);
   for (int i = 0; i < 1000; i++)
     {
-      assert (*node->data == i);
+      assert (node->data == i);
       node = node->next;
     }
 
