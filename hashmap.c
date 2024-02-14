@@ -4,58 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-static inline size_t
-node_size (const hashmap_i *info)
-{
-  const size_t m_align
-      = info->k_align > info->v_align ? info->k_align : info->v_align;
-  size_t ret = sizeof (char) + info->k_size + info->v_size;
-  if (ret % m_align)
-    ret += m_align - ret % m_align;
-  return ret;
-}
-
-static inline size_t
-key_offset (const hashmap_i *info)
-{
-  size_t ret = 0 + sizeof (char);
-  if (ret % info->k_align)
-    ret += info->k_align - ret % info->k_align;
-  return ret;
-}
-
-static inline size_t
-val_offset (const hashmap_i *info)
-{
-  size_t ret = key_offset (info) + info->k_size;
-  if (ret % info->v_align)
-    ret += info->v_align - ret % info->v_align;
-  return ret;
-}
-
-static inline void *
-node_ptr (hashmap *map, long hash, const hashmap_i *info)
-{
-  return map->data + hash * node_size (info);
-}
-
-static inline void *
-key_ptr (void *node, const hashmap_i *info)
-{
-  return node + key_offset (info);
-}
-
-static inline void *
-val_ptr (void *node, const hashmap_i *info)
-{
-  return node + val_offset (info);
-}
-
 static inline long
 next_hash (hashmap *map, long hash)
 {
   long ret = hash * hash;
-
   if ((size_t)ret >= map->cap)
     return -1;
   return ret;
@@ -87,14 +39,14 @@ hashmap_reserve (hashmap *map, size_t cap, const hashmap_i *info)
   while (ncap < cap)
     ncap *= HASHMAP_EXPAN_RATIO;
 
-  void *ndat = realloc (map->data, ncap * node_size (info));
+  void *ndat = realloc (map->data, ncap * info->n_size);
   if (ndat == NULL)
     return NULL;
 
   for (size_t i = map->cap; i < ncap; i++)
     {
-      hashmap_n *node = get_node (map, i, k_ele, v_ele);
-      node->state = HASHMAP_STATE_EMPTY;
+      char *state = map->data + info->n_size * i;
+      *state = HASHMAP_STATE_EMPTY;
     }
 
   map->data = ndat;
@@ -102,32 +54,33 @@ hashmap_reserve (hashmap *map, size_t cap, const hashmap_i *info)
   return map;
 }
 
-hashmap_n *
-hashmap_find (hashmap *map, hashmap_hash_t *f_hash, hashmap_comp_t *f_comp,
-              void *key, size_t k_ele, size_t v_ele)
+void *
+hashmap_find (hashmap *map, void *key, const hashmap_i *info)
 {
   if (!map->cap || !map->len)
     return NULL;
 
-  long code = f_hash (key);
+  long code = info->f_hash (key);
   if (code < 0)
     return NULL;
 
   long hash = code % map->cap;
-  hashmap_n *node = get_node (map, hash, k_ele, v_ele);
+  void *node = map->data + hash * info->n_size;
 
-  for (; node; node = get_node (map, hash, k_ele, v_ele))
+  for (; node; node = map->data + hash * info->n_size)
     {
-      if (node->state == HASHMAP_STATE_EMPTY)
+      char state = *(char *)node;
+      if (state == HASHMAP_STATE_EMPTY)
         break;
 
-      if (node->state == HASHMAP_STATE_RMED)
+      if (state == HASHMAP_STATE_RMED)
         if ((hash = next_hash (map, hash)) < 0)
           break;
 
-      if (node->state == HASHMAP_STATE_USED)
+      if (state == HASHMAP_STATE_USED)
         {
-          if (f_comp (key, node->key) == 0)
+          void *nkey = node + info->k_offs;
+          if (info->f_comp (key, nkey) == 0)
             return node;
           if ((hash = next_hash (map, hash)) < 0)
             break;
@@ -138,59 +91,61 @@ hashmap_find (hashmap *map, hashmap_hash_t *f_hash, hashmap_comp_t *f_comp,
 }
 
 void
-hashmap_remove (hashmap *map, hashmap_hash_t *f_hash, hashmap_comp_t *f_comp,
-                void *key, size_t k_ele, size_t v_ele)
+hashmap_remove (hashmap *map, void *key, const hashmap_i *info)
 {
-  hashmap_n *node = hashmap_find (map, f_hash, f_comp, key, k_ele, v_ele);
+  void *node = hashmap_find (map, key, info);
   if (!node)
     return;
 
-  node->state = HASHMAP_STATE_RMED;
+  char *state = (char *)node;
+  *state = HASHMAP_STATE_RMED;
   map->len--;
 }
 
-hashmap_n *
-hashmap_insert (hashmap *map, hashmap_hash_t *f_hash, hashmap_comp_t *f_comp,
-                void *key, void *val, size_t k_ele, size_t v_ele)
+void *
+hashmap_insert (hashmap *map, void *key, void *val, const hashmap_i *info)
 {
   if (map->len * HASHMAP_LOAD_FACTOR >= map->cap)
-    if (!hashmap_reserve (map, map->cap * HASHMAP_EXPAN_RATIO, k_ele, v_ele))
+    if (!hashmap_reserve (map, map->cap * HASHMAP_EXPAN_RATIO, info))
       return NULL;
 
-  long code = f_hash (key);
+  long code = info->f_hash (key);
   if (code < 0)
     return NULL;
 
   long hash = code % map->cap;
-  hashmap_n *node = get_node (map, hash, k_ele, v_ele);
+  void *node = map->data + hash * info->n_size;
 
-  for (;; node = get_node (map, hash, k_ele, v_ele))
+  for (;; node = map->data + hash * info->n_size)
     {
-      if (node->state == HASHMAP_STATE_EMPTY)
+      char state = *(char *)node;
+      if (state == HASHMAP_STATE_EMPTY)
         break;
 
-      if (node->state == HASHMAP_STATE_RMED)
+      if (state == HASHMAP_STATE_RMED)
         break;
 
-      if (node->state == HASHMAP_STATE_USED)
+      if (state == HASHMAP_STATE_USED)
         {
-          if (f_comp (key, node->key) == 0)
+          void *nkey = node + info->k_offs;
+          if (info->f_comp (key, nkey) == 0)
             return NULL;
 
           for (; hash < 0; hash = next_hash (map, hash))
-            if (!hashmap_reserve (map, map->cap * HASHMAP_EXPAN_RATIO, k_ele,
-                                  v_ele))
+            if (!hashmap_reserve (map, map->cap * HASHMAP_EXPAN_RATIO, info))
               return NULL;
         }
     }
 
-  node->state = HASHMAP_STATE_USED;
-  node->val = (void *)node->key + aligned_size (k_ele, 0);
+  char *state = (char *)node;
+  *state = HASHMAP_STATE_USED;
+  void *nkey = node + info->k_offs;
+  void *nval = node + info->v_offs;
 
-  if (memmove (node->key, key, k_ele) != node->key)
+  if (memmove (nkey, key, info->k_size) != nkey)
     return NULL;
 
-  if (memmove (node->val, val, v_ele) != node->val)
+  if (memmove (nval, val, info->v_size) != nval)
     return NULL;
 
   map->len++;
