@@ -8,7 +8,7 @@
 
 typedef struct vector_i
 {
-  size_t size;
+  size_t d_size;
 } vector_i;
 
 typedef struct vector
@@ -70,7 +70,7 @@ extern void *vector_insert (vector *vec, size_t pos, void *data,
   }
 
 #define VECTOR_DEF_INFO(TYPE, PRE)                                            \
-  static const vector_i PRE##_vector_info = { .size = sizeof (TYPE) };        \
+  static const vector_i PRE##_vector_info = { .d_size = sizeof (TYPE) };      \
                                                                               \
   static void PRE##_vector_remove (vector *vec, size_t pos)                   \
       __attribute__ ((nonnull (1)));                                          \

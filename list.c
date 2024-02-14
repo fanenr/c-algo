@@ -3,27 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static inline size_t
-data_offset (const list_i *info)
-{
-  if (alignof (list_n) >= info->align)
-    return 0;
-
-  return info->align - alignof (list_n);
-}
-
-static inline size_t
-data_size (const list_i *info)
-{
-  return info->size + data_offset (info);
-}
-
-static inline void *
-data_ptr (list_n *node, const list_i *info)
-{
-  return (void *)node + sizeof (list_n) + data_offset (info);
-}
-
 void
 list_init (list *lis)
 {
@@ -83,15 +62,14 @@ list_at (list *lis, size_t pos)
 list_n *
 list_push_back (list *lis, void *data, const list_i *info)
 {
-  size_t size = data_size (info);
-  list_n *node = malloc (sizeof (list_n) + size);
+  list_n *node = malloc (info->n_size);
   if (!node)
     return NULL;
 
   node->next = NULL;
   node->prev = lis->tail;
-  node->data = data_ptr (node, info);
-  if (memcpy (node->data, data, info->size) != node->data)
+  void *val = (void *)node + info->d_offs;
+  if (memcpy (val, data, info->d_size) != val)
     return NULL;
 
   if (lis->len)
@@ -107,15 +85,14 @@ list_push_back (list *lis, void *data, const list_i *info)
 list_n *
 list_push_front (list *lis, void *data, const list_i *info)
 {
-  size_t size = data_size (info);
-  list_n *node = malloc (sizeof (list_n) + size);
+  list_n *node = malloc (info->n_size);
   if (!node)
     return NULL;
 
   node->prev = NULL;
   node->next = lis->head;
-  node->data = data_ptr (node, info);
-  if (memcpy (node->data, data, info->size) != node->data)
+  void *val = (void *)node + info->d_offs;
+  if (memcpy (val, data, info->d_size) != val)
     return NULL;
 
   if (lis->len)
@@ -131,15 +108,14 @@ list_push_front (list *lis, void *data, const list_i *info)
 list_n *
 list_insert (list *lis, list_n *pos, void *data, const list_i *info)
 {
-  size_t size = data_size (info);
-  list_n *node = malloc (sizeof (list_n) + size);
+  list_n *node = malloc (info->n_size);
   if (!node)
     return NULL;
 
   node->next = pos;
   node->prev = pos->prev;
-  node->data = data_ptr (node, info);
-  if (memcpy (node->data, data, info->size) != node->data)
+  void *val = (void *)node + info->d_offs;
+  if (memcpy (val, data, info->d_size) != val)
     return NULL;
 
   if (pos != lis->head)
