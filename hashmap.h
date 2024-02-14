@@ -13,14 +13,15 @@
 #define HASHMAP_STATE_EMPTY 0
 
 typedef long hashmap_hash_t (void *key);
-typedef int hashmap_comp_t (void *a, void *b);
+typedef int hashmap_comp_t (void *key1, void *key2);
 
 typedef struct hashmap_i
 {
   size_t k_size;
   size_t v_size;
-  size_t k_align;
-  size_t v_align;
+  size_t n_size;
+  size_t k_offs;
+  size_t v_offs;
   hashmap_hash_t *f_hash;
   hashmap_comp_t *f_comp;
 } hashmap_i;
@@ -45,5 +46,24 @@ extern void *hashmap_find (hashmap *map, void *key, const hashmap_i *info);
 
 extern void *hashmap_insert (hashmap *map, void *key, void *val,
                              const hashmap_i *info);
+
+#define HASHMAP_DEF_INFO(KTYPE, VTYPE, PRE)                                   \
+  typedef struct PRE##_hashmap_n PRE##_hashmap_n;                             \
+                                                                              \
+  struct PRE##_hashmap_n                                                      \
+  {                                                                           \
+    char sts;                                                                 \
+    KTYPE key;                                                                \
+    VTYPE val;                                                                \
+  };                                                                          \
+                                                                              \
+  static const hashmap_i PRE##_hashmap_info                                   \
+      = { .k_size = sizeof (KTYPE),                                           \
+          .v_size = sizeof (VTYPE),                                           \
+          .n_size = sizeof (PRE##_hashmap_n),                                 \
+          .k_offs = offsetof (PRE##_hashmap_n, key),                          \
+          .v_offs = offsetof (PRE##_hashmap_n, val),                          \
+          .f_hash = (hashmap_hash_t *)PRE##_hashmap_hash,                     \
+          .f_comp = (hashmap_comp_t *)PRE##_hashmap_comp }
 
 #endif

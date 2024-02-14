@@ -44,37 +44,6 @@ extern list_n *list_insert (list *lis, list_n *pos, void *data,
                             const list_i *info)
     __attribute__ ((nonnull (1, 2, 3, 4)));
 
-#define LIST_DEF_INFO(TYPE, PRE)                                              \
-  typedef struct PRE##_list_n PRE##_list_n;                                   \
-                                                                              \
-  struct PRE##_list_n                                                         \
-  {                                                                           \
-    PRE##_list_n *prev;                                                       \
-    PRE##_list_n *next;                                                       \
-    TYPE data;                                                                \
-  };                                                                          \
-                                                                              \
-  static const list_i PRE##_list_info                                         \
-      = { .d_size = sizeof (TYPE),                                            \
-          .n_size = sizeof (PRE##_list_n),                                    \
-          .d_offs = offsetof (PRE##_list_n, data) };                          \
-                                                                              \
-  static void PRE##_list_remove (list *lis, PRE##_list_n *pos)                \
-      __attribute__ ((nonnull (1, 2)));                                       \
-                                                                              \
-  static PRE##_list_n *PRE##_list_at (list *lis, size_t pos)                  \
-      __attribute__ ((nonnull (1)));                                          \
-                                                                              \
-  static inline PRE##_list_n *PRE##_list_push_back (list *lis, TYPE data)     \
-      __attribute__ ((nonnull (1)));                                          \
-                                                                              \
-  static inline PRE##_list_n *PRE##_list_push_front (list *lis, TYPE data)    \
-      __attribute__ ((nonnull (1)));                                          \
-                                                                              \
-  static inline PRE##_list_n *PRE##_list_insert (                             \
-      list *lis, PRE##_list_n *pos, TYPE data)                                \
-      __attribute__ ((nonnull (1, 2)));
-
 #define LIST_DEF_AT(TYPE, PRE)                                                \
   static inline PRE##_list_n *PRE##_list_at (list *lis, size_t pos)           \
   {                                                                           \
@@ -106,6 +75,37 @@ extern list_n *list_insert (list *lis, list_n *pos, void *data,
     return (PRE##_list_n *)list_insert (lis, (list_n *)pos, &data,            \
                                         &PRE##_list_info);                    \
   }
+
+#define LIST_DEF_INFO(TYPE, PRE)                                              \
+  typedef struct PRE##_list_n PRE##_list_n;                                   \
+                                                                              \
+  struct PRE##_list_n                                                         \
+  {                                                                           \
+    PRE##_list_n *prev;                                                       \
+    PRE##_list_n *next;                                                       \
+    TYPE data;                                                                \
+  };                                                                          \
+                                                                              \
+  static const list_i PRE##_list_info                                         \
+      = { .d_size = sizeof (TYPE),                                            \
+          .n_size = sizeof (PRE##_list_n),                                    \
+          .d_offs = offsetof (PRE##_list_n, data) };                          \
+                                                                              \
+  static void PRE##_list_remove (list *lis, PRE##_list_n *pos)                \
+      __attribute__ ((nonnull (1, 2)));                                       \
+                                                                              \
+  static PRE##_list_n *PRE##_list_at (list *lis, size_t pos)                  \
+      __attribute__ ((nonnull (1)));                                          \
+                                                                              \
+  static inline PRE##_list_n *PRE##_list_push_back (list *lis, TYPE data)     \
+      __attribute__ ((nonnull (1)));                                          \
+                                                                              \
+  static inline PRE##_list_n *PRE##_list_push_front (list *lis, TYPE data)    \
+      __attribute__ ((nonnull (1)));                                          \
+                                                                              \
+  static inline PRE##_list_n *PRE##_list_insert (                             \
+      list *lis, PRE##_list_n *pos, TYPE data)                                \
+      __attribute__ ((nonnull (1, 2)));
 
 #define LIST_DEF_ALL(TYPE, PRE)                                               \
   LIST_DEF_INFO (TYPE, PRE);                                                  \
