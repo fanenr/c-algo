@@ -3,7 +3,7 @@ NOWARN  = -Wno-unused-variable -Wno-unused-function
 CFLAGS  = -Wall -Wextra $(NOWARN) -ggdb3 -std=gnu11 -fsanitize=address
 export CFLAGS LDFLAGS
 
-targets := vector list
+targets := vector list hashmap
 objects := $(targets:%=%.o)
 export targets objects
 

@@ -3,4 +3,5 @@
 *.o
 list
 vector
+hashmap
 compile_commands.json
