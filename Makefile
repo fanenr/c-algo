@@ -1,5 +1,5 @@
 LDFLAGS = -g -lasan
-NOWARN  = -Wno-unused-variable -Wno-unused-function
+NOWARN  = #-Wno-unused-variable -Wno-unused-function
 CFLAGS  = -Wall -Wextra $(NOWARN) -ggdb3 -std=gnu11 -fsanitize=address
 export CFLAGS LDFLAGS
 
