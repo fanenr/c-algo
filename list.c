@@ -26,7 +26,7 @@ list_free (list *lis)
 void
 list_remove (list *lis, list_n *pos)
 {
-  list_n *prev, *curr, *next;
+  list_n *prev, *next;
   prev = pos->prev, next = pos->next;
 
   free (pos);
