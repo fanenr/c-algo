@@ -13,7 +13,6 @@ vector_free (vector *vec)
 {
   free (vec->data);
   vector_init (vec);
-  return;
 }
 
 void
@@ -22,15 +21,14 @@ vector_remove (vector *vec, size_t pos, const vector_i *info)
   if (pos >= vec->len)
     return;
 
-  const size_t size = info->d_size;
-  void *rmpos = vec->data + pos * size;
   if (pos == vec->len - 1)
     goto end;
 
-  void *mvst = rmpos + size;
+  size_t size = info->d_size;
+  void *rmpos = vec->data + pos * size;
   size_t mvlen = (vec->len - pos - 1) * size;
 
-  if (memmove (rmpos, mvst, mvlen) != rmpos)
+  if (memmove (rmpos, rmpos + size, mvlen) != rmpos)
     return;
 
 end:
@@ -73,7 +71,7 @@ vector_push_back (vector *vec, void *data, const vector_i *info)
   if (!vector_reserve (vec, vec->len + 1, info))
     return NULL;
 
-  const size_t size = info->d_size;
+  size_t size = info->d_size;
   void *inpos = vec->data + vec->len * size;
 
   if (memcpy (inpos, data, size) != inpos)
@@ -95,12 +93,11 @@ vector_insert (vector *vec, size_t pos, void *data, const vector_i *info)
   if (pos == vec->len)
     return vector_push_back (vec, data, info);
 
-  const size_t size = info->d_size;
+  size_t size = info->d_size;
   void *inpos = vec->data + pos * size;
-  void *mvde = inpos + size;
   size_t mvlen = (vec->len - pos) * size;
 
-  if (memmove (mvde, inpos, mvlen) != mvde)
+  if (memmove (inpos + size, inpos, mvlen) != inpos + size)
     return NULL;
 
   if (memcpy (inpos, data, size) != inpos)
