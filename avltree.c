@@ -95,6 +95,58 @@ rotate (avltree_n *node)
   return node;
 }
 
+static inline avltree_n *
+avltree_remove_impl (avltree_n *curr, void *key, const avltree_i *info)
+{
+  if (!curr)
+    return NULL;
+
+  void *ckey = KEY_OF (curr, info);
+  void *cval = VAL_OF (curr, info);
+  int comp = info->f_comp (key, ckey);
+
+  if (comp == 0)
+    {
+      if (curr->left && curr->right)
+        {
+          avltree_n *repl = curr->right;
+          while (repl->left)
+            repl = repl->left;
+
+          void *rkey = KEY_OF (repl, info);
+          void *rval = VAL_OF (repl, info);
+          if (memcpy (ckey, rkey, info->k_size) != ckey)
+            return NULL;
+          if (memcpy (cval, rval, info->v_size) != cval)
+            return NULL;
+
+          curr->right = avltree_remove_impl (curr->right, rkey, info);
+        }
+
+      if (!curr->left && !curr->right)
+        {
+          free (curr);
+          return NULL;
+        }
+
+      free (curr);
+      curr = curr->left ? curr->left : curr->right;
+    }
+
+  avltree_n **next = comp < 0 ? &curr->left : &curr->right;
+  *next = avltree_remove_impl (*next, key, info);
+
+  height_update (curr);
+  curr = rotate (curr);
+  return curr;
+}
+
+void
+avltree_remove (avltree *tree, void *key, const avltree_i *info)
+{
+  tree->root = avltree_remove_impl (tree->root, key, info);
+}
+
 avltree_n *
 avltree_find (avltree *tree, void *key, const avltree_i *info)
 {
