@@ -26,22 +26,22 @@ list_free (list *lis)
 void
 list_remove (list *lis, list_n *pos)
 {
-  list_n *prev, *next;
-  prev = pos->prev, next = pos->next;
+  if (!lis->len)
+    return;
 
+  list_n *prev = pos->prev;
+  list_n *next = pos->next;
   free (pos);
 
-  if (lis->len == 1)
-    lis->head = lis->tail = NULL;
-  else if (pos == lis->head)
+  if (pos == lis->head)
     lis->head = next;
-  else if (pos == lis->tail)
+  if (pos == lis->tail)
     lis->tail = prev;
-  else
-    {
-      prev->next = next;
-      next->prev = prev;
-    }
+
+  if (prev)
+    prev->next = next;
+  if (next)
+    next->prev = prev;
 
   lis->len--;
 }
@@ -72,7 +72,7 @@ list_push_back (list *lis, void *data, const list_i *info)
   if (memcpy (val, data, info->d_size) != val)
     return NULL;
 
-  if (lis->len)
+  if (lis->tail)
     lis->tail->next = node;
   else
     lis->head = node;
@@ -95,7 +95,7 @@ list_push_front (list *lis, void *data, const list_i *info)
   if (memcpy (val, data, info->d_size) != val)
     return NULL;
 
-  if (lis->len)
+  if (lis->head)
     lis->head->prev = node;
   else
     lis->tail = node;
