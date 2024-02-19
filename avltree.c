@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX(A, B) (((A) > (B)) ? (A) : (B))
 #define HEIGHT_OF(NODE) ((NODE) ? (NODE)->height : -1)
 #define BALANCE_FACTOR_OF(NODE)                                               \
   ((NODE) ? HEIGHT_OF ((NODE)->left) - HEIGHT_OF ((NODE)->right) : 0)
@@ -38,7 +37,7 @@ height_update (avltree_n *node)
 {
   int lh = HEIGHT_OF (node->left);
   int rh = HEIGHT_OF (node->right);
-  node->height = MAX (lh, rh) + 1;
+  node->height = (lh > rh ? lh : rh) + 1;
 }
 
 static inline avltree_n *
@@ -107,6 +106,12 @@ avltree_remove_impl (avltree_n *curr, void *key, const avltree_i *info)
 
   if (comp == 0)
     {
+      if (!curr->left && !curr->right)
+        {
+          free (curr);
+          return NULL;
+        }
+
       if (curr->left && curr->right)
         {
           avltree_n *repl = curr->right;
@@ -116,26 +121,24 @@ avltree_remove_impl (avltree_n *curr, void *key, const avltree_i *info)
           void *rkey = KEY_OF (repl, info);
           void *rval = VAL_OF (repl, info);
           if (memcpy (ckey, rkey, info->k_size) != ckey)
-            return NULL;
+            return curr;
           if (memcpy (cval, rval, info->v_size) != cval)
-            return NULL;
+            return curr;
 
           curr->right = avltree_remove_impl (curr->right, rkey, info);
+          goto ret;
         }
 
-      if (!curr->left && !curr->right)
-        {
-          free (curr);
-          return NULL;
-        }
-
+      avltree_n *child = curr->left ?: curr->right;
       free (curr);
-      curr = curr->left ? curr->left : curr->right;
+      curr = child;
+      goto ret;
     }
 
   avltree_n **next = comp < 0 ? &curr->left : &curr->right;
   *next = avltree_remove_impl (*next, key, info);
 
+ret:
   height_update (curr);
   curr = rotate (curr);
   return curr;
@@ -161,10 +164,7 @@ avltree_find (avltree *tree, void *key, const avltree_i *info)
       if (comp == 0)
         return curr;
 
-      if (comp < 0)
-        curr = curr->left;
-      else
-        curr = curr->right;
+      curr = comp < 0 ? curr->left : curr->right;
     }
 
   return NULL;
