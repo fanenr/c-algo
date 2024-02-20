@@ -6,8 +6,8 @@
 #define NODE_AT(MAP, INDEX, INFO) ((MAP)->data + (INDEX) * (INFO)->n_size)
 
 #define STS_OF(NODE) ((char *)NODE)
-#define KEY_OF(NODE, INFO) ((NODE) + (INFO)->k_offs)
-#define VAL_OF(NODE, INFO) ((NODE) + (INFO)->v_offs)
+#define KEY_OF(NODE, INFO) ((void *)(NODE) + (INFO)->k_offs)
+#define VAL_OF(NODE, INFO) ((void *)(NODE) + (INFO)->v_offs)
 
 void
 hashmap_init (hashmap *map)
