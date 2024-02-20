@@ -1,50 +1,50 @@
-#include "avltree.h"
+#include "avlmap.h"
 #include <stdlib.h>
 #include <string.h>
+
+#define KEY_OF(NODE, INFO) ((NODE) + (INFO)->k_offs)
+#define VAL_OF(NODE, INFO) ((NODE) + (INFO)->v_offs)
 
 #define HEIGHT_OF(NODE) ((NODE) ? (NODE)->height : -1)
 #define BALANCE_FACTOR_OF(NODE)                                               \
   ((NODE) ? HEIGHT_OF ((NODE)->left) - HEIGHT_OF ((NODE)->right) : 0)
 
-#define KEY_OF(NODE, INFO) ((NODE) + (INFO)->k_offs)
-#define VAL_OF(NODE, INFO) ((NODE) + (INFO)->v_offs)
-
 void
-avltree_init (avltree *tree)
+avlmap_init (avlmap *tree)
 {
-  *tree = (avltree){ .len = 0, .root = NULL };
+  *tree = (avlmap){ .len = 0, .root = NULL };
 }
 
 static inline void
-avltree_free_impl (avltree_n *node)
+avlmap_free_impl (avlmap_n *node)
 {
   if (!node)
     return;
-  avltree_free_impl (node->left);
-  avltree_free_impl (node->right);
+  avlmap_free_impl (node->left);
+  avlmap_free_impl (node->right);
   free (node);
 }
 
 void
-avltree_free (avltree *tree)
+avlmap_free (avlmap *tree)
 {
-  avltree_free_impl (tree->root);
-  avltree_init (tree);
+  avlmap_free_impl (tree->root);
+  avlmap_init (tree);
 }
 
 static inline void
-height_update (avltree_n *node)
+height_update (avlmap_n *node)
 {
   int lh = HEIGHT_OF (node->left);
   int rh = HEIGHT_OF (node->right);
   node->height = (lh > rh ? lh : rh) + 1;
 }
 
-static inline avltree_n *
-rotate_left (avltree_n *node)
+static inline avlmap_n *
+rotate_left (avlmap_n *node)
 {
-  avltree_n *child = node->right;
-  avltree_n *gchild = child->left;
+  avlmap_n *child = node->right;
+  avlmap_n *gchild = child->left;
 
   child->left = node;
   node->right = gchild;
@@ -54,11 +54,11 @@ rotate_left (avltree_n *node)
   return child;
 }
 
-static inline avltree_n *
-rotate_right (avltree_n *node)
+static inline avlmap_n *
+rotate_right (avlmap_n *node)
 {
-  avltree_n *child = node->left;
-  avltree_n *gchild = child->right;
+  avlmap_n *child = node->left;
+  avlmap_n *gchild = child->right;
 
   child->right = node;
   node->left = gchild;
@@ -68,8 +68,8 @@ rotate_right (avltree_n *node)
   return child;
 }
 
-static inline avltree_n *
-rotate (avltree_n *node)
+static inline avlmap_n *
+rotate (avlmap_n *node)
 {
   int bf = BALANCE_FACTOR_OF (node);
 
@@ -94,8 +94,8 @@ rotate (avltree_n *node)
   return node;
 }
 
-static inline avltree_n *
-avltree_remove_impl (avltree_n *curr, void *key, const avltree_i *info)
+static inline avlmap_n *
+avlmap_remove_impl (avlmap_n *curr, void *key, const avlmap_i *info)
 {
   if (!curr)
     return NULL;
@@ -106,8 +106,8 @@ avltree_remove_impl (avltree_n *curr, void *key, const avltree_i *info)
 
   if (comp != 0)
     {
-      avltree_n **next = comp < 0 ? &curr->left : &curr->right;
-      *next = avltree_remove_impl (*next, key, info);
+      avlmap_n **next = comp < 0 ? &curr->left : &curr->right;
+      *next = avlmap_remove_impl (*next, key, info);
       goto update;
     }
 
@@ -119,14 +119,14 @@ avltree_remove_impl (avltree_n *curr, void *key, const avltree_i *info)
 
   if (!curr->left ^ !curr->right)
     { /* one children */
-      avltree_n *child = curr->left ?: curr->right;
+      avlmap_n *child = curr->left ?: curr->right;
       free (curr);
       curr = child;
       goto update;
     }
 
   /* two children */
-  avltree_n *repl = curr->right;
+  avlmap_n *repl = curr->right;
   while (repl->left)
     repl = repl->left;
 
@@ -137,7 +137,7 @@ avltree_remove_impl (avltree_n *curr, void *key, const avltree_i *info)
   if (memcpy (cval, rval, info->v_size) != cval)
     return curr;
 
-  curr->right = avltree_remove_impl (curr->right, rkey, info);
+  curr->right = avlmap_remove_impl (curr->right, rkey, info);
 
 update:
   height_update (curr);
@@ -146,18 +146,18 @@ update:
 }
 
 void
-avltree_remove (avltree *tree, void *key, const avltree_i *info)
+avlmap_remove (avlmap *tree, void *key, const avlmap_i *info)
 {
-  tree->root = avltree_remove_impl (tree->root, key, info);
+  tree->root = avlmap_remove_impl (tree->root, key, info);
 }
 
-avltree_n *
-avltree_find (avltree *tree, void *key, const avltree_i *info)
+avlmap_n *
+avlmap_find (avlmap *tree, void *key, const avlmap_i *info)
 {
   if (!tree->len)
     return NULL;
 
-  for (avltree_n *curr = tree->root; curr;)
+  for (avlmap_n *curr = tree->root; curr;)
     {
       void *ckey = KEY_OF (curr, info);
       int comp = info->f_comp (key, ckey);
@@ -171,9 +171,9 @@ avltree_find (avltree *tree, void *key, const avltree_i *info)
   return NULL;
 }
 
-static inline avltree_n *
-avltree_insert_impl (avltree_n **inpos, avltree_n *curr, void *key, void *val,
-                     const avltree_i *info)
+static inline avlmap_n *
+avlmap_insert_impl (avlmap_n **inpos, avlmap_n *curr, void *key, void *val,
+                    const avlmap_i *info)
 {
   if (curr)
     {
@@ -182,8 +182,8 @@ avltree_insert_impl (avltree_n **inpos, avltree_n *curr, void *key, void *val,
       if (comp == 0)
         return curr;
 
-      avltree_n **next = comp < 0 ? &curr->left : &curr->right;
-      *next = avltree_insert_impl (inpos, *next, key, val, info);
+      avlmap_n **next = comp < 0 ? &curr->left : &curr->right;
+      *next = avlmap_insert_impl (inpos, *next, key, val, info);
 
       height_update (curr);
       curr = rotate (curr);
@@ -197,22 +197,22 @@ avltree_insert_impl (avltree_n **inpos, avltree_n *curr, void *key, void *val,
   if (!node)
     return NULL;
   if (memcpy (nkey, key, info->k_size) != nkey)
-    goto err;
+    goto error;
   if (memcpy (nval, val, info->v_size) != nval)
-    goto err;
+    goto error;
 
   *inpos = node;
   return node;
 
-err:
+error:
   free (node);
   return NULL;
 }
 
-avltree_n *
-avltree_insert (avltree *tree, void *key, void *val, const avltree_i *info)
+avlmap_n *
+avlmap_insert (avlmap *tree, void *key, void *val, const avlmap_i *info)
 {
-  avltree_n *sts = NULL;
-  tree->root = avltree_insert_impl (&sts, tree->root, key, val, info);
+  avlmap_n *sts = NULL;
+  tree->root = avlmap_insert_impl (&sts, tree->root, key, val, info);
   return sts;
 }

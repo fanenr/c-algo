@@ -5,9 +5,9 @@
 #define NEXT_INDEX(INDEX, TIME) ((INDEX) + (TIME) * (TIME))
 #define NODE_AT(MAP, INDEX, INFO) ((MAP)->data + (INDEX) * (INFO)->n_size)
 
-#define NODE_STS(NODE) ((char *)NODE)
-#define NODE_KEY(NODE, INFO) ((NODE) + (INFO)->k_offs)
-#define NODE_VAL(NODE, INFO) ((NODE) + (INFO)->v_offs)
+#define STS_OF(NODE) ((char *)NODE)
+#define KEY_OF(NODE, INFO) ((NODE) + (INFO)->k_offs)
+#define VAL_OF(NODE, INFO) ((NODE) + (INFO)->v_offs)
 
 void
 hashmap_init (hashmap *map)
@@ -43,10 +43,10 @@ hashmap_reserve (hashmap *map, size_t cap, const hashmap_i *info)
   for (size_t i = 0; i < map->cap; i++)
     {
       void *node = NODE_AT (map, i, info);
-      void *key = NODE_KEY (node, info);
-      void *val = NODE_VAL (node, info);
+      void *key = KEY_OF (node, info);
+      void *val = VAL_OF (node, info);
 
-      char sts = *NODE_STS (node);
+      char sts = *STS_OF (node);
       if (sts == HASHMAP_STATE_EMPTY || sts == HASHMAP_STATE_RMED)
         break;
 
@@ -76,7 +76,7 @@ hashmap_find (hashmap *map, void *key, const hashmap_i *info)
   for (size_t i = 1;; i++)
     {
       void *node = NODE_AT (map, index, info);
-      char sts = *NODE_STS (node);
+      char sts = *STS_OF (node);
 
       if (sts == HASHMAP_STATE_EMPTY)
         return NULL;
@@ -89,7 +89,7 @@ hashmap_find (hashmap *map, void *key, const hashmap_i *info)
           return NULL;
         }
 
-      void *nkey = NODE_KEY (node, info);
+      void *nkey = KEY_OF (node, info);
       if (sts == HASHMAP_STATE_USED)
         {
           if (info->f_comp (key, nkey) == 0)
@@ -110,7 +110,7 @@ hashmap_remove (hashmap *map, void *key, const hashmap_i *info)
   if (!node)
     return;
 
-  *NODE_STS (node) = HASHMAP_STATE_RMED;
+  *STS_OF (node) = HASHMAP_STATE_RMED;
   map->len--;
 }
 
@@ -133,12 +133,12 @@ hashmap_insert (hashmap *map, void *key, void *val, const hashmap_i *info)
   for (size_t i = 1;; i++)
     {
       node = NODE_AT (map, index, info);
-      char sts = *NODE_STS (node);
+      char sts = *STS_OF (node);
 
       if (sts == HASHMAP_STATE_EMPTY || sts == HASHMAP_STATE_RMED)
         break;
 
-      void *nkey = NODE_KEY (node, info);
+      void *nkey = KEY_OF (node, info);
       if (info->f_comp (key, nkey) == 0)
         return NULL;
 
@@ -150,9 +150,9 @@ hashmap_insert (hashmap *map, void *key, void *val, const hashmap_i *info)
         return NULL;
     }
 
-  void *nkey = NODE_KEY (node, info);
-  void *nval = NODE_VAL (node, info);
-  *NODE_STS (node) = HASHMAP_STATE_USED;
+  void *nkey = KEY_OF (node, info);
+  void *nval = VAL_OF (node, info);
+  *STS_OF (node) = HASHMAP_STATE_USED;
 
   if (memmove (nkey, key, info->k_size) != nkey)
     return NULL;
