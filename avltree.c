@@ -104,41 +104,42 @@ avltree_remove_impl (avltree_n *curr, void *key, const avltree_i *info)
   void *cval = VAL_OF (curr, info);
   int comp = info->f_comp (key, ckey);
 
-  if (comp == 0)
+  if (comp != 0)
     {
-      if (!curr->left && !curr->right)
-        {
-          free (curr);
-          return NULL;
-        }
+      avltree_n **next = comp < 0 ? &curr->left : &curr->right;
+      *next = avltree_remove_impl (*next, key, info);
+      goto update;
+    }
 
-      if (curr->left && curr->right)
-        {
-          avltree_n *repl = curr->right;
-          while (repl->left)
-            repl = repl->left;
+  if (!curr->left && !curr->right)
+    { /* no children */
+      free (curr);
+      return NULL;
+    }
 
-          void *rkey = KEY_OF (repl, info);
-          void *rval = VAL_OF (repl, info);
-          if (memcpy (ckey, rkey, info->k_size) != ckey)
-            return curr;
-          if (memcpy (cval, rval, info->v_size) != cval)
-            return curr;
-
-          curr->right = avltree_remove_impl (curr->right, rkey, info);
-          goto ret;
-        }
-
+  if (!curr->left ^ !curr->right)
+    { /* one children */
       avltree_n *child = curr->left ?: curr->right;
       free (curr);
       curr = child;
-      goto ret;
+      goto update;
     }
 
-  avltree_n **next = comp < 0 ? &curr->left : &curr->right;
-  *next = avltree_remove_impl (*next, key, info);
+  /* two children */
+  avltree_n *repl = curr->right;
+  while (repl->left)
+    repl = repl->left;
 
-ret:
+  void *rkey = KEY_OF (repl, info);
+  void *rval = VAL_OF (repl, info);
+  if (memcpy (ckey, rkey, info->k_size) != ckey)
+    return curr;
+  if (memcpy (cval, rval, info->v_size) != cval)
+    return curr;
+
+  curr->right = avltree_remove_impl (curr->right, rkey, info);
+
+update:
   height_update (curr);
   curr = rotate (curr);
   return curr;
