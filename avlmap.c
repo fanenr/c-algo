@@ -1,13 +1,14 @@
 #include "avlmap.h"
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define KEY_OF(NODE, INFO) ((NODE) + (INFO)->k_offs)
-#define VAL_OF(NODE, INFO) ((NODE) + (INFO)->v_offs)
 
 #define HEIGHT_OF(NODE) ((NODE) ? (NODE)->height : -1)
 #define BALANCE_FACTOR_OF(NODE)                                               \
   ((NODE) ? HEIGHT_OF ((NODE)->left) - HEIGHT_OF ((NODE)->right) : 0)
+
+#define KEY_OF(NODE, INFO) ((void *)(NODE) + (INFO)->k_offs)
+#define VAL_OF(NODE, INFO) ((void *)(NODE) + (INFO)->v_offs)
 
 void
 avlmap_init (avlmap *tree)
@@ -95,7 +96,7 @@ rotate (avlmap_n *node)
 }
 
 static inline avlmap_n *
-avlmap_remove_impl (avlmap_n *curr, void *key, const avlmap_i *info)
+avlmap_remove_impl (bool *sts, avlmap_n *curr, void *key, const avlmap_i *info)
 {
   if (!curr)
     return NULL;
@@ -107,13 +108,14 @@ avlmap_remove_impl (avlmap_n *curr, void *key, const avlmap_i *info)
   if (comp != 0)
     {
       avlmap_n **next = comp < 0 ? &curr->left : &curr->right;
-      *next = avlmap_remove_impl (*next, key, info);
+      *next = avlmap_remove_impl (sts, *next, key, info);
       goto update;
     }
 
   if (!curr->left && !curr->right)
     { /* no children */
       free (curr);
+      *sts = true;
       return NULL;
     }
 
@@ -121,6 +123,7 @@ avlmap_remove_impl (avlmap_n *curr, void *key, const avlmap_i *info)
     { /* one children */
       avlmap_n *child = curr->left ?: curr->right;
       free (curr);
+      *sts = true;
       curr = child;
       goto update;
     }
@@ -137,7 +140,7 @@ avlmap_remove_impl (avlmap_n *curr, void *key, const avlmap_i *info)
   if (memcpy (cval, rval, info->v_size) != cval)
     return curr;
 
-  curr->right = avlmap_remove_impl (curr->right, rkey, info);
+  curr->right = avlmap_remove_impl (sts, curr->right, rkey, info);
 
 update:
   height_update (curr);
@@ -148,7 +151,10 @@ update:
 void
 avlmap_remove (avlmap *tree, void *key, const avlmap_i *info)
 {
-  tree->root = avlmap_remove_impl (tree->root, key, info);
+  bool sts = false;
+  tree->root = avlmap_remove_impl (&sts, tree->root, key, info);
+  if (sts)
+    tree->len--;
 }
 
 avlmap_n *
@@ -190,12 +196,15 @@ avlmap_insert_impl (avlmap_n **inpos, avlmap_n *curr, void *key, void *val,
       return curr;
     }
 
-  void *node = malloc (sizeof (info->n_size));
+  avlmap_n *node = malloc (info->n_size);
   void *nkey = KEY_OF (node, info);
   void *nval = VAL_OF (node, info);
 
   if (!node)
     return NULL;
+
+  node->height = 0;
+  node->left = node->right = NULL;
   if (memcpy (nkey, key, info->k_size) != nkey)
     goto error;
   if (memcpy (nval, val, info->v_size) != nval)
@@ -214,5 +223,7 @@ avlmap_insert (avlmap *tree, void *key, void *val, const avlmap_i *info)
 {
   avlmap_n *sts = NULL;
   tree->root = avlmap_insert_impl (&sts, tree->root, key, val, info);
+  if (sts)
+    tree->len++;
   return sts;
 }

@@ -47,13 +47,13 @@ main (void)
   hashmap map;
   hashmap_init (&map);
 
-  si_hashamp_insert (&map, "Tom", 18);
-  si_hashamp_insert (&map, "Jack", 19);
-  si_hashamp_insert (&map, "Arthur", 20);
+  si_hashmap_insert (&map, "Tom", 18);
+  si_hashmap_insert (&map, "Jack", 19);
+  si_hashmap_insert (&map, "Arthur", 20);
 
-  assert (si_hashamp_find (&map, "Tom")->val == 18);
-  assert (si_hashamp_find (&map, "Jack")->val == 19);
-  assert (si_hashamp_find (&map, "Arthur")->val == 20);
+  assert (si_hashmap_find (&map, "Tom")->val == 18);
+  assert (si_hashmap_find (&map, "Jack")->val == 19);
+  assert (si_hashmap_find (&map, "Arthur")->val == 20);
 
   hashmap_free (&map);
 }
