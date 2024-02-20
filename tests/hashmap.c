@@ -3,13 +3,13 @@
 #include <string.h>
 
 size_t
-ii_hashmap_hash (int *key)
+ii_hashmap_hash (const int *key)
 {
   return *key;
 }
 
 int
-ii_hashmap_comp (int *key1, int *key2)
+ii_hashmap_comp (const int *key1, const int *key2)
 {
   int i1 = *key1;
   int i2 = *key2;
@@ -21,9 +21,9 @@ ii_hashmap_comp (int *key1, int *key2)
 }
 
 size_t
-si_hashmap_hash (char **key)
+si_hashmap_hash (const char **key)
 {
-  char *str = *key;
+  const char *str = *key;
   size_t hash = 0;
   for (size_t i = strlen (str); i; i--)
     hash += str[i - 1];
@@ -31,10 +31,10 @@ si_hashmap_hash (char **key)
 }
 
 int
-si_hashmap_comp (char **key1, char **key2)
+si_hashmap_comp (const char **key1, const char **key2)
 {
-  char *s1 = *key1;
-  char *s2 = *key2;
+  const char *s1 = *key1;
+  const char *s2 = *key2;
   return strcmp (s1, s2);
 }
 

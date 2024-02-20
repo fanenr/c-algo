@@ -12,8 +12,8 @@
 #define HASHMAP_STATE_RMED 1
 #define HASHMAP_STATE_EMPTY 0
 
-typedef size_t hashmap_hash_t (void *key);
-typedef int hashmap_comp_t (void *key1, void *key2);
+typedef size_t hashmap_hash_t (const void *key);
+typedef int hashmap_comp_t (const void *key1, const void *key2);
 
 typedef struct hashmap_i
 {
