@@ -106,7 +106,7 @@ avlmap_remove_impl (bool *sts, avlmap_n *curr, void *key, const avlmap_i *info)
   int comp = info->f_comp (key, ckey);
 
   if (comp != 0)
-    {
+    { /* continue to find */
       avlmap_n **next = comp < 0 ? &curr->left : &curr->right;
       *next = avlmap_remove_impl (sts, *next, key, info);
       goto update;
@@ -123,8 +123,8 @@ avlmap_remove_impl (bool *sts, avlmap_n *curr, void *key, const avlmap_i *info)
     { /* one children */
       avlmap_n *child = curr->left ?: curr->right;
       free (curr);
-      *sts = true;
       curr = child;
+      *sts = true;
       goto update;
     }
 
@@ -138,6 +138,7 @@ avlmap_remove_impl (bool *sts, avlmap_n *curr, void *key, const avlmap_i *info)
   if (memcpy (ckey, rkey, info->k_size) != ckey)
     return curr;
   if (memcpy (cval, rval, info->v_size) != cval)
+    /* TODO: need rollback */
     return curr;
 
   curr->right = avlmap_remove_impl (sts, curr->right, rkey, info);
@@ -178,7 +179,7 @@ avlmap_find (avlmap *tree, void *key, const avlmap_i *info)
 }
 
 static inline avlmap_n *
-avlmap_insert_impl (avlmap_n **inpos, avlmap_n *curr, void *key, void *val,
+avlmap_insert_impl (avlmap_n **sts, avlmap_n *curr, void *key, void *val,
                     const avlmap_i *info)
 {
   if (curr)
@@ -189,7 +190,7 @@ avlmap_insert_impl (avlmap_n **inpos, avlmap_n *curr, void *key, void *val,
         return curr;
 
       avlmap_n **next = comp < 0 ? &curr->left : &curr->right;
-      *next = avlmap_insert_impl (inpos, *next, key, val, info);
+      *next = avlmap_insert_impl (sts, *next, key, val, info);
 
       height_update (curr);
       curr = rotate (curr);
@@ -210,7 +211,7 @@ avlmap_insert_impl (avlmap_n **inpos, avlmap_n *curr, void *key, void *val,
   if (memcpy (nval, val, info->v_size) != nval)
     goto error;
 
-  *inpos = node;
+  *sts = node;
   return node;
 
 error:
