@@ -1,24 +1,13 @@
 #include "../hashmap.h"
+#include "../common.h"
 #include <assert.h>
+#include <stdio.h>
 #include <string.h>
 
-size_t
-ii_hashmap_hash (const int *key)
-{
-  return *key;
-}
+#define N 100000
 
-int
-ii_hashmap_comp (const int *key1, const int *key2)
-{
-  int i1 = *key1;
-  int i2 = *key2;
-  if (i1 < i2)
-    return -1;
-  if (i1 > i2)
-    return 1;
-  return 0;
-}
+char *names[N];
+int ages[N];
 
 size_t
 si_hashmap_hash (const char **key)
@@ -38,7 +27,6 @@ si_hashmap_comp (const char **key1, const char **key2)
   return strcmp (s1, s2);
 }
 
-HASHMAP_DEF_ALL (int, int, ii);
 HASHMAP_DEF_ALL (char *, int, si);
 
 int
@@ -47,13 +35,44 @@ main (void)
   hashmap map;
   hashmap_init (&map);
 
-  si_hashmap_insert (&map, "Tom", 18);
-  si_hashmap_insert (&map, "Jack", 19);
-  si_hashmap_insert (&map, "Arthur", 20);
+  for (size_t i = 0; i < N; i++)
+    {
+      char *name = rand_string (rand_long (8, 17));
+      assert (name);
+      int age = rand_long (1, 101);
+      names[i] = name;
+      ages[i] = age;
+      si_hashmap_n *node = si_hashmap_insert (&map, name, age);
+      if (!node)
+        names[i] = NULL;
+    }
 
-  assert (si_hashmap_find (&map, "Tom")->val == 18);
-  assert (si_hashmap_find (&map, "Jack")->val == 19);
-  assert (si_hashmap_find (&map, "Arthur")->val == 20);
+  /* printf ("len: %lu\ncap: %lu\n", map.len, map.cap); */
 
+  for (size_t i = 0; i < N / 4; i++)
+    {
+      long rmpos = rand_long (0, N);
+      if (!names[rmpos])
+        continue;
+      size_t len = map.len;
+      si_hashmap_remove (&map, names[rmpos]);
+      assert (map.len != len);
+      free (names[rmpos]);
+      names[rmpos] = NULL;
+    }
+
+  /* printf ("len: %lu\n", map.len); */
+
+  for (size_t i = 0; i < N; i++)
+    {
+      if (!names[i])
+        continue;
+      si_hashmap_n *node = si_hashmap_find (&map, names[i]);
+      assert (node);
+      assert (node->val == ages[i]);
+    }
+
+  for (size_t i = 0; i < N; i++)
+    free (names[i]);
   hashmap_free (&map);
 }
