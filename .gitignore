@@ -6,3 +6,7 @@ vector
 hashmap
 avlmap
 compile_commands.json
+
+bench
+!bench/
+!avlmap/
