@@ -47,7 +47,7 @@ list_remove (list *lis, list_n *pos)
 }
 
 list_n *
-list_at (list *lis, size_t pos)
+list_at (const list *lis, size_t pos)
 {
   if (pos >= lis->len)
     return NULL;

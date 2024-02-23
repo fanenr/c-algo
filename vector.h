@@ -28,7 +28,7 @@ extern void vector_remove (vector *vec, size_t pos, const vector_i *info)
 extern vector *vector_reserve (vector *vec, size_t cap, const vector_i *info)
     __attribute__ ((nonnull (1, 3)));
 
-extern void *vector_at (vector *vec, size_t pos, const vector_i *info)
+extern void *vector_at (const vector *vec, size_t pos, const vector_i *info)
     __attribute__ ((nonnull (1, 3)));
 
 extern void *vector_push_back (vector *vec, void *data, const vector_i *info)
@@ -51,7 +51,7 @@ extern void *vector_insert (vector *vec, size_t pos, void *data,
   }
 
 #define VECTOR_DEF_AT(TYPE, PRE)                                              \
-  static inline TYPE *PRE##_vector_at (vector *vec, size_t pos)               \
+  static inline TYPE *PRE##_vector_at (const vector *vec, size_t pos)         \
   {                                                                           \
     return vector_at (vec, pos, &PRE##_vector_info);                          \
   }
@@ -78,7 +78,7 @@ extern void *vector_insert (vector *vec, size_t pos, void *data,
   static vector *PRE##_vector_reserve (vector *vec, size_t cap)               \
       __attribute__ ((nonnull (1)));                                          \
                                                                               \
-  static TYPE *PRE##_vector_at (vector *vec, size_t pos)                      \
+  static TYPE *PRE##_vector_at (const vector *vec, size_t pos)                \
       __attribute__ ((nonnull (1)));                                          \
                                                                               \
   static inline TYPE *PRE##_vector_push_back (vector *vec, TYPE data)         \

@@ -58,7 +58,7 @@ vector_reserve (vector *vec, size_t cap, const vector_i *info)
 }
 
 void *
-vector_at (vector *vec, size_t pos, const vector_i *info)
+vector_at (const vector *vec, size_t pos, const vector_i *info)
 {
   if (pos >= vec->len)
     return NULL;

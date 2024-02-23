@@ -59,7 +59,7 @@ hashmap_reserve (hashmap *map, size_t cap, const hashmap_i *info)
 }
 
 void *
-hashmap_find (hashmap *map, void *key, const hashmap_i *info)
+hashmap_find (const hashmap *map, void *key, const hashmap_i *info)
 {
   if (!map->cap || !map->len)
     return NULL;
