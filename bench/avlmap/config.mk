@@ -1,14 +1,14 @@
 MODE   = release
 # MODE   = debug
 
-CSTD	 = -std=gnu11
+CSTD   = -std=gnu11
 WARN   = -Wall -Wextra -Werror
 NOWARN = -Wno-unused-variable -Wno-unused-function
 
 ifeq ($(MODE), debug)
-	LTO_LDFLAGS =
-	LTO_CFLAGS  =
-	OPT_LEVEL   = -Og
+	LTO_LDFLAGS  =
+	LTO_CFLAGS   =
+	OPT_LEVEL    = -Og
 
 	DBG_LDFLAGS  = -g
 	DBG_CFLAGS   = -ggdb3
@@ -18,9 +18,9 @@ ifeq ($(MODE), debug)
 endif
 
 ifeq ($(MODE), release)
-	LTO_LDFLAGS = -flto
-	LTO_CFLAGS  = -flto
-	OPT_LEVEL   = -O2
+	LTO_LDFLAGS  = -flto
+	LTO_CFLAGS   = -flto
+	OPT_LEVEL    = -O2
 
 	DBG_LDFLAGS  =
 	DBG_CFLAGS   =
@@ -30,5 +30,5 @@ ifeq ($(MODE), release)
 endif
 
 CFLAGS  = $(WARN) $(NOWARN) $(OPT_LEVEL) $(DBG_CFLAGS) $(LTO_CFLAGS) \
-					$(CSTD) $(ASAN_CFLAGS)
+          $(CSTD) $(ASAN_CFLAGS)
 LDFLAGS = $(DBG_LDFLAGS) $(LTO_LDFLAGS) $(ASAN_LDFLAGS)

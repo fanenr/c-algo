@@ -1,10 +1,10 @@
+#include "common.h"
 #include <cassert>
-#include <map>
 #include <cstdio>
 #include <cstring>
-#include "common.h"
+#include <map>
 
-#define N 10000000
+#define N 2000000
 
 char *names[N];
 int ages[N];
@@ -85,6 +85,8 @@ int
 main (void)
 {
   bench_insert ();
+  printf ("len: %lu\n", map.size ());
   bench_remove ();
+  printf ("len: %lu\n", map.size ());
   bench_find ();
 }
