@@ -11,9 +11,9 @@
 #define VAL_OF(NODE, INFO) ((void *)(NODE) + (INFO)->v_offs)
 
 void
-avlmap_init (avlmap *tree)
+avlmap_init (avlmap *map)
 {
-  *tree = (avlmap){ .len = 0, .root = NULL };
+  *map = (avlmap){ .len = 0, .root = NULL };
 }
 
 static inline void
@@ -27,10 +27,10 @@ avlmap_free_impl (avlmap_n *node)
 }
 
 void
-avlmap_free (avlmap *tree)
+avlmap_free (avlmap *map)
 {
-  avlmap_free_impl (tree->root);
-  avlmap_init (tree);
+  avlmap_free_impl (map->root);
+  avlmap_init (map);
 }
 
 static inline void
@@ -45,10 +45,9 @@ static inline avlmap_n *
 rotate_left (avlmap_n *node)
 {
   avlmap_n *child = node->right;
-  avlmap_n *gchild = child->left;
 
+  node->right = child->left;
   child->left = node;
-  node->right = gchild;
 
   height_update (node);
   height_update (child);
@@ -59,10 +58,9 @@ static inline avlmap_n *
 rotate_right (avlmap_n *node)
 {
   avlmap_n *child = node->left;
-  avlmap_n *gchild = child->right;
 
+  node->left = child->right;
   child->right = node;
-  node->left = gchild;
 
   height_update (node);
   height_update (child);
@@ -150,21 +148,21 @@ update:
 }
 
 void
-avlmap_remove (avlmap *tree, void *key, const avlmap_i *info)
+avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
 {
   bool sts = false;
-  tree->root = avlmap_remove_impl (&sts, tree->root, key, info);
+  map->root = avlmap_remove_impl (&sts, map->root, key, info);
   if (sts)
-    tree->len--;
+    map->len--;
 }
 
 avlmap_n *
-avlmap_find (avlmap *tree, void *key, const avlmap_i *info)
+avlmap_find (const avlmap *map, void *key, const avlmap_i *info)
 {
-  if (!tree->len)
+  if (!map->len)
     return NULL;
 
-  for (avlmap_n *curr = tree->root; curr;)
+  for (avlmap_n *curr = map->root; curr;)
     {
       void *ckey = KEY_OF (curr, info);
       int comp = info->f_comp (key, ckey);
@@ -220,11 +218,11 @@ error:
 }
 
 avlmap_n *
-avlmap_insert (avlmap *tree, void *key, void *val, const avlmap_i *info)
+avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
 {
   avlmap_n *sts = NULL;
-  tree->root = avlmap_insert_impl (&sts, tree->root, key, val, info);
+  map->root = avlmap_insert_impl (&sts, map->root, key, val, info);
   if (sts)
-    tree->len++;
+    map->len++;
   return sts;
 }

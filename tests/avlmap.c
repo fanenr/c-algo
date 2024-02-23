@@ -20,6 +20,21 @@ si_avlmap_comp (const char **key1, const char **key2)
 
 AVLMAP_DEF_ALL (char *, int, si);
 
+static void
+balance_check (const avlmap_n *node)
+{
+  if (!node)
+    return;
+
+  balance_check (node->left);
+  balance_check (node->right);
+
+  int lh = node->left ? node->left->height : -1;
+  int rh = node->right ? node->right->height : -1;
+  int bf = lh - rh;
+  assert (bf >= -1 && bf <= 1);
+}
+
 int
 main (void)
 {
@@ -38,6 +53,7 @@ main (void)
         names[i] = NULL;
     }
 
+  balance_check (map.root);
   /* printf ("len: %lu\n", map.len); */
 
   for (size_t i = 0; i < N / 4; i++)
@@ -52,6 +68,7 @@ main (void)
       names[rmpos] = NULL;
     }
 
+  balance_check (map.root);
   /* printf ("len: %lu\n", map.len); */
 
   for (size_t i = 0; i < N; i++)

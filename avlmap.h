@@ -30,17 +30,18 @@ typedef struct avlmap
   avlmap_n *root;
 } avlmap;
 
-extern void avlmap_init (avlmap *tree);
+extern void avlmap_init (avlmap *map);
 
-extern void avlmap_free (avlmap *tree);
+extern void avlmap_free (avlmap *map);
 
-extern void avlmap_remove (avlmap *tree, void *key, const avlmap_i *info)
+extern void avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
     __attribute__ ((nonnull (1, 2, 3)));
 
-extern avlmap_n *avlmap_find (avlmap *tree, void *key, const avlmap_i *info)
+extern avlmap_n *avlmap_find (const avlmap *map, void *key,
+                              const avlmap_i *info)
     __attribute__ ((nonnull (1, 2, 3)));
 
-extern avlmap_n *avlmap_insert (avlmap *tree, void *key, void *val,
+extern avlmap_n *avlmap_insert (avlmap *map, void *key, void *val,
                                 const avlmap_i *info)
     __attribute__ ((nonnull (1, 2, 3, 4)));
 
@@ -51,7 +52,8 @@ extern avlmap_n *avlmap_insert (avlmap *tree, void *key, void *val,
   }
 
 #define AVLMAP_DEF_FIND(KTYPE, VTYPE, PRE)                                    \
-  static inline PRE##_avlmap_n *PRE##_avlmap_find (avlmap *map, KTYPE key)    \
+  static inline PRE##_avlmap_n *PRE##_avlmap_find (const avlmap *map,         \
+                                                   KTYPE key)                 \
   {                                                                           \
     return (PRE##_avlmap_n *)avlmap_find (map, &key, &PRE##_avlmap_info);     \
   }
@@ -87,7 +89,7 @@ extern avlmap_n *avlmap_insert (avlmap *tree, void *key, void *val,
   static void PRE##_avlmap_remove (avlmap *map, KTYPE key)                    \
       __attribute__ ((nonnull (1)));                                          \
                                                                               \
-  static PRE##_avlmap_n *PRE##_avlmap_find (avlmap *map, KTYPE key)           \
+  static PRE##_avlmap_n *PRE##_avlmap_find (const avlmap *map, KTYPE key)     \
       __attribute__ ((nonnull (1)));                                          \
                                                                               \
   static PRE##_avlmap_n *PRE##_avlmap_insert (                                \

@@ -44,7 +44,8 @@ extern hashmap *hashmap_reserve (hashmap *map, size_t cap,
                                  const hashmap_i *info)
     __attribute__ ((nonnull (1, 3)));
 
-extern void *hashmap_find (hashmap *map, void *key, const hashmap_i *info)
+extern void *hashmap_find (const hashmap *map, void *key,
+                           const hashmap_i *info)
     __attribute__ ((nonnull (1, 2, 3)));
 
 extern void *hashmap_insert (hashmap *map, void *key, void *val,
@@ -64,7 +65,8 @@ extern void *hashmap_insert (hashmap *map, void *key, void *val,
   }
 
 #define HASHMAP_DEF_FIND(KTYPE, VTYPE, PRE)                                   \
-  static inline PRE##_hashmap_n *PRE##_hashmap_find (hashmap *map, KTYPE key) \
+  static inline PRE##_hashmap_n *PRE##_hashmap_find (const hashmap *map,      \
+                                                     KTYPE key)               \
   {                                                                           \
     return hashmap_find (map, &key, &PRE##_hashmap_info);                     \
   }
@@ -101,7 +103,7 @@ extern void *hashmap_insert (hashmap *map, void *key, void *val,
   static hashmap *PRE##_hashmap_reserve (hashmap *map, size_t cap)            \
       __attribute__ ((nonnull (1)));                                          \
                                                                               \
-  static PRE##_hashmap_n *PRE##_hashmap_find (hashmap *map, KTYPE key)        \
+  static PRE##_hashmap_n *PRE##_hashmap_find (const hashmap *map, KTYPE key)  \
       __attribute__ ((nonnull (1)));                                          \
                                                                               \
   static PRE##_hashmap_n *PRE##_hashmap_insert (                              \

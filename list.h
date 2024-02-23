@@ -32,7 +32,8 @@ extern void list_free (list *lis) __attribute__ ((nonnull (1)));
 extern void list_remove (list *lis, list_n *pos)
     __attribute__ ((nonnull (1, 2)));
 
-extern list_n *list_at (list *lis, size_t pos) __attribute__ ((nonnull (1)));
+extern list_n *list_at (const list *lis, size_t pos)
+    __attribute__ ((nonnull (1)));
 
 extern list_n *list_push_back (list *lis, void *data, const list_i *info)
     __attribute__ ((nonnull (1, 2, 3)));
@@ -45,7 +46,7 @@ extern list_n *list_insert (list *lis, list_n *pos, void *data,
     __attribute__ ((nonnull (1, 2, 3, 4)));
 
 #define LIST_DEF_AT(TYPE, PRE)                                                \
-  static inline PRE##_list_n *PRE##_list_at (list *lis, size_t pos)           \
+  static inline PRE##_list_n *PRE##_list_at (const list *lis, size_t pos)     \
   {                                                                           \
     return (PRE##_list_n *)list_at (lis, pos);                                \
   }
@@ -94,7 +95,7 @@ extern list_n *list_insert (list *lis, list_n *pos, void *data,
   static void PRE##_list_remove (list *lis, PRE##_list_n *pos)                \
       __attribute__ ((nonnull (1, 2)));                                       \
                                                                               \
-  static PRE##_list_n *PRE##_list_at (list *lis, size_t pos)                  \
+  static PRE##_list_n *PRE##_list_at (const list *lis, size_t pos)            \
       __attribute__ ((nonnull (1)));                                          \
                                                                               \
   static inline PRE##_list_n *PRE##_list_push_back (list *lis, TYPE data)     \
