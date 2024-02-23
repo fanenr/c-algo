@@ -95,67 +95,117 @@ rotate (avlmap_n *node)
   return node;
 }
 
-static inline avlmap_n *
-avlmap_remove_impl (bool *sts, avlmap_n *curr, void *key, const avlmap_i *info)
+static inline bool
+avlmap_swap_data (void *kpos1, void *kpos2, const avlmap_i *info)
 {
-  if (!curr)
-    return NULL;
+  void *bakup = NULL;
+  size_t d_size = info->n_size - info->k_offs;
 
-  void *ckey = KEY_OF (curr, info);
-  void *cval = VAL_OF (curr, info);
-  int comp = info->f_comp (key, ckey);
+  if (!(bakup = malloc (d_size)))
+    return false;
+  if (memcpy (bakup, kpos1, d_size) != bakup)
+    goto error;
+  if (memcpy (kpos1, kpos2, d_size) != kpos1)
+    goto error;
+  if (memcpy (kpos2, bakup, d_size) != kpos2)
+    goto error;
 
-  if (comp != 0)
-    { /* continue to find */
-      avlmap_n **next = comp < 0 ? &curr->left : &curr->right;
-      *next = avlmap_remove_impl (sts, *next, key, info);
-      goto update;
-    }
+  free (bakup);
+  return true;
 
-  if (!curr->left && !curr->right)
-    { /* no children */
-      free (curr);
-      *sts = true;
-      return NULL;
-    }
-
-  if (!curr->left ^ !curr->right)
-    { /* one children */
-      avlmap_n *child = curr->left ?: curr->right;
-      free (curr);
-      curr = child;
-      *sts = true;
-      goto update;
-    }
-
-  /* two children */
-  avlmap_n *repl = curr->right;
-  while (repl->left)
-    repl = repl->left;
-
-  void *rkey = KEY_OF (repl, info);
-  void *rval = VAL_OF (repl, info);
-  if (memcpy (ckey, rkey, info->k_size) != ckey)
-    return curr;
-  if (memcpy (cval, rval, info->v_size) != cval)
-    /* TODO: need rollback */
-    return curr;
-
-  curr->right = avlmap_remove_impl (sts, curr->right, rkey, info);
-
-update:
-  height_update (curr);
-  curr = rotate (curr);
-  return curr;
+error:
+  free (bakup);
+  return false;
 }
 
 void
 avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
 {
-  bool sts = false;
-  map->root = avlmap_remove_impl (&sts, map->root, key, info);
-  if (sts)
-    map->len--;
+  unsigned num = 0;
+  avlmap_n *parents[HEIGHT_MAX];
+  signed char heights[HEIGHT_MAX];
+  avlmap_n *node = NULL;
+  avlmap_n **rmpos = &map->root;
+
+  for (avlmap_n *curr = map->root; curr;)
+    {
+      void *ckey = KEY_OF (curr, info);
+      int comp = info->f_comp (key, ckey);
+
+      if (comp == 0)
+        {
+          node = curr;
+          break;
+        }
+
+      parents[num] = curr;
+      heights[num++] = curr->height;
+      curr = *(rmpos = comp < 0 ? &curr->left : &curr->right);
+    }
+
+  if (!node)
+    /* not found */
+    return;
+
+  if (!node->left && !node->right)
+    { /* no children */
+      *rmpos = NULL;
+      free (node);
+      map->len--;
+      goto balance;
+    }
+
+  if (!node->left ^ !node->right)
+    { /* one children */
+      *rmpos = node->left ?: node->right;
+      free (node);
+      map->len--;
+      goto balance;
+    }
+
+  /* two children */
+  parents[num] = node;
+  heights[num++] = node->height;
+  avlmap_n *node_bak = node;
+  node = *(rmpos = &node->right);
+  while (node->left)
+    {
+      parents[num] = node;
+      heights[num++] = node->height;
+      node = *(rmpos = &node->left);
+    }
+
+  /* swap data */
+  void *nkey = KEY_OF (node_bak, info);
+  void *bkey = KEY_OF (node, info);
+  if (!avlmap_swap_data (nkey, bkey, info))
+    return;
+
+  *rmpos = node->left ?: node->right;
+  free (node);
+  map->len--;
+
+balance:
+  for (; num; num--)
+    {
+      avlmap_n *curr = parents[num - 1];
+      signed char height = heights[num - 1];
+      avlmap_n *rotated = rotate (curr);
+      signed char updated = height_update (curr);
+
+      if (updated == height && rotated == curr)
+        break;
+
+      avlmap_n **repos = &map->root;
+      if (num - 1)
+        {
+          avlmap_n *father = parents[num - 2];
+          repos = curr == father->left ? &father->left : &father->right;
+        }
+      *repos = rotated;
+    }
+
+  return;
 }
 
 avlmap_n *
