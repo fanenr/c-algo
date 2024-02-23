@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define N 10000000
+#define N 2000000
 
 char *names[N];
 int ages[N];
@@ -87,6 +87,8 @@ int
 main (void)
 {
   bench_insert ();
+  printf ("len: %lu\n", map.len);
   bench_remove ();
+  printf ("len: %lu\n", map.len);
   bench_find ();
 }
