@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define HEIGHT_MAX 36
+
 #define HEIGHT_OF(NODE) ((NODE) ? (NODE)->height : -1)
 #define BALANCE_FACTOR_OF(NODE)                                               \
   ((NODE) ? HEIGHT_OF ((NODE)->left) - HEIGHT_OF ((NODE)->right) : 0)
@@ -33,12 +35,12 @@ avlmap_free (avlmap *map)
   avlmap_init (map);
 }
 
-static inline void
+static inline signed char
 height_update (avlmap_n *node)
 {
-  int lh = HEIGHT_OF (node->left);
-  int rh = HEIGHT_OF (node->right);
-  node->height = (lh > rh ? lh : rh) + 1;
+  signed char lh = HEIGHT_OF (node->left);
+  signed char rh = HEIGHT_OF (node->right);
+  return (node->height = (lh > rh ? lh : rh) + 1);
 }
 
 static inline avlmap_n *
@@ -176,31 +178,31 @@ avlmap_find (const avlmap *map, void *key, const avlmap_i *info)
   return NULL;
 }
 
-static inline avlmap_n *
-avlmap_insert_impl (avlmap_n **sts, avlmap_n *curr, void *key, void *val,
-                    const avlmap_i *info)
+avlmap_n *
+avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
 {
-  if (curr)
+  unsigned num = 0;
+  avlmap_n *parents[HEIGHT_MAX];
+  signed char heights[HEIGHT_MAX];
+  avlmap_n **inpos = &map->root;
+
+  for (avlmap_n *curr = map->root; curr;)
     {
       void *ckey = KEY_OF (curr, info);
       int comp = info->f_comp (key, ckey);
+
       if (comp == 0)
         return curr;
 
-      avlmap_n **next = comp < 0 ? &curr->left : &curr->right;
-      *next = avlmap_insert_impl (sts, *next, key, val, info);
-
-      height_update (curr);
-      curr = rotate (curr);
-      return curr;
+      parents[num] = curr;
+      heights[num++] = curr->height;
+      curr = *(inpos = comp < 0 ? &curr->left : &curr->right);
     }
 
+  /* allocate node and initialize */
   avlmap_n *node = malloc (info->n_size);
   void *nkey = KEY_OF (node, info);
   void *nval = VAL_OF (node, info);
-
-  if (!node)
-    return NULL;
 
   node->height = 0;
   node->left = node->right = NULL;
@@ -209,20 +211,34 @@ avlmap_insert_impl (avlmap_n **sts, avlmap_n *curr, void *key, void *val,
   if (memcpy (nval, val, info->v_size) != nval)
     goto error;
 
-  *sts = node;
+  /* insert node */
+  *inpos = node;
+  map->len++;
+
+  /* rebalance */
+  if (num > 2)
+    for (; num; num--)
+      {
+        avlmap_n *curr = parents[num - 1];
+        if (heights[num - 1] == height_update (curr))
+          break;
+
+        avlmap_n *rotated = rotate (curr);
+        if (rotated == curr)
+          continue;
+
+        avlmap_n **repos = &map->root;
+        if (num - 1)
+          {
+            avlmap_n *father = parents[num - 2];
+            repos = curr == father->left ? &father->left : &father->right;
+          }
+        *repos = rotated;
+      }
+
   return node;
 
 error:
   free (node);
   return NULL;
-}
-
-avlmap_n *
-avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
-{
-  avlmap_n *sts = NULL;
-  map->root = avlmap_insert_impl (&sts, map->root, key, val, info);
-  if (sts)
-    map->len++;
-  return sts;
 }

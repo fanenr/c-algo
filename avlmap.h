@@ -19,9 +19,9 @@ typedef struct avlmap_n avlmap_n;
 
 struct avlmap_n
 {
-  int height;
   avlmap_n *left;
   avlmap_n *right;
+  signed char height;
 };
 
 typedef struct avlmap
@@ -71,9 +71,9 @@ extern avlmap_n *avlmap_insert (avlmap *map, void *key, void *val,
                                                                               \
   struct PRE##_avlmap_n                                                       \
   {                                                                           \
-    int height;                                                               \
     avlmap_n *left;                                                           \
     avlmap_n *right;                                                          \
+    signed char height;                                                       \
     KTYPE key;                                                                \
     VTYPE val;                                                                \
   };                                                                          \
