@@ -54,7 +54,7 @@ main (void)
     }
 
   balance_check (map.root);
-  /* printf ("len: %lu\n", map.len); */
+  printf ("len: %lu\n", map.len);
 
   for (size_t i = 0; i < N / 4; i++)
     {
@@ -69,7 +69,7 @@ main (void)
     }
 
   balance_check (map.root);
-  /* printf ("len: %lu\n", map.len); */
+  printf ("len: %lu\n", map.len);
 
   for (size_t i = 0; i < N; i++)
     {
