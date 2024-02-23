@@ -1,6 +1,4 @@
-LDFLAGS = -g -lasan
-NOWARN  = -Wno-unused-variable -Wno-unused-function
-CFLAGS  = -Wall -Wextra $(NOWARN) -ggdb3 -std=gnu11 -fsanitize=address
+include config.mk
 export CFLAGS LDFLAGS
 
 targets := vector list hashmap avlmap
