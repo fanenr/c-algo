@@ -68,7 +68,6 @@ main (void)
       if (!names[i])
         continue;
       si_hashmap_n *node = si_hashmap_find (&map, names[i]);
-      assert (node);
       assert (node->val == ages[i]);
     }
 

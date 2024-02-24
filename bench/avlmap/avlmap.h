@@ -17,11 +17,13 @@ typedef struct avlmap_i
 
 typedef struct avlmap_n avlmap_n;
 
+typedef int avlmap_height_t;
+
 struct avlmap_n
 {
   avlmap_n *left;
   avlmap_n *right;
-  signed char height;
+  avlmap_height_t height;
 };
 
 typedef struct avlmap

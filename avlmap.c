@@ -35,11 +35,11 @@ avlmap_free (avlmap *map)
   avlmap_init (map);
 }
 
-static inline signed char
+static inline avlmap_height_t
 height_update (avlmap_n *node)
 {
-  signed char lh = HEIGHT_OF (node->left);
-  signed char rh = HEIGHT_OF (node->right);
+  avlmap_height_t lh = HEIGHT_OF (node->left);
+  avlmap_height_t rh = HEIGHT_OF (node->right);
   return (node->height = (lh > rh ? lh : rh) + 1);
 }
 
@@ -123,7 +123,7 @@ avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
 {
   unsigned num = 0;
   avlmap_n *parents[HEIGHT_MAX];
-  signed char heights[HEIGHT_MAX];
+  avlmap_height_t heights[HEIGHT_MAX];
   avlmap_n *node = NULL;
   avlmap_n **rmpos = &map->root;
 
@@ -181,7 +181,7 @@ avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
   if (!avlmap_swap_data (nkey, bkey, info))
     return;
 
-  *rmpos = node->left ?: node->right;
+  *rmpos = node->right;
   free (node);
   map->len--;
 
@@ -189,18 +189,23 @@ balance:
   for (; num; num--)
     {
       avlmap_n *curr = parents[num - 1];
-      signed char height = heights[num - 1];
-      avlmap_n *rotated = rotate (curr);
-      signed char updated = height_update (curr);
+      avlmap_height_t height = heights[num - 1];
 
-      if (updated == height && rotated == curr)
-        break;
+      avlmap_height_t updated = height_update (curr);
+      avlmap_n *rotated = rotate (curr);
+
+      if (rotated == curr)
+        {
+          if (updated == height)
+            break;
+          continue;
+        }
 
       avlmap_n **repos = &map->root;
       if (num - 1)
         {
           avlmap_n *father = parents[num - 2];
-          repos = curr == father->left ? &father->left : &father->right;
+          repos = (curr == father->left ? &father->left : &father->right);
         }
       *repos = rotated;
     }
@@ -233,7 +238,7 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
 {
   unsigned num = 0;
   avlmap_n *parents[HEIGHT_MAX];
-  signed char heights[HEIGHT_MAX];
+  avlmap_height_t heights[HEIGHT_MAX];
   avlmap_n **inpos = &map->root;
 
   for (avlmap_n *curr = map->root; curr;)
@@ -266,25 +271,24 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
   map->len++;
 
   /* rebalance */
-  if (num > 2)
-    for (; num; num--)
-      {
-        avlmap_n *curr = parents[num - 1];
-        if (heights[num - 1] == height_update (curr))
-          break;
+  for (; num; num--)
+    {
+      avlmap_n *curr = parents[num - 1];
+      if (heights[num - 1] == height_update (curr))
+        break;
 
-        avlmap_n *rotated = rotate (curr);
-        if (rotated == curr)
-          continue;
+      avlmap_n *rotated = rotate (curr);
+      if (rotated == curr)
+        continue;
 
-        avlmap_n **repos = &map->root;
-        if (num - 1)
-          {
-            avlmap_n *father = parents[num - 2];
-            repos = curr == father->left ? &father->left : &father->right;
-          }
-        *repos = rotated;
-      }
+      avlmap_n **repos = &map->root;
+      if (num - 1)
+        {
+          avlmap_n *father = parents[num - 2];
+          repos = curr == father->left ? &father->left : &father->right;
+        }
+      *repos = rotated;
+    }
 
   return node;
 
