@@ -4,10 +4,8 @@
 #include <cstring>
 #include <map>
 
-#define N 2000000
-
-char *names[N];
-int ages[N];
+#define T 5
+#define N 3000000
 
 struct comp
 {
@@ -18,9 +16,67 @@ struct comp
   }
 };
 
+int ages[N];
+char *names[N];
 std::map<char *, int, comp> map;
 
-static void
+static void clear (void);
+static double bench_find (void);
+static double bench_insert (void);
+static double bench_remove (void);
+
+int
+main (void)
+{
+  double t_insert = 0;
+  double t_remove = 0;
+  double t_find = 0;
+
+  for (size_t i = 0; i < T; i++)
+    {
+      t_insert += bench_insert ();
+      t_remove += bench_remove ();
+      t_find += bench_find ();
+      clear ();
+    }
+
+  printf ("insert: %lf\n", t_insert / T);
+  printf ("remove: %lf\n", t_remove / T);
+  printf ("find: %lf\n", t_find / T);
+}
+
+static inline void
+clear (void)
+{
+  for (size_t i = 0; i < N; i++)
+    free (names[i]);
+  map.clear ();
+
+  memset (names, 0, sizeof (char *) * N);
+  memset (ages, 0, sizeof (int) * N);
+}
+
+static inline double
+bench_find (void)
+{
+  TIME_ST ();
+  for (size_t i = 0; i < N; i++)
+    {
+      if (!names[i])
+        continue;
+      auto const &found = map.find (names[i]);
+      if (found->second != ages[i])
+        {
+          printf ("find failed\n");
+          abort ();
+        }
+    }
+  TIME_ED ();
+
+  return TIME_VAL ();
+}
+
+static inline double
 bench_insert (void)
 {
   for (size_t i = 0; i < N; i++)
@@ -41,10 +97,10 @@ bench_insert (void)
     }
   TIME_ED ();
 
-  printf ("insert: %lf\n", TIME_VAL ());
+  return TIME_VAL ();
 }
 
-static void
+static inline double
 bench_remove (void)
 {
   TIME_ST ();
@@ -58,35 +114,5 @@ bench_remove (void)
     }
   TIME_ED ();
 
-  printf ("remove: %lf\n", TIME_VAL ());
-}
-
-static void
-bench_find (void)
-{
-  TIME_ST ();
-  for (size_t i = 0; i < N; i++)
-    {
-      if (!names[i])
-        continue;
-      auto const &found = map.find (names[i]);
-      if (found->second != ages[i])
-        {
-          printf ("find failed\n");
-          abort ();
-        }
-    }
-  TIME_ED ();
-
-  printf ("find: %lf\n", TIME_VAL ());
-}
-
-int
-main (void)
-{
-  bench_insert ();
-  printf ("len: %lu\n", map.size ());
-  bench_remove ();
-  printf ("len: %lu\n", map.size ());
-  bench_find ();
+  return TIME_VAL ();
 }
