@@ -142,6 +142,9 @@ hashmap_insert (hashmap *map, void *key, void *val, const hashmap_i *info)
       size_t ncap = map->cap * HASHMAP_EXPAN_RATIO;
       if (!hashmap_reserve (map, ncap, info))
         return NULL;
+
+      index = INDEX_AT (map, hash);
+      i = 0;
     }
 
   void *nkey = KEY_OF (node, info);
