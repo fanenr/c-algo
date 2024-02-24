@@ -75,7 +75,7 @@ extern avlmap_n *avlmap_insert (avlmap *map, void *key, void *val,
   {                                                                           \
     avlmap_n *left;                                                           \
     avlmap_n *right;                                                          \
-    signed char height;                                                       \
+    avlmap_height_t height;                                                   \
     KTYPE key;                                                                \
     VTYPE val;                                                                \
   };                                                                          \
