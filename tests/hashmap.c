@@ -9,6 +9,8 @@
 char *names[N];
 int ages[N];
 
+hashmap map;
+
 size_t
 si_hashmap_hash (const char **key)
 {
@@ -29,49 +31,89 @@ si_hashmap_comp (const char **key1, const char **key2)
 
 HASHMAP_DEF_ALL (char *, int, si);
 
-int
-main (void)
+static void
+init (void)
 {
-  hashmap map;
+  memset (names, 0, sizeof (char *) * N);
+  memset (ages, 0, sizeof (int) * N);
   hashmap_init (&map);
+}
 
+static void
+clear (void)
+{
+  for (size_t i = 0; i < N; i++)
+    free (names[i]);
+  hashmap_free (&map);
+}
+
+static void
+test_insert (void)
+{
   for (size_t i = 0; i < N; i++)
     {
-      char *name = rand_string (rand_long (8, 17));
-      assert (name);
+      char *name = NULL;
+      assert ((name = rand_string (rand_long (8, 17))));
       int age = rand_long (1, 101);
       names[i] = name;
       ages[i] = age;
-      si_hashmap_n *node = si_hashmap_insert (&map, name, age);
+    }
+
+  for (size_t i = 0; i < N; i++)
+    {
+      si_hashmap_n *node = si_hashmap_insert (&map, names[i], ages[i]);
       if (!node)
         names[i] = NULL;
     }
+}
 
-  /* printf ("len: %lu\ncap: %lu\n", map.len, map.cap); */
-
-  for (size_t i = 0; i < N / 4; i++)
+static void
+test_remove (void)
+{
+  for (size_t i = 0; i < N / 2; i++)
     {
       long rmpos = rand_long (0, N);
       if (!names[rmpos])
         continue;
+
       size_t len = map.len;
       si_hashmap_remove (&map, names[rmpos]);
       assert (map.len != len);
+
       free (names[rmpos]);
       names[rmpos] = NULL;
     }
+}
 
-  /* printf ("len: %lu\n", map.len); */
-
+static void
+test_find (void)
+{
   for (size_t i = 0; i < N; i++)
     {
       if (!names[i])
         continue;
+
       si_hashmap_n *node = si_hashmap_find (&map, names[i]);
       assert (node->val == ages[i]);
     }
+}
 
-  for (size_t i = 0; i < N; i++)
-    free (names[i]);
-  hashmap_free (&map);
+int
+main (void)
+{
+  size_t times = 1;
+  for (size_t i = 0; i < times; i++)
+    {
+      init ();
+
+      test_insert ();
+      printf ("len: %lu\ncap: %lu\n", map.len, map.cap);
+
+      test_remove ();
+      printf ("len: %lu\n", map.len);
+
+      test_find ();
+
+      clear ();
+    }
 }

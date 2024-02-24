@@ -1,5 +1,5 @@
-MODE   = release
-# MODE   = debug
+# MODE   = release
+MODE   = debug
 
 CSTD   = -std=gnu11
 WARN   = -Wall -Wextra -Werror
