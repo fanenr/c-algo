@@ -47,11 +47,16 @@ static inline avlmap_n *
 rotate_left (avlmap_n *node)
 {
   avlmap_n *child = node->right;
+  avlmap_n *parent = node->parent;
 
   node->right = child->left;
   if (child->left)
     child->left->parent = node;
-  child->parent = node->parent;
+
+  child->parent = parent;
+  if (parent)
+    *(parent->left == node ? &parent->left : &parent->right) = child;
+
   node->parent = child;
   child->left = node;
 
@@ -64,11 +69,16 @@ static inline avlmap_n *
 rotate_right (avlmap_n *node)
 {
   avlmap_n *child = node->left;
+  avlmap_n *parent = node->parent;
 
   node->left = child->right;
   if (child->right)
     child->right->parent = node;
+
   child->parent = node->parent;
+  if (parent)
+    *(parent->left == node ? &parent->left : &parent->right) = child;
+
   node->parent = child;
   child->right = node;
 
@@ -135,23 +145,17 @@ avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
     /* not found */
     return;
 
-  avlmap_n *parent = node->parent;
+  avlmap_n *parent = NULL;
+  avlmap_n **repos = &map->root;
 
 remove:
+  parent = node->parent;
+  if (parent)
+    repos = parent->left == node ? &parent->left : &parent->right;
+
   if (!node->left && !node->right)
     { /* no children */
-      if (!parent)
-        {
-          free (node);
-          map->len--;
-          map->root = NULL;
-          return;
-        }
-      if (parent->left == node)
-        parent->left = NULL;
-      if (parent->right == node)
-        parent->right = NULL;
-
+      *repos = NULL;
       free (node);
       map->len--;
       goto balance;
@@ -161,18 +165,7 @@ remove:
     { /* one children */
       avlmap_n *child = node->left ?: node->right;
       child->parent = parent;
-      if (!parent)
-        {
-          free (node);
-          map->len--;
-          map->root = child;
-          return;
-        }
-      if (parent->left == node)
-        parent->left = child;
-      if (parent->right == node)
-        parent->right = child;
-
+      *repos = child;
       free (node);
       map->len--;
       goto balance;
@@ -190,7 +183,6 @@ remove:
   if (!avlmap_swap_data (nkey, bkey, info))
     return;
 
-  parent = node->parent;
   goto remove;
 
 balance:
@@ -207,15 +199,7 @@ balance:
           continue;
         }
 
-      avlmap_n *prnt = rotated->parent;
-      if (prnt)
-        {
-          if (prnt->left == curr)
-            prnt->left = rotated;
-          else
-            prnt->right = rotated;
-        }
-      else
+      if (!rotated->parent)
         {
           map->root = rotated;
           break;
@@ -252,6 +236,7 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
 {
   int comp = 0;
   avlmap_n *parent = NULL;
+  avlmap_n **inpos = &map->root;
 
   for (avlmap_n *curr = map->root; curr;)
     {
@@ -262,7 +247,7 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
         return NULL;
 
       parent = curr;
-      curr = comp < 0 ? curr->left : curr->right;
+      curr = *(inpos = comp < 0 ? &curr->left : &curr->right);
     }
 
   /* allocate node and initialize */
@@ -283,19 +268,11 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
 
   /* insert node */
   map->len++;
-  if (parent)
-    {
-      if (comp < 0)
-        parent->left = node;
-      if (comp > 0)
-        parent->right = node;
-      height_update (parent);
-    }
-  else
-    {
-      map->root = node;
-      return node;
-    }
+  *inpos = node;
+
+  if (!parent)
+    return node;
+  height_update (parent);
 
   /* rebalance */
   for (avlmap_n *curr = parent->parent; curr; curr = curr->parent)
@@ -307,15 +284,7 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
       if (rotated == curr)
         continue;
 
-      avlmap_n *prnt = rotated->parent;
-      if (prnt)
-        {
-          if (prnt->left == curr)
-            prnt->left = rotated;
-          else
-            prnt->right = rotated;
-        }
-      else
+      if (!rotated->parent)
         {
           map->root = rotated;
           break;
