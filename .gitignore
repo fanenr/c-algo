@@ -1,12 +1,19 @@
-.cache/
-
+# object file
 *.o
+
+# exe file
 list
 vector
-hashmap
 avlmap
+hashmap
+
+test
+bench
+
+# other
 compile_commands.json
 
-bench
-!bench/
-!avlmap/
+# directory
+!/**/
+
+/.cache/
