@@ -6,7 +6,7 @@
 #include <string.h>
 
 #define T 5
-#define N 1000000
+#define N 3000000
 
 avlmap map;
 int ages[N];
