@@ -1,4 +1,5 @@
 #include "avlmap.h"
+#include <alloca.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -96,26 +97,23 @@ rotate (avlmap_n *node)
 }
 
 static inline bool
-avlmap_swap_data (void *kpos1, void *kpos2, const avlmap_i *info)
+avlmap_swap_data (avlmap_n *node1, avlmap_n *node2, const avlmap_i *info)
 {
-  void *bakup = NULL;
+  void *ktemp = NULL;
+  void *kpos1 = KEY_OF (node1, info);
+  void *kpos2 = KEY_OF (node2, info);
   size_t d_size = info->n_size - info->k_offs;
 
-  if (!(bakup = malloc (d_size)))
+  if (!(ktemp = alloca (d_size)))
     return false;
-  if (memcpy (bakup, kpos1, d_size) != bakup)
-    goto error;
+  if (memcpy (ktemp, kpos1, d_size) != ktemp)
+    return false;
   if (memcpy (kpos1, kpos2, d_size) != kpos1)
-    goto error;
-  if (memcpy (kpos2, bakup, d_size) != kpos2)
-    goto error;
+    return false;
+  if (memcpy (kpos2, ktemp, d_size) != kpos2)
+    return false;
 
-  free (bakup);
   return true;
-
-error:
-  free (bakup);
-  return false;
 }
 
 void
@@ -124,6 +122,7 @@ avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
   unsigned num = 0;
   avlmap_n *parents[HEIGHT_MAX];
   avlmap_height_t heights[HEIGHT_MAX];
+
   avlmap_n *node = NULL;
   avlmap_n **rmpos = &map->root;
 
@@ -151,7 +150,6 @@ avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
     { /* no children */
       *rmpos = NULL;
       free (node);
-      map->len--;
       goto balance;
     }
 
@@ -159,14 +157,14 @@ avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
     { /* one children */
       *rmpos = node->left ?: node->right;
       free (node);
-      map->len--;
       goto balance;
     }
 
   /* two children */
   parents[num] = node;
   heights[num++] = node->height;
-  avlmap_n *node_bak = node;
+
+  avlmap_n *bakup = node;
   node = *(rmpos = &node->right);
   while (node->left)
     {
@@ -175,17 +173,14 @@ avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
       node = *(rmpos = &node->left);
     }
 
-  /* swap data */
-  void *nkey = KEY_OF (node_bak, info);
-  void *bkey = KEY_OF (node, info);
-  if (!avlmap_swap_data (nkey, bkey, info))
+  if (!avlmap_swap_data (node, bakup, info))
     return;
 
   *rmpos = node->right;
   free (node);
-  map->len--;
 
 balance:
+  map->len--;
   for (; num; num--)
     {
       avlmap_n *curr = parents[num - 1];
@@ -205,7 +200,7 @@ balance:
       if (num - 1)
         {
           avlmap_n *father = parents[num - 2];
-          repos = (curr == father->left ? &father->left : &father->right);
+          repos = (curr == father->left) ? &father->left : &father->right;
         }
       *repos = rotated;
     }
@@ -233,12 +228,38 @@ avlmap_find (const avlmap *map, void *key, const avlmap_i *info)
   return NULL;
 }
 
+static inline avlmap_n *
+avlmap_node_new (void *key, void *val, const avlmap_i *info)
+{
+  avlmap_n *node = NULL;
+  if (!(node = malloc (info->n_size)))
+    return NULL;
+
+  node->height = 0;
+  node->left = node->right = NULL;
+
+  void *nkey = KEY_OF (node, info);
+  void *nval = VAL_OF (node, info);
+  if (memcpy (nkey, key, info->k_size) != nkey)
+    goto error;
+  if (memcpy (nval, val, info->v_size) != nval)
+    goto error;
+
+  return node;
+
+error:
+  free (node);
+  return NULL;
+}
+
 avlmap_n *
 avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
 {
   unsigned num = 0;
   avlmap_n *parents[HEIGHT_MAX];
   avlmap_height_t heights[HEIGHT_MAX];
+
+  avlmap_n *node = NULL;
   avlmap_n **inpos = &map->root;
 
   for (avlmap_n *curr = map->root; curr;)
@@ -254,23 +275,12 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
       curr = *(inpos = comp < 0 ? &curr->left : &curr->right);
     }
 
-  /* allocate node and initialize */
-  avlmap_n *node = malloc (info->n_size);
-  void *nkey = KEY_OF (node, info);
-  void *nval = VAL_OF (node, info);
+  if (!(node = avlmap_node_new (key, val, info)))
+    return NULL;
 
-  node->height = 0;
-  node->left = node->right = NULL;
-  if (memcpy (nkey, key, info->k_size) != nkey)
-    goto error;
-  if (memcpy (nval, val, info->v_size) != nval)
-    goto error;
-
-  /* insert node */
   *inpos = node;
   map->len++;
 
-  /* rebalance */
   for (; num; num--)
     {
       avlmap_n *curr = parents[num - 1];
@@ -285,14 +295,10 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
       if (num - 1)
         {
           avlmap_n *father = parents[num - 2];
-          repos = curr == father->left ? &father->left : &father->right;
+          repos = (curr == father->left) ? &father->left : &father->right;
         }
       *repos = rotated;
     }
 
   return node;
-
-error:
-  free (node);
-  return NULL;
 }
