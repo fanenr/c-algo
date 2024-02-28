@@ -80,7 +80,7 @@ bitmap_at (const bitmap_t *map, size_t pos)
 }
 
 size_t
-bitmap_find_first0 (bitmap_t *map)
+bitmap_find_first0 (const bitmap_t *map)
 {
   size_t val, idx, elems = BITMAP_ELEMS (map->nbits);
 
@@ -92,7 +92,7 @@ bitmap_find_first0 (bitmap_t *map)
 }
 
 size_t
-bitmap_find_first1 (bitmap_t *map)
+bitmap_find_first1 (const bitmap_t *map)
 {
   size_t val, idx, elems = BITMAP_ELEMS (map->nbits);
 
