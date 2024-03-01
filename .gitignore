@@ -3,6 +3,7 @@
 
 # exe file
 list
+rbmap
 vector
 avlmap
 hashmap
@@ -11,6 +12,7 @@ test
 bench
 
 # other
+.gdb_history
 compile_commands.json
 
 # directory

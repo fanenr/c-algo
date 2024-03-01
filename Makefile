@@ -1,7 +1,7 @@
 include config.mk
 export CFLAGS LDFLAGS
 
-targets := vector list hashmap avlmap
+targets := vector list hashmap avlmap rbmap
 objects := $(targets:%=%.o)
 export targets objects
 
