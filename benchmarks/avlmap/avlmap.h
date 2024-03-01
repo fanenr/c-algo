@@ -3,21 +3,17 @@
 
 #include <stddef.h>
 
-typedef int avlmap_comp_t (const void *key1, const void *key2);
-
-typedef struct avlmap_i
-{
-  size_t k_size;
-  size_t v_size;
-  size_t n_size;
-  size_t k_offs;
-  size_t v_offs;
-  avlmap_comp_t *f_comp;
-} avlmap_i;
-
-typedef struct avlmap_n avlmap_n;
-
 typedef int avlmap_height_t;
+typedef struct avlmap avlmap;
+typedef struct avlmap_i avlmap_i;
+typedef struct avlmap_n avlmap_n;
+typedef int avlmap_comp_t (const void *a, const void *b);
+
+struct avlmap
+{
+  size_t size;
+  avlmap_n *root;
+};
 
 struct avlmap_n
 {
@@ -26,11 +22,15 @@ struct avlmap_n
   avlmap_height_t height;
 };
 
-typedef struct avlmap
+struct avlmap_i
 {
-  size_t len;
-  avlmap_n *root;
-} avlmap;
+  size_t k_size;
+  size_t v_size;
+  size_t n_size;
+  size_t k_offs;
+  size_t v_offs;
+  avlmap_comp_t *f_comp;
+};
 
 extern void avlmap_init (avlmap *map);
 
@@ -47,20 +47,20 @@ extern avlmap_n *avlmap_insert (avlmap *map, void *key, void *val,
                                 const avlmap_i *info)
     __attribute__ ((nonnull (1, 2, 3, 4)));
 
-#define AVLMAP_DEF_REMOVE(KTYPE, VTYPE, PRE)                                  \
+#define AVLMAP_DEF_REMOVE(PRE, KTYPE, VTYPE)                                  \
   static inline void PRE##_avlmap_remove (avlmap *map, KTYPE key)             \
   {                                                                           \
     avlmap_remove (map, &key, &PRE##_avlmap_info);                            \
   }
 
-#define AVLMAP_DEF_FIND(KTYPE, VTYPE, PRE)                                    \
+#define AVLMAP_DEF_FIND(PRE, KTYPE, VTYPE)                                    \
   static inline PRE##_avlmap_n *PRE##_avlmap_find (const avlmap *map,         \
                                                    KTYPE key)                 \
   {                                                                           \
     return (PRE##_avlmap_n *)avlmap_find (map, &key, &PRE##_avlmap_info);     \
   }
 
-#define AVLMAP_DEF_INSERT(KTYPE, VTYPE, PRE)                                  \
+#define AVLMAP_DEF_INSERT(PRE, KTYPE, VTYPE)                                  \
   static inline PRE##_avlmap_n *PRE##_avlmap_insert (avlmap *map, KTYPE key,  \
                                                      VTYPE val)               \
   {                                                                           \
@@ -68,7 +68,7 @@ extern avlmap_n *avlmap_insert (avlmap *map, void *key, void *val,
                                             &PRE##_avlmap_info);              \
   }
 
-#define AVLMAP_DEF_INFO(KTYPE, VTYPE, PRE)                                    \
+#define AVLMAP_DEF_INFO(PRE, KTYPE, VTYPE, COMP)                              \
   typedef struct PRE##_avlmap_n PRE##_avlmap_n;                               \
                                                                               \
   struct PRE##_avlmap_n                                                       \
@@ -86,7 +86,7 @@ extern avlmap_n *avlmap_insert (avlmap *map, void *key, void *val,
           .n_size = sizeof (PRE##_avlmap_n),                                  \
           .k_offs = offsetof (PRE##_avlmap_n, key),                           \
           .v_offs = offsetof (PRE##_avlmap_n, val),                           \
-          .f_comp = (avlmap_comp_t *)PRE##_avlmap_comp };                     \
+          .f_comp = (avlmap_comp_t *)COMP };                                  \
                                                                               \
   static void PRE##_avlmap_remove (avlmap *map, KTYPE key)                    \
       __attribute__ ((nonnull (1)));                                          \
@@ -97,10 +97,10 @@ extern avlmap_n *avlmap_insert (avlmap *map, void *key, void *val,
   static PRE##_avlmap_n *PRE##_avlmap_insert (                                \
       avlmap *map, KTYPE key, VTYPE val) __attribute__ ((nonnull (1)));
 
-#define AVLMAP_DEF_ALL(KTYPE, VTYPE, PRE)                                     \
-  AVLMAP_DEF_INFO (KTYPE, VTYPE, PRE);                                        \
-  AVLMAP_DEF_REMOVE (KTYPE, VTYPE, PRE);                                      \
-  AVLMAP_DEF_FIND (KTYPE, VTYPE, PRE);                                        \
-  AVLMAP_DEF_INSERT (KTYPE, VTYPE, PRE)
+#define AVLMAP_DEF_ALL(PRE, KTYPE, VTYPE, COMP)                               \
+  AVLMAP_DEF_INFO (PRE, KTYPE, VTYPE, COMP);                                  \
+  AVLMAP_DEF_REMOVE (PRE, KTYPE, VTYPE);                                      \
+  AVLMAP_DEF_FIND (PRE, KTYPE, VTYPE);                                        \
+  AVLMAP_DEF_INSERT (PRE, KTYPE, VTYPE)
 
 #endif
