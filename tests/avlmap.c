@@ -5,61 +5,77 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define N 100000
-
-char *names[N];
-int ages[N];
+#define T 1UL
+#define N 1000000UL
 
 avlmap map;
+int ages[N];
+char *names[N];
+
+static void clear (void);
+static void test_find (void);
+static void test_insert (void);
+static void test_remove (void);
+static void check_bf (const avlmap_n *node);
+
+static int si_comp (const char **a, const char **b);
+AVLMAP_DEF_ALL (si, char *, int, si_comp);
 
 int
-si_avlmap_comp (const char **key1, const char **key2)
+main (void)
 {
-  const char *s1 = *key1;
-  const char *s2 = *key2;
-  return strcmp (s1, s2);
+  for (size_t i = 0; i < T; i++)
+    {
+      test_insert ();
+      check_bf (map.root);
+      printf ("len: %lu\nheight: %d\n", map.size, map.root->height);
+
+      test_remove ();
+      check_bf (map.root);
+      printf ("len: %lu\nheight: %d\n", map.size, map.root->height);
+
+      test_find ();
+      clear ();
+    }
 }
 
-AVLMAP_DEF_ALL (char *, int, si);
-
-static void
-balance_check (const avlmap_n *node)
+static inline int
+si_comp (const char **a, const char **b)
 {
-  if (!node)
-    return;
-
-  balance_check (node->left);
-  balance_check (node->right);
-
-  int lh = node->left ? node->left->height : -1;
-  int rh = node->right ? node->right->height : -1;
-  int bf = lh - rh;
-  assert (bf >= -1 && bf <= 1);
+  return strcmp (*a, *b);
 }
 
-static void
-init (void)
-{
-  memset (names, 0, sizeof (char *) * N);
-  memset (ages, 0, sizeof (int) * N);
-  avlmap_init (&map);
-}
-
-static void
+static inline void
 clear (void)
 {
   for (size_t i = 0; i < N; i++)
     free (names[i]);
   avlmap_free (&map);
+
+  memset (names, 0, sizeof (char *) * N);
+  memset (ages, 0, sizeof (int) * N);
 }
 
-static void
+static inline void
+test_find (void)
+{
+  for (size_t i = 0; i < N; i++)
+    {
+      if (!names[i])
+        continue;
+
+      si_avlmap_n *node = si_avlmap_find (&map, names[i]);
+      assert (node->val == ages[i]);
+    }
+}
+
+static inline void
 test_insert (void)
 {
   for (size_t i = 0; i < N; i++)
     {
-      char *name = NULL;
-      assert ((name = rand_string (rand_long (8, 17))));
+      char *name = rand_string (rand_long (8, 17));
+      assert (name);
       int age = rand_long (1, 101);
       names[i] = name;
       ages[i] = age;
@@ -73,7 +89,7 @@ test_insert (void)
     }
 }
 
-static void
+static inline void
 test_remove (void)
 {
   for (size_t i = 0; i < N / 2; i++)
@@ -82,46 +98,26 @@ test_remove (void)
       if (!names[rmpos])
         continue;
 
-      size_t len = map.len;
+      size_t size = map.size;
       si_avlmap_remove (&map, names[rmpos]);
-      assert (map.len != len);
+      assert (map.size != size);
 
       free (names[rmpos]);
       names[rmpos] = NULL;
     }
 }
 
-static void
-test_find (void)
+static inline void
+check_bf (const avlmap_n *node)
 {
-  for (size_t i = 0; i < N; i++)
-    {
-      if (!names[i])
-        continue;
+  if (!node)
+    return;
 
-      si_avlmap_n *node = si_avlmap_find (&map, names[i]);
-      assert (node->val == ages[i]);
-    }
-}
+  check_bf (node->left);
+  check_bf (node->right);
 
-int
-main (void)
-{
-  size_t times = 1;
-  for (size_t i = 0; i < times; i++)
-    {
-      init ();
-
-      test_insert ();
-      balance_check (map.root);
-      printf ("len: %lu\nheight: %d\n", map.len, map.root->height);
-
-      test_remove ();
-      balance_check (map.root);
-      printf ("len: %lu\nheight: %d\n", map.len, map.root->height);
-
-      test_find ();
-
-      clear ();
-    }
+  int lh = node->left ? node->left->height : -1;
+  int rh = node->right ? node->right->height : -1;
+  int bf = lh - rh;
+  assert (bf >= -1 && bf <= 1);
 }

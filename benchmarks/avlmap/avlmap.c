@@ -16,7 +16,7 @@
 void
 avlmap_init (avlmap *map)
 {
-  *map = (avlmap){ .len = 0, .root = NULL };
+  *map = (avlmap){ .size = 0, .root = NULL };
 }
 
 static inline void
@@ -119,7 +119,7 @@ avlmap_swap_data (avlmap_n *node1, avlmap_n *node2, const avlmap_i *info)
 void
 avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
 {
-  unsigned num = 0;
+  avlmap_height_t num = 0;
   avlmap_n *parents[HEIGHT_MAX];
   avlmap_height_t heights[HEIGHT_MAX];
 
@@ -180,7 +180,7 @@ avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
   free (node);
 
 balance:
-  map->len--;
+  map->size--;
   for (; num; num--)
     {
       avlmap_n *curr = parents[num - 1];
@@ -211,7 +211,7 @@ balance:
 avlmap_n *
 avlmap_find (const avlmap *map, void *key, const avlmap_i *info)
 {
-  if (!map->len)
+  if (!map->size)
     return NULL;
 
   for (avlmap_n *curr = map->root; curr;)
@@ -255,7 +255,7 @@ error:
 avlmap_n *
 avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
 {
-  unsigned num = 0;
+  avlmap_height_t num = 0;
   avlmap_n *parents[HEIGHT_MAX];
   avlmap_height_t heights[HEIGHT_MAX];
 
@@ -268,7 +268,7 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
       int comp = info->f_comp (key, ckey);
 
       if (comp == 0)
-        return curr;
+        return NULL;
 
       parents[num] = curr;
       heights[num++] = curr->height;
@@ -279,7 +279,7 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
     return NULL;
 
   *inpos = node;
-  map->len++;
+  map->size++;
 
   for (; num; num--)
     {
