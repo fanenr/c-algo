@@ -49,16 +49,14 @@ rotate_left (avlmap_n *node)
   avlmap_n *child = node->right;
   avlmap_n *parent = node->parent;
 
-  node->right = child->left;
-  if (child->left)
-    child->left->parent = node;
+  if ((node->right = child->left))
+    node->right->parent = node;
 
-  child->parent = parent;
-  if (parent)
+  if ((child->parent = parent))
     *(parent->left == node ? &parent->left : &parent->right) = child;
 
-  node->parent = child;
   child->left = node;
+  node->parent = child;
 
   height_update (node);
   height_update (child);
@@ -71,16 +69,14 @@ rotate_right (avlmap_n *node)
   avlmap_n *child = node->left;
   avlmap_n *parent = node->parent;
 
-  node->left = child->right;
-  if (child->right)
-    child->right->parent = node;
+  if ((node->left = child->right))
+    node->left->parent = node;
 
-  child->parent = node->parent;
-  if (parent)
+  if ((child->parent = node->parent))
     *(parent->left == node ? &parent->left : &parent->right) = child;
 
-  node->parent = child;
   child->right = node;
+  node->parent = child;
 
   height_update (node);
   height_update (child);
@@ -97,7 +93,7 @@ rotate (avlmap_n *node)
       if (BALANCE_FACTOR_OF (node->left) >= 0)
         return rotate_right (node);
 
-      node->left = rotate_left (node->left);
+      rotate_left (node->left);
       return rotate_right (node);
     }
 
@@ -106,7 +102,7 @@ rotate (avlmap_n *node)
       if (BALANCE_FACTOR_OF (node->right) <= 0)
         return rotate_left (node);
 
-      node->right = rotate_right (node->right);
+      rotate_right (node->right);
       return rotate_left (node);
     }
 
