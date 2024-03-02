@@ -127,11 +127,21 @@ rbmap_remove (rbmap *map, void *key, const rbmap_i *info)
       goto del;
     }
 
-  for (rbmap_n *curr = node; curr;)
+  for (rbmap_n *curr = node, *prnt; curr; curr = prnt)
     {
-      rbmap_n *prnt = curr->parent;
+      prnt = curr->parent;
       int direction = (curr == prnt->left) ? -1 : 1;
       rbmap_n *bro = direction < 0 ? prnt->right : prnt->left;
+
+      if (!bro)
+        continue;
+
+      if (IS_RED (prnt))
+        {
+          prnt->color = RBMAP_BLACK;
+          bro->color = RBMAP_RED;
+          break;
+        }
 
       if (IS_RED (bro))
         {
@@ -143,12 +153,6 @@ rbmap_remove (rbmap *map, void *key, const rbmap_i *info)
           prnt->color = RBMAP_RED;
           bro->color = RBMAP_BLACK;
           break;
-        }
-
-      if (!bro)
-        {
-          curr = prnt;
-          continue;
         }
 
       if (IS_RED (bro->left) || IS_RED (bro->right))
@@ -178,15 +182,7 @@ rbmap_remove (rbmap *map, void *key, const rbmap_i *info)
           break;
         }
 
-      if (IS_RED (prnt))
-        {
-          prnt->color = RBMAP_BLACK;
-          bro->color = RBMAP_RED;
-          break;
-        }
-
       bro->color = RBMAP_RED;
-      curr = prnt;
     }
 
 del:
