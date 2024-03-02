@@ -16,6 +16,7 @@ static void clear (void);
 static void test_find (void);
 static void test_insert (void);
 static void test_remove (void);
+static int height_of (avlmap_n *root);
 static void check_bf (const avlmap_n *node);
 
 static int si_comp (const char **a, const char **b);
@@ -28,11 +29,15 @@ main (void)
     {
       test_insert ();
       check_bf (map.root);
-      printf ("len: %lu\nheight: %d\n", map.size, map.root->height);
+      int height = height_of (map.root);
+      assert (height == map.root->height);
+      printf ("len: %lu\nheight: %d\n", map.size, height);
 
       test_remove ();
       check_bf (map.root);
-      printf ("len: %lu\nheight: %d\n", map.size, map.root->height);
+      height = height_of (map.root);
+      assert (height == map.root->height);
+      printf ("len: %lu\nheight: %d\n", map.size, height);
 
       test_find ();
       clear ();
@@ -105,6 +110,16 @@ test_remove (void)
       free (names[rmpos]);
       names[rmpos] = NULL;
     }
+}
+
+static inline int
+height_of (avlmap_n *root)
+{
+  if (!root)
+    return -1;
+  int left = height_of (root->left);
+  int right = height_of (root->right);
+  return (left > right ? left : right) + 1;
 }
 
 static inline void
