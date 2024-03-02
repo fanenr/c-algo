@@ -1,22 +1,21 @@
-#include "../rbmap.h"
-#include "../common.h"
+#include "common.h"
+#include "rbmap.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define T 1UL
-#define N 1000000UL
+#define T 5UL
+#define N 3000000UL
 
 rbmap map;
 int ages[N];
 char *names[N];
 
 static void clear (void);
-static void test_find (void);
-static void test_insert (void);
-static void test_remove (void);
-static int height_of (rbmap_n *root);
+static double bench_find (void);
+static double bench_insert (void);
+static double bench_remove (void);
 
 static int si_comp (const char **a, const char **b);
 RBMAP_DEF_ALL (si, char *, int, si_comp);
@@ -24,17 +23,21 @@ RBMAP_DEF_ALL (si, char *, int, si_comp);
 int
 main (void)
 {
+  double t_insert = 0;
+  double t_remove = 0;
+  double t_find = 0;
+
   for (size_t i = 0; i < T; i++)
     {
-      test_insert ();
-      printf ("len: %lu\nheight: %d\n", map.size, height_of (map.root));
-
-      test_remove ();
-      printf ("len: %lu\nheight: %d\n", map.size, height_of (map.root));
-
-      test_find ();
+      t_insert += bench_insert ();
+      t_remove += bench_remove ();
+      t_find += bench_find ();
       clear ();
     }
+
+  printf ("insert: %lf\n", t_insert / T);
+  printf ("remove: %lf\n", t_remove / T);
+  printf ("find: %lf\n", t_find / T);
 }
 
 static inline int
@@ -54,21 +57,28 @@ clear (void)
   memset (ages, 0, sizeof (int) * N);
 }
 
-static inline void
-test_find (void)
+static inline double
+bench_find (void)
 {
+  TIME_ST ();
   for (size_t i = 0; i < N; i++)
     {
       if (!names[i])
         continue;
-
       si_rbmap_n *node = si_rbmap_find (&map, names[i]);
-      assert (node->val == ages[i]);
+      if (node->val != ages[i])
+        {
+          printf ("find failed\n");
+          abort ();
+        }
     }
+  TIME_ED ();
+
+  return TIME_VAL ();
 }
 
-static inline void
-test_insert (void)
+static inline double
+bench_insert (void)
 {
   for (size_t i = 0; i < N; i++)
     {
@@ -79,38 +89,32 @@ test_insert (void)
       ages[i] = age;
     }
 
+  TIME_ST ();
   for (size_t i = 0; i < N; i++)
     {
       si_rbmap_n *node = si_rbmap_insert (&map, names[i], ages[i]);
       if (!node)
         names[i] = NULL;
     }
+  TIME_ED ();
+
+  return TIME_VAL ();
 }
 
-static inline void
-test_remove (void)
+static inline double
+bench_remove (void)
 {
+  TIME_ST ();
   for (size_t i = 0; i < N / 2; i++)
     {
       long rmpos = rand_long (0, N);
       if (!names[rmpos])
         continue;
 
-      size_t size = map.size;
       si_rbmap_remove (&map, names[rmpos]);
-      assert (map.size != size);
-
-      free (names[rmpos]);
       names[rmpos] = NULL;
     }
-}
+  TIME_ED ();
 
-static inline int
-height_of (rbmap_n *root)
-{
-  if (!root)
-    return -1;
-  int left = height_of (root->left);
-  int right = height_of (root->right);
-  return (left > right ? left : right) + 1;
+  return TIME_VAL ();
 }
