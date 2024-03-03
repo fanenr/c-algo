@@ -1,11 +1,11 @@
-#include "../hashmap.h"
-#include "../common.h"
+#include "common.h"
+#include "hashmap.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define T 1UL
+#define T 5UL
 #define N 1000000UL
 
 hashmap map;
@@ -13,9 +13,9 @@ int ages[N];
 char *names[N];
 
 static void clear (void);
-static void test_find (void);
-static void test_insert (void);
-static void test_remove (void);
+static double bench_find (void);
+static double bench_insert (void);
+static double bench_remove (void);
 
 static size_t si_hash (const char **key);
 static int si_comp (const char **a, const char **b);
@@ -26,24 +26,28 @@ main (void)
 {
   rand_init ();
 
+  double t_insert = 0;
+  double t_remove = 0;
+  double t_find = 0;
+
   for (size_t i = 0; i < T; i++)
     {
-      test_insert ();
-      printf ("cap: %lu\nsize: %lu\n", map.cap, map.size);
-
-      test_remove ();
-      printf ("cap: %lu\nsize: %lu\n", map.cap, map.size);
-
-      test_find ();
+      t_insert += bench_insert ();
+      t_remove += bench_remove ();
+      t_find += bench_find ();
       clear ();
     }
+
+  printf ("insert: %lf\n", t_insert / T);
+  printf ("remove: %lf\n", t_remove / T);
+  printf ("find: %lf\n", t_find / T);
 }
 
 static inline size_t
 si_hash (const char **key)
 {
-  size_t hash = 0;
   const char *str = *key;
+  size_t hash = 0;
   for (size_t len = strlen (str); len; len--)
     hash += str[len - 1];
   return hash;
@@ -66,21 +70,28 @@ clear (void)
   memset (ages, 0, sizeof (int) * N);
 }
 
-static inline void
-test_find (void)
+static inline double
+bench_find (void)
 {
+  TIME_ST ();
   for (size_t i = 0; i < N; i++)
     {
       if (!names[i])
         continue;
-
       si_hashmap_n *node = si_hashmap_find (&map, names[i]);
-      assert (node->val == ages[i]);
+      if (node->val != ages[i])
+        {
+          printf ("find failed\n");
+          abort ();
+        }
     }
+  TIME_ED ();
+
+  return TIME_VAL ();
 }
 
-static inline void
-test_insert (void)
+static inline double
+bench_insert (void)
 {
   for (size_t i = 0; i < N; i++)
     {
@@ -91,33 +102,32 @@ test_insert (void)
       ages[i] = age;
     }
 
+  TIME_ST ();
   for (size_t i = 0; i < N; i++)
     {
       si_hashmap_n *node = si_hashmap_insert (&map, names[i], ages[i]);
       if (!node)
         names[i] = NULL;
     }
+  TIME_ED ();
+
+  return TIME_VAL ();
 }
 
-static inline void
-test_remove (void)
+static inline double
+bench_remove (void)
 {
-  for (size_t i = 0; i < N; i++)
+  TIME_ST ();
+  for (size_t i = 0; i < N / 2; i++)
     {
       long rmpos = rand_long (0, N);
       if (!names[rmpos])
         continue;
 
-      si_hashmap_n *node = si_hashmap_find (&map, names[rmpos]);
-      assert (node->val == ages[rmpos]);
-
-      size_t size = map.size;
       si_hashmap_remove (&map, names[rmpos]);
-      assert (map.size != size);
-
-      assert (!si_hashmap_find (&map, names[rmpos]));
-
-      free (names[rmpos]);
       names[rmpos] = NULL;
     }
+  TIME_ED ();
+
+  return TIME_VAL ();
 }
