@@ -1,3 +1,5 @@
+MODE = release
+
 include config.mk
 
 .PHONY: all

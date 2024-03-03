@@ -1,7 +1,4 @@
-MODE   = release
-# MODE   = debug
-
-CXXSTD = -std=c++17
+CSTD   = -std=gnu11
 WARN   = -Wall -Wextra -Werror
 NOWARN = -Wno-unused-variable -Wno-unused-function
 

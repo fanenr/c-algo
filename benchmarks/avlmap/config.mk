@@ -1,6 +1,3 @@
-MODE   = release
-# MODE   = debug
-
 CSTD   = -std=gnu11
 WARN   = -Wall -Wextra -Werror
 NOWARN = -Wno-unused-variable -Wno-unused-function
