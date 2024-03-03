@@ -143,44 +143,41 @@ avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
     }
 
   if (!node)
-    /* not found */
     return;
 
   if (!node->left && !node->right)
-    { /* no children */
+    {
       *rmpos = NULL;
       free (node);
       goto balance;
     }
 
   if (!node->left ^ !node->right)
-    { /* one children */
+    {
       *rmpos = node->left ?: node->right;
       free (node);
       goto balance;
     }
 
-  /* two children */
   parents[num] = node;
   heights[num++] = node->height;
 
-  avlmap_n *bakup = node;
+  avlmap_n *old = node, *left;
   node = *(rmpos = &node->right);
-  while (node->left)
+  while ((left = node->left))
     {
       parents[num] = node;
       heights[num++] = node->height;
       node = *(rmpos = &node->left);
     }
 
-  if (!avlmap_swap_data (node, bakup, info))
+  if (!avlmap_swap_data (old, node, info))
     return;
 
   *rmpos = node->right;
   free (node);
 
 balance:
-  map->size--;
   for (; num; num--)
     {
       avlmap_n *curr = parents[num - 1];
@@ -197,7 +194,7 @@ balance:
         }
 
       avlmap_n **repos = &map->root;
-      if (num - 1)
+      if (num > 1)
         {
           avlmap_n *father = parents[num - 2];
           repos = (curr == father->left) ? &father->left : &father->right;
@@ -205,6 +202,7 @@ balance:
       *repos = rotated;
     }
 
+  map->size--;
   return;
 }
 
@@ -279,7 +277,6 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
     return NULL;
 
   *inpos = node;
-  map->size++;
 
   for (; num; num--)
     {
@@ -292,7 +289,7 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
         continue;
 
       avlmap_n **repos = &map->root;
-      if (num - 1)
+      if (num > 1)
         {
           avlmap_n *father = parents[num - 2];
           repos = (curr == father->left) ? &father->left : &father->right;
@@ -300,5 +297,6 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
       *repos = rotated;
     }
 
+  map->size++;
   return node;
 }

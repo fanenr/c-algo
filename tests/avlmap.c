@@ -30,13 +30,13 @@ main (void)
       test_insert ();
       check_bf (map.root);
       int height = height_of (map.root);
-      assert (height == map.root->height);
+      assert (height == (map.root ? map.root->height : -1));
       printf ("len: %lu\nheight: %d\n", map.size, height);
 
       test_remove ();
       check_bf (map.root);
       height = height_of (map.root);
-      assert (height == map.root->height);
+      assert (height == (map.root ? map.root->height : -1));
       printf ("len: %lu\nheight: %d\n", map.size, height);
 
       test_find ();
@@ -97,15 +97,20 @@ test_insert (void)
 static inline void
 test_remove (void)
 {
-  for (size_t i = 0; i < N / 2; i++)
+  for (size_t i = 0; i < N; i++)
     {
       long rmpos = rand_long (0, N);
       if (!names[rmpos])
         continue;
 
+      si_avlmap_n *node = si_avlmap_find (&map, names[rmpos]);
+      assert (node->val == ages[rmpos]);
+
       size_t size = map.size;
       si_avlmap_remove (&map, names[rmpos]);
       assert (map.size != size);
+
+      assert (!si_avlmap_find (&map, names[rmpos]));
 
       free (names[rmpos]);
       names[rmpos] = NULL;
