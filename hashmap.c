@@ -23,6 +23,28 @@ hashmap_free (hashmap *map)
   hashmap_init (map);
 }
 
+static inline hashmap_n *
+hashmap_move (hashmap *map, hashmap_n *node, const hashmap_i *info)
+{
+  hashmap_n *new;
+  size_t hash = node->hash;
+  size_t index = INDEX_AT (map, hash);
+
+  for (size_t i = 1;; i++)
+    {
+      new = NODE_AT (map, index, info);
+      if (new->sts != HASHMAP_STATE_USED)
+        break;
+      index = INDEX_NEXT (index, i);
+    }
+
+  if (memcpy (new, node, info->n_size) != new)
+    return NULL;
+
+  map->size++;
+  return node;
+}
+
 hashmap *
 hashmap_reserve (hashmap *map, size_t cap, const hashmap_i *info)
 {
@@ -32,6 +54,9 @@ hashmap_reserve (hashmap *map, size_t cap, const hashmap_i *info)
   hashmap_n *data;
   if (!(data = calloc (cap, info->n_size)))
     return NULL;
+
+  if (!map->size)
+    goto ret;
 
   hashmap nmap = { .cap = cap, .size = 0, .data = data };
   for (size_t i = 0; i < map->cap; i++)
@@ -43,13 +68,14 @@ hashmap_reserve (hashmap *map, size_t cap, const hashmap_i *info)
       if (node->sts != HASHMAP_STATE_USED)
         continue;
 
-      if (!hashmap_insert (&nmap, nkey, nval, info))
+      if (!hashmap_move (&nmap, node, info))
         {
           free (data);
           return NULL;
         }
     }
 
+ret:
   free (map->data);
   map->data = data;
   map->cap = cap;
