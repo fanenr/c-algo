@@ -5,6 +5,7 @@
 
 #define HEIGHT_MAX 36
 
+#define IS_BALANCED(BF) (-1 <= (BF) && (BF) >= 1)
 #define HEIGHT_OF(NODE) ((NODE) ? (NODE)->height : -1)
 #define BALANCE_FACTOR_OF(NODE)                                               \
   ((NODE) ? HEIGHT_OF ((NODE)->left) - HEIGHT_OF ((NODE)->right) : 0)
@@ -35,84 +36,88 @@ avlmap_free (avlmap *map)
   avlmap_init (map);
 }
 
-static inline avlmap_height_t
+static inline void
 height_update (avlmap_n *node)
 {
   avlmap_height_t lh = HEIGHT_OF (node->left);
   avlmap_height_t rh = HEIGHT_OF (node->right);
-  return (node->height = (lh > rh ? lh : rh) + 1);
+  node->height = (lh > rh ? lh : rh) + 1;
 }
 
-static inline avlmap_n *
-rotate_left (avlmap_n *node)
+static inline void
+rotate_left (avlmap *map, avlmap_n *node)
 {
   avlmap_n *child = node->right;
+  avlmap_n **repos = &map->root;
   avlmap_n *parent = node->parent;
 
   if ((node->right = child->left))
     node->right->parent = node;
 
   if ((child->parent = parent))
-    *(parent->left == node ? &parent->left : &parent->right) = child;
+    repos = (node == parent->left) ? &parent->left : &parent->right;
+  *repos = child;
 
   child->left = node;
   node->parent = child;
 
   height_update (node);
   height_update (child);
-  return child;
 }
 
-static inline avlmap_n *
-rotate_right (avlmap_n *node)
+static inline void
+rotate_right (avlmap *map, avlmap_n *node)
 {
   avlmap_n *child = node->left;
+  avlmap_n **repos = &map->root;
   avlmap_n *parent = node->parent;
 
   if ((node->left = child->right))
     node->left->parent = node;
 
-  if ((child->parent = node->parent))
-    *(parent->left == node ? &parent->left : &parent->right) = child;
+  if ((child->parent = parent))
+    repos = (node == parent->left) ? &parent->left : &parent->right;
+  *repos = child;
 
   child->right = node;
   node->parent = child;
 
   height_update (node);
   height_update (child);
-  return child;
 }
 
-static inline avlmap_n *
-rotate (avlmap_n *node)
+static inline void
+rotate (avlmap *map, avlmap_n *node)
 {
   int bf = BALANCE_FACTOR_OF (node);
 
   if (bf > 1)
     {
       if (BALANCE_FACTOR_OF (node->left) >= 0)
-        return rotate_right (node);
+        return rotate_right (map, node);
 
-      rotate_left (node->left);
-      return rotate_right (node);
+      rotate_left (map, node->left);
+      rotate_right (map, node);
+      return;
     }
 
   if (bf < -1)
     {
       if (BALANCE_FACTOR_OF (node->right) <= 0)
-        return rotate_left (node);
+        return rotate_left (map, node);
 
-      rotate_right (node->right);
-      return rotate_left (node);
+      rotate_right (map, node->right);
+      rotate_left (map, node);
+      return;
     }
-
-  return node;
 }
 
 static inline bool
-avlmap_swap_data (void *kpos1, void *kpos2, const avlmap_i *info)
+avlmap_swap_data (avlmap_n *node1, avlmap_n *node2, const avlmap_i *info)
 {
   void *bakup = NULL;
+  void *kpos1 = KEY_OF (node1, info);
+  void *kpos2 = KEY_OF (node2, info);
   size_t d_size = info->n_size - info->k_offs;
 
   if (!(bakup = malloc (d_size)))
@@ -136,74 +141,52 @@ void
 avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
 {
   avlmap_n *node = avlmap_find (map, key, info);
-
   if (!node)
-    /* not found */
     return;
 
-  avlmap_n *parent = NULL;
+  avlmap_n *prnt;
   avlmap_n **repos = &map->root;
+  avlmap_n *child = node->left ? node->left : node->right;
 
-remove:
-  parent = node->parent;
-  if (parent)
-    repos = parent->left == node ? &parent->left : &parent->right;
-
-  if (!node->left && !node->right)
-    { /* no children */
-      *repos = NULL;
-      free (node);
-      map->len--;
-      goto balance;
-    }
-
-  if (!node->left ^ !node->right)
-    { /* one children */
-      avlmap_n *child = node->left ?: node->right;
-      child->parent = parent;
-      *repos = child;
-      free (node);
-      map->len--;
-      goto balance;
-    }
-
-  /* two children */
-  avlmap_n *bak = node;
-  node = node->right;
-  while (node->left)
-    node = node->left;
-
-  /* swap data */
-  void *bkey = KEY_OF (bak, info);
-  void *nkey = KEY_OF (node, info);
-  if (!avlmap_swap_data (nkey, bkey, info))
-    return;
-
-  goto remove;
-
-balance:
-  for (avlmap_n *curr = parent; curr; curr = curr->parent)
+  if (node->left && node->right)
     {
-      avlmap_height_t height = parent->height;
-      height_update (curr);
-      avlmap_n *rotated = rotate (curr);
+      avlmap_n *old = node, *left;
+      node = node->right;
+      while ((left = node->left))
+        node = node->left;
+      child = node->right;
+      if (!avlmap_swap_data (old, node, info))
+        return;
+    }
 
-      if (rotated == curr)
+  if ((prnt = node->parent))
+    repos = (node == prnt->left) ? &prnt->left : &prnt->right;
+
+  free (node);
+  *repos = child;
+  child ? child->parent = prnt : 0;
+
+  for (avlmap_n *curr = prnt; curr; curr = curr->parent)
+    {
+      if (!curr->parent)
+        break;
+
+      avlmap_height_t height = curr->height;
+      height_update (curr);
+
+      avlmap_height_t bf = BALANCE_FACTOR_OF (curr);
+      if (IS_BALANCED (bf))
         {
-          if (curr->height == height)
+          if (height == curr->height)
             break;
           continue;
         }
 
-      if (!rotated->parent)
-        {
-          map->root = rotated;
-          break;
-        }
-
-      curr = rotated;
+      rotate (map, curr);
+      curr = curr->parent;
     }
 
+  map->len--;
   return;
 }
 
@@ -227,33 +210,15 @@ avlmap_find (const avlmap *map, void *key, const avlmap_i *info)
   return NULL;
 }
 
-avlmap_n *
-avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
+static inline avlmap_n *
+avlmap_node_new (void *key, void *val, const avlmap_i *info)
 {
-  int comp = 0;
-  avlmap_n *parent = NULL;
-  avlmap_n **inpos = &map->root;
-
-  for (avlmap_n *curr = map->root; curr;)
-    {
-      void *ckey = KEY_OF (curr, info);
-      comp = info->f_comp (key, ckey);
-
-      if (comp == 0)
-        return NULL;
-
-      parent = curr;
-      curr = *(inpos = comp < 0 ? &curr->left : &curr->right);
-    }
-
-  /* allocate node and initialize */
-  avlmap_n *node = malloc (info->n_size);
-  if (!node)
+  avlmap_n *node = NULL;
+  if (!(node = malloc (info->n_size)))
     return NULL;
 
   node->height = 0;
-  node->parent = parent;
-  node->left = node->right = NULL;
+  node->left = node->right = node->parent = NULL;
 
   void *nkey = KEY_OF (node, info);
   void *nval = VAL_OF (node, info);
@@ -262,36 +227,55 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
   if (memcpy (nval, val, info->v_size) != nval)
     goto error;
 
-  /* insert node */
-  map->len++;
-  *inpos = node;
-
-  if (!parent)
-    return node;
-  height_update (parent);
-
-  /* rebalance */
-  for (avlmap_n *curr = parent->parent; curr; curr = curr->parent)
-    {
-      if (curr->height == height_update (curr))
-        break;
-
-      avlmap_n *rotated = rotate (curr);
-      if (rotated == curr)
-        continue;
-
-      if (!rotated->parent)
-        {
-          map->root = rotated;
-          break;
-        }
-
-      curr = rotated;
-    }
-
   return node;
 
 error:
   free (node);
   return NULL;
+}
+
+avlmap_n *
+avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
+{
+  avlmap_n *node;
+  avlmap_n **inpos = &map->root;
+
+  if (!(node = avlmap_node_new (key, val, info)))
+    return NULL;
+
+  for (avlmap_n *curr = map->root; curr;)
+    {
+      void *ckey = KEY_OF (curr, info);
+      int comp = info->f_comp (key, ckey);
+
+      if (comp == 0)
+        return NULL;
+
+      node->parent = curr;
+      curr = *(inpos = comp < 0 ? &curr->left : &curr->right);
+    }
+
+  *inpos = node;
+
+  for (avlmap_n *curr = node->parent; curr; curr = curr->parent)
+    {
+      avlmap_height_t height = curr->height;
+      height_update (curr);
+
+      if (!curr->parent)
+        break;
+
+      if (height == curr->height)
+        break;
+
+      avlmap_height_t bf = BALANCE_FACTOR_OF (curr);
+      if (IS_BALANCED (bf))
+        continue;
+
+      rotate (map, curr);
+      curr = curr->parent;
+    }
+
+  map->len++;
+  return node;
 }

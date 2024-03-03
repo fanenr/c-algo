@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define T 5
-#define N 3000000
+#define T 1
+#define N 1000000
 
 avlmap map;
 int ages[N];
