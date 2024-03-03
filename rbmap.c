@@ -205,10 +205,11 @@ rbmap_find (const rbmap *map, void *key, const rbmap_i *info)
   if (!map->size)
     return NULL;
 
+  rbmap_comp_t *const f_comp = info->f_comp;
   for (rbmap_n *curr = map->root; curr;)
     {
       void *ckey = KEY_OF (curr, info);
-      int comp = info->f_comp (key, ckey);
+      int comp = f_comp (key, ckey);
 
       if (comp == 0)
         return curr;
@@ -252,10 +253,11 @@ rbmap_insert (rbmap *map, void *key, void *val, const rbmap_i *info)
   if (!(node = rbmap_node_new (key, val, info)))
     return NULL;
 
+  rbmap_comp_t *const f_comp = info->f_comp;
   for (rbmap_n *curr = map->root; curr;)
     {
       void *ckey = KEY_OF (curr, info);
-      int comp = info->f_comp (key, ckey);
+      int comp = f_comp (key, ckey);
 
       if (comp == 0)
         {

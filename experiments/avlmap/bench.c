@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define T 1
-#define N 1000000
+#define T 5
+#define N 3000000
 
 avlmap map;
 int ages[N];
@@ -17,8 +17,8 @@ static double bench_find (void);
 static double bench_insert (void);
 static double bench_remove (void);
 
-static int si_avlmap_comp (const char **key1, const char **key2);
-AVLMAP_DEF_ALL (char *, int, si);
+static int si_comp (const char **a, const char **b);
+AVLMAP_DEF_ALL (si, char *, int, si_comp);
 
 int
 main (void)
@@ -38,6 +38,12 @@ main (void)
   printf ("insert: %lf\n", t_insert / T);
   printf ("remove: %lf\n", t_remove / T);
   printf ("find: %lf\n", t_find / T);
+}
+
+static inline int
+si_comp (const char **a, const char **b)
+{
+  return strcmp (*a, *b);
 }
 
 static inline void
@@ -104,18 +110,11 @@ bench_remove (void)
       long rmpos = rand_long (0, N);
       if (!names[rmpos])
         continue;
+
       si_avlmap_remove (&map, names[rmpos]);
       names[rmpos] = NULL;
     }
   TIME_ED ();
 
   return TIME_VAL ();
-}
-
-static inline int
-si_avlmap_comp (const char **key1, const char **key2)
-{
-  const char *s1 = *key1;
-  const char *s2 = *key2;
-  return strcmp (s1, s2);
 }

@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define HEIGHT_MAX 36
-
 #define IS_BALANCED(BF) (-1 <= (BF) && (BF) >= 1)
 #define HEIGHT_OF(NODE) ((NODE) ? (NODE)->height : -1)
 #define BALANCE_FACTOR_OF(NODE)                                               \
@@ -16,7 +14,7 @@
 void
 avlmap_init (avlmap *map)
 {
-  *map = (avlmap){ .len = 0, .root = NULL };
+  *map = (avlmap){ .size = 0, .root = NULL };
 }
 
 static inline void
@@ -24,6 +22,7 @@ avlmap_free_impl (avlmap_n *node)
 {
   if (!node)
     return;
+
   avlmap_free_impl (node->left);
   avlmap_free_impl (node->right);
   free (node);
@@ -89,7 +88,7 @@ rotate_right (avlmap *map, avlmap_n *node)
 static inline void
 rotate (avlmap *map, avlmap_n *node)
 {
-  int bf = BALANCE_FACTOR_OF (node);
+  avlmap_height_t bf = BALANCE_FACTOR_OF (node);
 
   if (bf > 1)
     {
@@ -186,20 +185,21 @@ avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
       curr = curr->parent;
     }
 
-  map->len--;
+  map->size--;
   return;
 }
 
 avlmap_n *
 avlmap_find (const avlmap *map, void *key, const avlmap_i *info)
 {
-  if (!map->len)
+  if (!map->size)
     return NULL;
 
+  avlmap_comp_t *const f_comp = info->f_comp;
   for (avlmap_n *curr = map->root; curr;)
     {
       void *ckey = KEY_OF (curr, info);
-      int comp = info->f_comp (key, ckey);
+      int comp = f_comp (key, ckey);
 
       if (comp == 0)
         return curr;
@@ -243,10 +243,11 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
   if (!(node = avlmap_node_new (key, val, info)))
     return NULL;
 
+  avlmap_comp_t *const f_comp = info->f_comp;
   for (avlmap_n *curr = map->root; curr;)
     {
       void *ckey = KEY_OF (curr, info);
-      int comp = info->f_comp (key, ckey);
+      int comp = f_comp (key, ckey);
 
       if (comp == 0)
         return NULL;
@@ -276,6 +277,6 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
       curr = curr->parent;
     }
 
-  map->len++;
+  map->size++;
   return node;
 }

@@ -7,7 +7,7 @@ typedef int rbmap_color_t;
 typedef struct rbmap rbmap;
 typedef struct rbmap_i rbmap_i;
 typedef struct rbmap_n rbmap_n;
-typedef int rbmap_comp_t (const void *key1, const void *key2);
+typedef int rbmap_comp_t (const void *a, const void *b);
 
 struct rbmap_i
 {
@@ -72,9 +72,9 @@ extern rbmap_n *rbmap_insert (rbmap *map, void *key, void *val,
                                                                               \
   struct PRE##_rbmap_n                                                        \
   {                                                                           \
-    rbmap_n *left;                                                            \
-    rbmap_n *right;                                                           \
-    rbmap_n *parent;                                                          \
+    PRE##_rbmap_n *left;                                                      \
+    PRE##_rbmap_n *right;                                                     \
+    PRE##_rbmap_n *parent;                                                   \
     rbmap_color_t color;                                                      \
     KTYPE key;                                                                \
     VTYPE val;                                                                \

@@ -73,8 +73,8 @@ extern avlmap_n *avlmap_insert (avlmap *map, void *key, void *val,
                                                                               \
   struct PRE##_avlmap_n                                                       \
   {                                                                           \
-    avlmap_n *left;                                                           \
-    avlmap_n *right;                                                          \
+    PRE##_avlmap_n *left;                                                     \
+    PRE##_avlmap_n *right;                                                    \
     avlmap_height_t height;                                                   \
     KTYPE key;                                                                \
     VTYPE val;                                                                \
