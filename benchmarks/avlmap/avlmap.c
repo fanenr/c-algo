@@ -24,6 +24,7 @@ avlmap_free_impl (avlmap_n *node)
 {
   if (!node)
     return;
+
   avlmap_free_impl (node->left);
   avlmap_free_impl (node->right);
   free (node);
@@ -73,7 +74,7 @@ rotate_right (avlmap_n *node)
 static inline avlmap_n *
 rotate (avlmap_n *node)
 {
-  int bf = BALANCE_FACTOR_OF (node);
+  avlmap_height_t bf = BALANCE_FACTOR_OF (node);
 
   if (bf > 1)
     {
@@ -126,10 +127,11 @@ avlmap_remove (avlmap *map, void *key, const avlmap_i *info)
   avlmap_n *node = NULL;
   avlmap_n **rmpos = &map->root;
 
+  avlmap_comp_t *const f_comp = info->f_comp;
   for (avlmap_n *curr = map->root; curr;)
     {
       void *ckey = KEY_OF (curr, info);
-      int comp = info->f_comp (key, ckey);
+      int comp = f_comp (key, ckey);
 
       if (comp == 0)
         {
@@ -212,10 +214,11 @@ avlmap_find (const avlmap *map, void *key, const avlmap_i *info)
   if (!map->size)
     return NULL;
 
+  avlmap_comp_t *const f_comp = info->f_comp;
   for (avlmap_n *curr = map->root; curr;)
     {
       void *ckey = KEY_OF (curr, info);
-      int comp = info->f_comp (key, ckey);
+      int comp = f_comp (key, ckey);
 
       if (comp == 0)
         return curr;
@@ -260,10 +263,11 @@ avlmap_insert (avlmap *map, void *key, void *val, const avlmap_i *info)
   avlmap_n *node = NULL;
   avlmap_n **inpos = &map->root;
 
+  avlmap_comp_t *const f_comp = info->f_comp;
   for (avlmap_n *curr = map->root; curr;)
     {
       void *ckey = KEY_OF (curr, info);
-      int comp = info->f_comp (key, ckey);
+      int comp = f_comp (key, ckey);
 
       if (comp == 0)
         return NULL;
