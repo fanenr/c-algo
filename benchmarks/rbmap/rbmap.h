@@ -75,7 +75,7 @@ extern rbmap_n *rbmap_insert (rbmap *map, void *key, void *val,
     rbmap_n *left;                                                            \
     rbmap_n *right;                                                           \
     rbmap_n *parent;                                                          \
-    rbmap_color_t height;                                                     \
+    rbmap_color_t color;                                                      \
     KTYPE key;                                                                \
     VTYPE val;                                                                \
   };                                                                          \

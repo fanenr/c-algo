@@ -97,7 +97,7 @@ rbmap_remove (rbmap *map, void *key, const rbmap_i *info)
   if (!node)
     return;
 
-  rbmap_n *prnt = NULL;
+  rbmap_n *prnt;
   rbmap_n **rmpos = &map->root;
   rbmap_n *child = node->left ? node->left : node->right;
 
@@ -164,31 +164,25 @@ rbmap_remove (rbmap *map, void *key, const rbmap_i *info)
         {
           if (IS_BLACK (bro->right))
             {
-              rbmap_n *b_left;
-              if ((b_left = bro->left))
-                b_left->color = RBMAP_BLACK;
+              bro->left->color = RBMAP_BLACK;
               bro->color = RBMAP_RED;
               rotate_right (map, bro);
               bro = prnt->right;
             }
           rotate_left (map, prnt);
-          if (bro->right)
-            bro->right->color = RBMAP_BLACK;
+          bro->right->color = RBMAP_BLACK;
         }
       else
         {
           if (IS_BLACK (bro->left))
             {
-              rbmap_n *b_right;
-              if ((b_right = bro->right))
-                b_right->color = RBMAP_BLACK;
+              bro->right->color = RBMAP_BLACK;
               bro->color = RBMAP_RED;
               rotate_left (map, bro);
               bro = prnt->left;
             }
           rotate_right (map, prnt);
-          if (bro->left)
-            bro->left->color = RBMAP_BLACK;
+          bro->left->color = RBMAP_BLACK;
         }
 
       bro->color = prnt->color;
@@ -228,7 +222,7 @@ rbmap_find (const rbmap *map, void *key, const rbmap_i *info)
 static inline rbmap_n *
 rbmap_node_new (void *key, void *val, const rbmap_i *info)
 {
-  rbmap_n *node = NULL;
+  rbmap_n *node;
   if (!(node = malloc (info->n_size)))
     return NULL;
 
@@ -252,8 +246,7 @@ error:
 rbmap_n *
 rbmap_insert (rbmap *map, void *key, void *val, const rbmap_i *info)
 {
-  int comp = 0;
-  rbmap_n *node = NULL;
+  rbmap_n *node;
   rbmap_n **inpos = &map->root;
 
   if (!(node = rbmap_node_new (key, val, info)))
@@ -262,10 +255,13 @@ rbmap_insert (rbmap *map, void *key, void *val, const rbmap_i *info)
   for (rbmap_n *curr = map->root; curr;)
     {
       void *ckey = KEY_OF (curr, info);
-      comp = info->f_comp (key, ckey);
+      int comp = info->f_comp (key, ckey);
 
       if (comp == 0)
-        return NULL;
+        {
+          free (node);
+          return NULL;
+        }
 
       node->parent = curr;
       curr = *(inpos = comp < 0 ? &curr->left : &curr->right);
@@ -292,27 +288,21 @@ rbmap_insert (rbmap *map, void *key, void *val, const rbmap_i *info)
           continue;
         }
 
-      if (prnt_left && !curr_left)
+      if (prnt_left)
         {
-          rbmap_n *temp = prnt;
-          rotate_left (map, prnt);
-          prnt = curr;
-          curr = temp;
+          if (!curr_left)
+            rotate_left (map, prnt);
+          rotate_right (map, gprnt);
         }
-      if (!prnt_left && curr_left)
+      else
         {
-          rbmap_n *temp = prnt;
-          rotate_right (map, prnt);
-          prnt = curr;
-          curr = temp;
+          if (curr_left)
+            rotate_right (map, prnt);
+          rotate_left (map, gprnt);
         }
 
       gprnt->color = RBMAP_RED;
-      prnt->color = RBMAP_BLACK;
-      if (prnt_left)
-        rotate_right (map, gprnt);
-      else
-        rotate_left (map, gprnt);
+      gprnt->parent->color = RBMAP_BLACK;
       break;
     }
 

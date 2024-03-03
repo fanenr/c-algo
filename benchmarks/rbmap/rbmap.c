@@ -1,5 +1,6 @@
 #include "rbmap.h"
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -33,7 +34,7 @@ rbmap_free (rbmap *map)
   rbmap_init (map);
 }
 
-static inline rbmap_n *
+static inline void
 rotate_left (rbmap *map, rbmap_n *node)
 {
   rbmap_n *child = node->right;
@@ -49,11 +50,9 @@ rotate_left (rbmap *map, rbmap_n *node)
 
   child->left = node;
   node->parent = child;
-
-  return child;
 }
 
-static inline rbmap_n *
+static inline void
 rotate_right (rbmap *map, rbmap_n *node)
 {
   rbmap_n *child = node->left;
@@ -69,8 +68,6 @@ rotate_right (rbmap *map, rbmap_n *node)
 
   child->right = node;
   node->parent = child;
-
-  return child;
 }
 
 static inline bool
@@ -100,100 +97,106 @@ rbmap_remove (rbmap *map, void *key, const rbmap_i *info)
   if (!node)
     return;
 
+  rbmap_n *prnt;
+  rbmap_n **rmpos = &map->root;
+  rbmap_n *child = node->left ? node->left : node->right;
+
   if (node->left && node->right)
     {
-      rbmap_n *old = node;
+      rbmap_n *old = node, *left;
       node = node->right;
-      while (node->left)
-        node = node->left;
+      while ((left = node->left))
+        node = left;
+      child = node->right;
       if (!rbmap_swap_data (old, node, info))
         return;
     }
 
-  rbmap_n *child = NULL;
-  rbmap_n **rmpos = &map->root;
-  if (node->parent)
-    rmpos = (node == node->parent->left) ? &node->parent->left
-                                         : &node->parent->right;
+  if ((prnt = node->parent))
+    rmpos = (node == prnt->left) ? &prnt->left : &prnt->right;
 
-  if (IS_RED (node) && !node->left && !node->right)
-    goto del;
-
-  if (!node->left ^ !node->right)
+  if (IS_RED (node))
     {
-      child = node->left ? node->left : node->right;
-      child->parent = node->parent;
+      free (node);
+      *rmpos = NULL;
+      goto ret;
+    }
+
+  if (child)
+    {
+      free (node);
+      *rmpos = child;
+      child->parent = prnt;
       child->color = RBMAP_BLACK;
-      goto del;
+      goto ret;
     }
 
   for (rbmap_n *curr = node; curr;)
     {
       rbmap_n *prnt = curr->parent;
-      int direction = (curr == prnt->left) ? -1 : 1;
-      rbmap_n *bro = direction < 0 ? prnt->right : prnt->left;
+      if (!prnt)
+        break;
+
+      bool curr_left = (curr == prnt->left);
+      rbmap_n *bro = curr_left ? prnt->right : prnt->left;
 
       if (IS_RED (bro))
         {
-          if (direction < 0)
-            rotate_left (map, prnt);
-          else
-            rotate_right (map, prnt);
-
           prnt->color = RBMAP_RED;
           bro->color = RBMAP_BLACK;
-          break;
+          curr_left ? rotate_left (map, prnt) : rotate_right (map, prnt);
+          bro = curr_left ? prnt->right : prnt->left;
         }
 
-      if (!bro)
+      if (IS_BLACK (bro->left) && IS_BLACK (bro->right))
         {
+          bro->color = RBMAP_RED;
+          if (IS_RED (prnt))
+            {
+              prnt->color = RBMAP_BLACK;
+              break;
+            }
           curr = prnt;
           continue;
         }
 
-      if (IS_RED (bro->left) || IS_RED (bro->right))
+      if (curr_left)
         {
-          if (direction < 0 && !IS_RED (bro->right))
+          if (IS_BLACK (bro->right))
             {
+              bro->left->color = RBMAP_BLACK;
+              bro->color = RBMAP_RED;
               rotate_right (map, bro);
-              bro = bro->parent;
-              bro->color = RBMAP_BLACK;
-              bro->right->color = RBMAP_RED;
+              bro = prnt->right;
             }
-          else if (direction > 0 && !IS_RED (bro->left))
-            {
-              rotate_left (map, bro);
-              bro = bro->parent;
-              bro->color = RBMAP_BLACK;
-              bro->left->color = RBMAP_RED;
-            }
-
-          if (direction < 0)
-            rotate_left (map, prnt);
-          else
-            rotate_right (map, prnt);
-
-          bro->color = prnt->color;
-          prnt->color = RBMAP_BLACK;
-          break;
+          rotate_left (map, prnt);
+          bro->right->color = RBMAP_BLACK;
         }
-
-      if (IS_RED (prnt))
+      else
         {
-          prnt->color = RBMAP_BLACK;
-          bro->color = RBMAP_RED;
-          break;
+          if (IS_BLACK (bro->left))
+            {
+              bro->right->color = RBMAP_BLACK;
+              bro->color = RBMAP_RED;
+              rotate_left (map, bro);
+              bro = prnt->left;
+            }
+          rotate_right (map, prnt);
+          bro->left->color = RBMAP_BLACK;
         }
 
-      bro->color = RBMAP_RED;
-      curr = prnt;
+      bro->color = prnt->color;
+      prnt->color = RBMAP_BLACK;
+      break;
     }
 
-del:
-  map->root->color = RBMAP_BLACK;
-  *rmpos = child;
   free (node);
+  *rmpos = NULL;
+
+ret:
   map->size--;
+  if (map->root)
+    map->root->color = RBMAP_BLACK;
 }
 
 rbmap_n *
@@ -219,7 +222,7 @@ rbmap_find (const rbmap *map, void *key, const rbmap_i *info)
 static inline rbmap_n *
 rbmap_node_new (void *key, void *val, const rbmap_i *info)
 {
-  rbmap_n *node = NULL;
+  rbmap_n *node;
   if (!(node = malloc (info->n_size)))
     return NULL;
 
@@ -243,8 +246,7 @@ error:
 rbmap_n *
 rbmap_insert (rbmap *map, void *key, void *val, const rbmap_i *info)
 {
-  int comp = 0;
-  rbmap_n *node = NULL;
+  rbmap_n *node;
   rbmap_n **inpos = &map->root;
 
   if (!(node = rbmap_node_new (key, val, info)))
@@ -253,67 +255,58 @@ rbmap_insert (rbmap *map, void *key, void *val, const rbmap_i *info)
   for (rbmap_n *curr = map->root; curr;)
     {
       void *ckey = KEY_OF (curr, info);
-      comp = info->f_comp (key, ckey);
+      int comp = info->f_comp (key, ckey);
 
       if (comp == 0)
-        return NULL;
+        {
+          free (node);
+          return NULL;
+        }
 
       node->parent = curr;
       curr = *(inpos = comp < 0 ? &curr->left : &curr->right);
     }
 
-  map->size++;
   *inpos = node;
 
   for (rbmap_n *curr = node; curr;)
     {
       rbmap_n *prnt = curr->parent;
-      if (IS_BLACK (prnt) || !prnt->parent)
+      if (IS_BLACK (prnt))
         break;
 
       rbmap_n *gprnt = prnt->parent;
-      int direction = (prnt == gprnt->left) ? -1 : 1;
-      rbmap_n *uncle = direction < 0 ? gprnt->right : gprnt->left;
+      bool curr_left = (curr == prnt->left);
+      bool prnt_left = (prnt == gprnt->left);
+      rbmap_n *uncle = prnt_left ? gprnt->right : gprnt->left;
+
       if (IS_RED (uncle))
         {
           gprnt->color = RBMAP_RED;
           prnt->color = uncle->color = RBMAP_BLACK;
           curr = gprnt;
-          if (!curr->parent)
-            break;
-          comp = (curr == curr->parent->left) ? -1 : 1;
           continue;
         }
 
-      if (direction < 0 && comp < 0)
+      if (prnt_left)
         {
+          if (!curr_left)
+            rotate_left (map, prnt);
           rotate_right (map, gprnt);
-          gprnt->color = RBMAP_RED;
-          prnt->color = RBMAP_BLACK;
-        }
-      else if (direction > 0 && comp > 0)
-        {
-          rotate_left (map, gprnt);
-          gprnt->color = RBMAP_RED;
-          prnt->color = RBMAP_BLACK;
-        }
-      else if (direction < 0)
-        {
-          rotate_left (map, prnt);
-          rotate_right (map, gprnt);
-          curr->color = RBMAP_BLACK;
-          gprnt->color = RBMAP_RED;
         }
       else
         {
-          rotate_right (map, prnt);
+          if (curr_left)
+            rotate_right (map, prnt);
           rotate_left (map, gprnt);
-          curr->color = RBMAP_BLACK;
-          gprnt->color = RBMAP_RED;
         }
+
+      gprnt->color = RBMAP_RED;
+      gprnt->parent->color = RBMAP_BLACK;
       break;
     }
 
   map->root->color = RBMAP_BLACK;
+  map->size++;
   return node;
 }
