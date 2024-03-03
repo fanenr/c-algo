@@ -25,6 +25,8 @@ AVLMAP_DEF_ALL (si, char *, int, si_comp);
 int
 main (void)
 {
+  rand_init ();
+
   for (size_t i = 0; i < T; i++)
     {
       test_insert ();

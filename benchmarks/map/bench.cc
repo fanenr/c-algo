@@ -28,6 +28,8 @@ static double bench_remove (void);
 int
 main (void)
 {
+  rand_init ();
+
   double t_insert = 0;
   double t_remove = 0;
   double t_find = 0;
