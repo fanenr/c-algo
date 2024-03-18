@@ -121,14 +121,14 @@ extern void *vector_insert (vector *vec, size_t pos, void *data,
       __attribute__ ((nonnull (1)));
 
 #define VECTOR_DEF_ALL(PRE, DTYPE)                                            \
-  VECTOR_DEF_INFO (PRE, DTYPE);                                               \
+  VECTOR_DEF_INFO (PRE, DTYPE)                                                \
                                                                               \
-  VECTOR_DEF_AT (PRE, DTYPE);                                                 \
-  VECTOR_DEF_INIT (PRE, DTYPE);                                               \
-  VECTOR_DEF_FREE (PRE, DTYPE);                                               \
-  VECTOR_DEF_INSERT (PRE, DTYPE);                                             \
-  VECTOR_DEF_REMOVE (PRE, DTYPE);                                             \
-  VECTOR_DEF_RESERVE (PRE, DTYPE);                                            \
-  VECTOR_DEF_PUSH_BACK (PRE, DTYPE);
+  VECTOR_DEF_AT (PRE, DTYPE)                                                  \
+  VECTOR_DEF_INIT (PRE, DTYPE)                                                \
+  VECTOR_DEF_FREE (PRE, DTYPE)                                                \
+  VECTOR_DEF_INSERT (PRE, DTYPE)                                              \
+  VECTOR_DEF_REMOVE (PRE, DTYPE)                                              \
+  VECTOR_DEF_RESERVE (PRE, DTYPE)                                             \
+  VECTOR_DEF_PUSH_BACK (PRE, DTYPE)
 
 #endif

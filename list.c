@@ -1,19 +1,20 @@
 #include "list.h"
-#include <stdalign.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define DATA_OF(NODE, INFO) ((void *)(NODE) + (INFO)->d_offs)
 
 void
 list_init (list *lis)
 {
-  *lis = (list){ .len = 0, .head = NULL, .tail = NULL };
+  memset (lis, 0, sizeof (list));
 }
 
 void
 list_free (list *lis)
 {
   list_n *node = lis->head, *next;
-  for (size_t i = lis->len; i; i--)
+  for (size_t i = lis->size; i; i--)
     {
       next = node->next;
       free (node);
@@ -26,9 +27,6 @@ list_free (list *lis)
 void
 list_remove (list *lis, list_n *pos)
 {
-  if (!lis->len)
-    return;
-
   list_n *prev = pos->prev;
   list_n *next = pos->next;
   free (pos);
@@ -43,13 +41,13 @@ list_remove (list *lis, list_n *pos)
   if (next)
     next->prev = prev;
 
-  lis->len--;
+  lis->size--;
 }
 
 list_n *
 list_at (const list *lis, size_t pos)
 {
-  if (pos >= lis->len)
+  if (pos >= lis->size)
     return NULL;
 
   list_n *ret = lis->head;
@@ -59,18 +57,32 @@ list_at (const list *lis, size_t pos)
   return ret;
 }
 
+static inline list_n *
+list_node_new (void *data, const list_i *info)
+{
+  list_n *node;
+  if (!(node = malloc (info->n_size)))
+    return NULL;
+
+  void *dpos = DATA_OF (node, info);
+  if (memcpy (dpos, data, info->d_size) != dpos)
+    {
+      free (node);
+      return NULL;
+    }
+
+  return node;
+}
+
 list_n *
 list_push_back (list *lis, void *data, const list_i *info)
 {
-  list_n *node = malloc (info->n_size);
-  if (!node)
+  list_n *node;
+  if (!(node = list_node_new (data, info)))
     return NULL;
 
   node->next = NULL;
   node->prev = lis->tail;
-  void *val = (void *)node + info->d_offs;
-  if (memcpy (val, data, info->d_size) != val)
-    return NULL;
 
   if (lis->tail)
     lis->tail->next = node;
@@ -78,22 +90,19 @@ list_push_back (list *lis, void *data, const list_i *info)
     lis->head = node;
   lis->tail = node;
 
-  lis->len++;
+  lis->size++;
   return node;
 }
 
 list_n *
 list_push_front (list *lis, void *data, const list_i *info)
 {
-  list_n *node = malloc (info->n_size);
-  if (!node)
+  list_n *node;
+  if (!(node = list_node_new (data, info)))
     return NULL;
 
   node->prev = NULL;
   node->next = lis->head;
-  void *val = (void *)node + info->d_offs;
-  if (memcpy (val, data, info->d_size) != val)
-    return NULL;
 
   if (lis->head)
     lis->head->prev = node;
@@ -101,29 +110,26 @@ list_push_front (list *lis, void *data, const list_i *info)
     lis->tail = node;
   lis->head = node;
 
-  lis->len++;
+  lis->size++;
   return node;
 }
 
 list_n *
 list_insert (list *lis, list_n *pos, void *data, const list_i *info)
 {
-  list_n *node = malloc (info->n_size);
-  if (!node)
+  list_n *node;
+  if (!(node = list_node_new (data, info)))
     return NULL;
 
   node->next = pos;
   node->prev = pos->prev;
-  void *val = (void *)node + info->d_offs;
-  if (memcpy (val, data, info->d_size) != val)
-    return NULL;
 
-  if (pos != lis->head)
+  if (pos->prev)
     pos->prev->next = node;
   else
     lis->head = node;
   pos->prev = node;
 
-  lis->len++;
+  lis->size++;
   return node;
 }
