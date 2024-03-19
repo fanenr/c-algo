@@ -3,106 +3,105 @@
 #include <string.h>
 
 void
-vector_init (vector *vec)
+vector_init (vector_t *vec, size_t elem_size, vector_comp_t *comp_func)
 {
-  memset (vec, 0, sizeof (vector));
+  *vec = (vector_t){ .elem_size = elem_size, .comp_func = comp_func };
 }
 
 void
-vector_free (vector *vec)
+vector_free (vector_t *vec)
 {
   free (vec->data);
-  vector_init (vec);
+
+  vec->data = NULL;
+  vec->size = vec->cap = 0;
 }
 
 void
-vector_remove (vector *vec, size_t pos, const vector_i info)
+vector_remove (vector_t *vec, size_t pos)
 {
   if (pos >= vec->size)
     return;
 
   if (pos == vec->size - 1)
-    goto end;
+    goto ok;
 
-  size_t size = info.d_size;
-  void *rmpos = vec->data + pos * size;
-  size_t mvlen = (vec->size - pos - 1) * size;
+  size_t esize = vec->elem_size;
+  void *rmpos = vec->data + pos * esize;
+  size_t mvlen = (vec->size - pos - 1) * esize;
 
-  if (memmove (rmpos, rmpos + size, mvlen) != rmpos)
+  if (memmove (rmpos, rmpos + esize, mvlen) != rmpos)
     return;
 
-end:
+ok:
   vec->size--;
 }
 
-vector *
-vector_reserve (vector *vec, size_t cap, const vector_i info)
+vector_t *
+vector_reserve (vector_t *vec, size_t cap)
 {
   if (vec->cap >= cap)
     return vec;
 
-  size_t ncap = vec->cap;
-  if (ncap < VECTOR_INIT_CAP)
-    ncap = VECTOR_INIT_CAP;
+  void *newdata;
+  size_t newcap = vec->cap;
+  size_t esize = vec->elem_size;
 
-  while (ncap < cap)
-    ncap *= VECTOR_EXPAN_RATIO;
+  if (newcap < VECTOR_INIT_CAP)
+    newcap = VECTOR_INIT_CAP;
 
-  void *ndat = realloc (vec->data, ncap * info.d_size);
-  if (ndat == NULL)
+  while (newcap < cap)
+    newcap *= VECTOR_EXPAN_RATIO;
+
+  if (!(newdata = realloc (vec->data, newcap * esize)))
     return NULL;
 
-  vec->data = ndat;
-  vec->cap = ncap;
+  vec->data = newdata;
+  vec->cap = newcap;
   return vec;
 }
 
 void *
-vector_at (const vector *vec, size_t pos, const vector_i info)
+vector_at (const vector_t *vec, size_t pos)
 {
   if (pos >= vec->size)
     return NULL;
-  return vec->data + pos * info.d_size;
+  return vec->data + pos * vec->elem_size;
 }
 
 void *
-vector_push_back (vector *vec, void *data, const vector_i info)
+vector_push_back (vector_t *vec)
 {
-  if (!vector_reserve (vec, vec->size + 1, info))
+  size_t esize = vec->elem_size;
+
+  if (!vector_reserve (vec, vec->size + 1))
     return NULL;
 
-  size_t size = info.d_size;
-  void *inpos = vec->data + vec->size * size;
-
-  if (memcpy (inpos, data, size) != inpos)
-    return NULL;
+  void *end = vec->data + vec->size * esize;
 
   vec->size++;
-  return inpos;
+  return end;
 }
 
 void *
-vector_insert (vector *vec, size_t pos, void *data, const vector_i info)
+vector_insert (vector_t *vec, size_t pos)
 {
   if (pos > vec->size)
     return NULL;
 
   if (pos == vec->size)
-    return vector_push_back (vec, data, info);
+    return vector_push_back (vec);
 
-  if (!vector_reserve (vec, vec->size + 1, info))
+  if (!vector_reserve (vec, vec->size + 1))
     return NULL;
 
-  size_t size = info.d_size;
-  void *inpos = vec->data + pos * size;
-  size_t mvlen = (vec->size - pos) * size;
+  size_t esize = vec->elem_size;
+  void *in = vec->data + pos * esize;
+  size_t len = (vec->size - pos) * esize;
 
-  if (memmove (inpos + size, inpos, mvlen) != inpos + size)
-    return NULL;
-
-  if (memcpy (inpos, data, size) != inpos)
+  if (memmove (in + esize, in, len) != in + esize)
     return NULL;
 
   vec->size++;
-  return inpos;
+  return in;
 }
