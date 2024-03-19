@@ -1,29 +1,88 @@
 #include "../vector.h"
+#include "../common.h"
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-struct bala
-{
-  int a;
-  float b;
-  long c;
-  double d;
-};
+#define T 1UL
+#define N 1000000UL
 
-VECTOR_DEF_ALL (i32, int);
-VECTOR_DEF_ALL (bala, struct bala);
+static void clear (void);
+static void test_at (void);
+static void test_insert (void);
+static void test_remove (void);
+
+VECTOR_DEF_ALL (age, int);
+VECTOR_DEF_ALL (name, char *);
+
+int ages[N];
+char *names[N];
+age_vector avec;
+name_vector nvec;
 
 int
 main (void)
 {
-  bala_vector vec;
-  bala_vector_init (&vec);
+  rand_init ();
 
-  for (int i = 0; i < 1000; i++)
-    bala_vector_push_back (&vec, (struct bala){ .a = i });
+  for (size_t i = 0; i < T; i++)
+    {
+      test_insert ();
+      printf ("size: %lu, %lu\n", avec.size, nvec.size);
 
-  assert (vec.size == 1000);
-  for (int i = 0; i < 1000; i++)
-    assert (bala_vector_at (&vec, i)->a == i);
+      test_remove ();
+      printf ("size: %lu, %lu\n", avec.size, nvec.size);
 
-  bala_vector_free (&vec);
+      test_at ();
+      clear ();
+    }
+}
+
+static inline void
+clear (void)
+{
+  for (size_t i = 0; i < N; i++)
+    free (names[i]);
+  age_vector_free (&avec);
+  name_vector_free (&nvec);
+
+  memset (names, 0, sizeof (char *) * N);
+  memset (ages, 0, sizeof (int) * N);
+}
+
+static inline void
+test_at (void)
+{
+  for (size_t i = 0; i < N; i++)
+    {
+    }
+}
+
+static inline void
+test_insert (void)
+{
+  for (size_t i = 0; i < N; i++)
+    {
+      char *name = rand_string (rand_long (8, 17));
+      assert (name);
+      int age = rand_long (1, 101);
+      names[i] = name;
+      ages[i] = age;
+    }
+
+  for (size_t i = 0; i < N; i++)
+    {
+    }
+}
+
+static inline void
+test_remove (void)
+{
+  for (size_t i = 0; i < N; i++)
+    {
+      long rmpos = rand_long (0, N);
+      if (!names[rmpos])
+        continue;
+    }
 }
