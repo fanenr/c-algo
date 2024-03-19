@@ -8,9 +8,9 @@
 #define TIME_ED() clock_t __tm_ed__ = clock ();
 #define TIME_VAL() ((double)(__tm_ed__ - __tm_st__) / CLOCKS_PER_SEC)
 
-static long rand_long (long from, long to);
-static char *rand_string (size_t len);
 static void rand_init (void);
+static char *rand_string (size_t len);
+static long rand_long (long from, long to);
 
 static inline void
 rand_init (void)
