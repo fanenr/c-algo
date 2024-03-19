@@ -2,24 +2,19 @@
 #include "../common.h"
 #include <assert.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #define T 1UL
-#define N 1000000UL
+#define N 100000UL
 
+static void init (void);
 static void clear (void);
+
 static void test_at (void);
 static void test_insert (void);
 static void test_remove (void);
 
-VECTOR_DEF_ALL (age, int);
-VECTOR_DEF_ALL (name, char *);
-
-int ages[N];
-char *names[N];
-age_vector avec;
-name_vector nvec;
+vector_t vec;
 
 int
 main (void)
@@ -28,34 +23,39 @@ main (void)
 
   for (size_t i = 0; i < T; i++)
     {
+      init ();
+
       test_insert ();
-      printf ("size: %lu, %lu\n", avec.size, nvec.size);
+      printf ("size: %lu\n", vec.size);
 
       test_remove ();
-      printf ("size: %lu, %lu\n", avec.size, nvec.size);
+      printf ("size: %lu\n", vec.size);
 
       test_at ();
+
       clear ();
     }
 }
 
 static inline void
+init (void)
+{
+  vector_init (&vec, sizeof (int), NULL);
+}
+
+static inline void
 clear (void)
 {
-  for (size_t i = 0; i < N; i++)
-    free (names[i]);
-  age_vector_free (&avec);
-  name_vector_free (&nvec);
-
-  memset (names, 0, sizeof (char *) * N);
-  memset (ages, 0, sizeof (int) * N);
+  vector_free (&vec);
 }
 
 static inline void
 test_at (void)
 {
-  for (size_t i = 0; i < N; i++)
+  for (size_t i = 0; i < vec.size; i++)
     {
+      int *node = vector_at (&vec, i);
+      assert (node);
     }
 }
 
@@ -64,25 +64,19 @@ test_insert (void)
 {
   for (size_t i = 0; i < N; i++)
     {
-      char *name = rand_string (rand_long (8, 17));
-      assert (name);
-      int age = rand_long (1, 101);
-      names[i] = name;
-      ages[i] = age;
-    }
-
-  for (size_t i = 0; i < N; i++)
-    {
+      size_t pos = rand_long (0, vec.size + 1);
+      int *node = vector_insert (&vec, pos);
+      int num = rand_long (0, N);
+      *node = num;
     }
 }
 
 static inline void
 test_remove (void)
 {
-  for (size_t i = 0; i < N; i++)
+  for (size_t i = 0; i < N / 2; i++)
     {
-      long rmpos = rand_long (0, N);
-      if (!names[rmpos])
-        continue;
+      size_t pos = rand_long (0, vec.size);
+      vector_remove (&vec, pos);
     }
 }
