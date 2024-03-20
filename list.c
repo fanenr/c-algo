@@ -2,134 +2,88 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DATA_OF(NODE, INFO) ((void *)(NODE) + (INFO)->d_offs)
-
 void
-list_init (list *lis)
+list_init (list_t *list)
 {
-  memset (lis, 0, sizeof (list));
+  *list = (list_t){};
 }
 
 void
-list_free (list *lis)
+list_remove (list_t *list, list_node_t *node)
 {
-  list_n *node = lis->head, *next;
-  for (size_t i = lis->size; i; i--)
-    {
-      next = node->next;
-      free (node);
-      node = next;
-    }
+  list_node_t *prev = node->prev;
+  list_node_t *next = node->next;
 
-  list_init (lis);
-}
-
-void
-list_remove (list *lis, list_n *pos)
-{
-  list_n *prev = pos->prev;
-  list_n *next = pos->next;
-  free (pos);
-
-  if (pos == lis->head)
-    lis->head = next;
-  if (pos == lis->tail)
-    lis->tail = prev;
+  if (node == list->head)
+    list->head = next;
+  if (node == list->tail)
+    list->tail = prev;
 
   if (prev)
     prev->next = next;
   if (next)
     next->prev = prev;
 
-  lis->size--;
+  list->size--;
 }
 
-list_n *
-list_at (const list *lis, size_t pos)
+list_node_t *
+list_at (const list_t *list, size_t index)
 {
-  if (pos >= lis->size)
+  if (index >= list->size)
     return NULL;
 
-  list_n *ret = lis->head;
-  for (; pos; pos--)
+  list_node_t *ret = list->head;
+  for (; index; index--)
     ret = ret->next;
 
   return ret;
 }
 
-static inline list_n *
-list_node_new (void *data, const list_i *info)
+list_node_t *
+list_push_back (list_t *list, list_node_t *node)
 {
-  list_n *node;
-  if (!(node = malloc (info->n_size)))
-    return NULL;
-
-  void *dpos = DATA_OF (node, info);
-  if (memcpy (dpos, data, info->d_size) != dpos)
-    {
-      free (node);
-      return NULL;
-    }
-
-  return node;
-}
-
-list_n *
-list_push_back (list *lis, void *data, const list_i *info)
-{
-  list_n *node;
-  if (!(node = list_node_new (data, info)))
-    return NULL;
-
   node->next = NULL;
-  node->prev = lis->tail;
+  node->prev = list->tail;
 
-  if (lis->tail)
-    lis->tail->next = node;
+  if (list->tail)
+    list->tail->next = node;
   else
-    lis->head = node;
-  lis->tail = node;
+    list->head = node;
+  list->tail = node;
 
-  lis->size++;
+  list->size++;
   return node;
 }
 
-list_n *
-list_push_front (list *lis, void *data, const list_i *info)
+list_node_t *
+list_push_front (list_t *list, list_node_t *node)
 {
-  list_n *node;
-  if (!(node = list_node_new (data, info)))
-    return NULL;
-
   node->prev = NULL;
-  node->next = lis->head;
+  node->next = list->head;
 
-  if (lis->head)
-    lis->head->prev = node;
+  if (list->head)
+    list->head->prev = node;
   else
-    lis->tail = node;
-  lis->head = node;
+    list->tail = node;
+  list->head = node;
 
-  lis->size++;
+  list->size++;
   return node;
 }
 
-list_n *
-list_insert (list *lis, list_n *pos, void *data, const list_i *info)
+list_node_t *
+list_insert (list_t *list, list_node_t *pos, list_node_t *node)
 {
-  list_n *node;
-  if (!(node = list_node_new (data, info)))
-    return NULL;
-
   node->next = pos;
   node->prev = pos->prev;
 
   if (pos->prev)
     pos->prev->next = node;
   else
-    lis->head = node;
+    list->head = node;
   pos->prev = node;
 
-  lis->size++;
+  list->size++;
   return node;
 }
