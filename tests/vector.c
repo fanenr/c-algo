@@ -2,7 +2,6 @@
 #include "../common.h"
 #include <assert.h>
 #include <stdio.h>
-#include <string.h>
 
 #define T 1UL
 #define N 100000UL
@@ -40,7 +39,7 @@ main (void)
 static inline void
 init (void)
 {
-  vector_init (&vec, sizeof (int), NULL);
+  vector_init (&vec, sizeof (int));
 }
 
 static inline void
