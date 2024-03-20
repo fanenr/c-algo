@@ -3,16 +3,15 @@
 #include <string.h>
 
 void
-vector_init (vector_t *vec, size_t elem_size, vector_comp_t *comp_func)
+vector_init (vector_t *vec, size_t elem_size)
 {
-  *vec = (vector_t){ .elem_size = elem_size, .comp_func = comp_func };
+  *vec = (vector_t){ .elem_size = elem_size };
 }
 
 void
 vector_free (vector_t *vec)
 {
   free (vec->data);
-
   vec->data = NULL;
   vec->size = vec->cap = 0;
 }
