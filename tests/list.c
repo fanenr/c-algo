@@ -1,25 +1,31 @@
 #include "../list.h"
 #include <assert.h>
+#include <stdlib.h>
 
-LIST_DEF_ALL (i32, int);
+typedef struct data data;
+
+struct data
+{
+  list_node_t node;
+  int num;
+};
+
+static list_node_t *data_list_node_new (int num);
+static void data_list_free (list_t *list);
 
 int
 main (void)
 {
-  i32_list lis;
-  i32_list_init (&lis);
+}
 
-  for (int i = 0; i < 1000; i++)
-    assert (i32_list_push_back (&lis, i));
+static list_node_t *
+data_list_node_new (int num)
+{
+  data *node = malloc (sizeof (data));
+  assert (node);
 
-  assert (lis.size == 1000);
+  node->node = list_node_init_v;
+  node->num = num;
 
-  i32_list_n *node = i32_list_at (&lis, 0);
-  for (int i = 0; i < 1000; i++)
-    {
-      assert (node->data == i);
-      node = node->next;
-    }
-
-  i32_list_free (&lis);
+  return &node->node;
 }
