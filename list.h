@@ -1,10 +1,13 @@
 #ifndef LIST_H
 #define LIST_H
 
+#include "util.h"
 #include <stddef.h>
 
 typedef struct list_t list_t;
 typedef struct list_node_t list_node_t;
+
+typedef int list_comp_t (const list_node_t *a, const list_node_t *b);
 
 struct list_node_t
 {
@@ -17,28 +20,31 @@ struct list_t
   size_t size;
   list_node_t *head;
   list_node_t *tail;
+  list_comp_t *comp_fn;
 };
 
-#define list_node_init_v ((list_node_t){})
-
-#define list_nonnull(...) __attribute__ ((nonnull (__VA_ARGS__)))
-
-extern void list_init (list_t *list) list_nonnull (1);
+extern void list_init (list_t *list, list_comp_t *comp) attr_nonnull (1);
 
 extern list_node_t *list_at (const list_t *list, size_t index)
-    list_nonnull (1);
+    attr_nonnull (1);
 
 extern list_node_t *list_push_back (list_t *list, list_node_t *node)
-    list_nonnull (1, 2);
+    attr_nonnull (1, 2);
 
 extern list_node_t *list_push_front (list_t *list, list_node_t *node)
-    list_nonnull (1, 2);
+    attr_nonnull (1, 2);
 
-extern list_node_t *list_insert (list_t *list, list_node_t *pos,
-                                 list_node_t *node) list_nonnull (1, 2, 3);
+extern list_node_t *list_insert_back (list_t *list, list_node_t *pos,
+                                      list_node_t *node)
+    attr_nonnull (1, 2, 3);
 
-extern void list_remove (list_t *list, list_node_t *node) list_nonnull (1, 2);
+extern list_node_t *list_insert_front (list_t *list, list_node_t *pos,
+                                       list_node_t *node)
+    attr_nonnull (1, 2, 3);
 
-#undef list_nonnull
+extern list_node_t *list_insert_at (list_t *list, size_t index,
+                                    list_node_t *node) attr_nonnull (1, 3);
+
+extern void list_remove (list_t *list, list_node_t *node) attr_nonnull (1, 2);
 
 #endif
