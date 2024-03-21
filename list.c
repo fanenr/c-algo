@@ -1,11 +1,9 @@
 #include "list.h"
-#include <stdlib.h>
-#include <string.h>
 
 void
-list_init (list_t *list)
+list_init (list_t *list, list_comp_t comp)
 {
-  *list = (list_t){};
+  *list = (list_t){ .comp_fn = comp };
 }
 
 void
@@ -73,7 +71,7 @@ list_push_front (list_t *list, list_node_t *node)
 }
 
 list_node_t *
-list_insert (list_t *list, list_node_t *pos, list_node_t *node)
+list_insert_front (list_t *list, list_node_t *pos, list_node_t *node)
 {
   node->next = pos;
   node->prev = pos->prev;
@@ -86,4 +84,35 @@ list_insert (list_t *list, list_node_t *pos, list_node_t *node)
 
   list->size++;
   return node;
+}
+
+list_node_t *
+list_insert_back (list_t *list, list_node_t *pos, list_node_t *node)
+{
+  node->prev = pos;
+  node->next = pos->next;
+
+  if (pos->next)
+    pos->next->prev = node;
+  else
+    list->tail = node;
+  pos->next = node;
+
+  list->size++;
+  return node;
+}
+
+list_node_t *
+list_insert_at (list_t *list, size_t index, list_node_t *node)
+{
+  if (index > list->size)
+    return NULL;
+
+  if (index == list->size)
+    return list_push_back (list, node);
+
+  if (index == 0)
+    return list_push_front (list, node);
+
+  return list_insert_front (list, list_at (list, index), node);
 }
