@@ -5,13 +5,13 @@ include config.mk
 .PHONY: all
 all: bench
 
-bench: bench.o avlmap.o
+bench: bench.o avltree.o
 	gcc $(LDFLAGS) -o $@ $^
 
-bench.o: bench.c avlmap.h
+bench.o: bench.c avltree.h
 	gcc $(CFLAGS) -c $<
 
-avlmap.o: avlmap.c avlmap.h
+avltree.o: avltree.c avltree.h
 	gcc $(CFLAGS) -c $<
 
 .PHONY: json

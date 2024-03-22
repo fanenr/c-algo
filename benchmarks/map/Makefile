@@ -9,7 +9,7 @@ bench: bench.o
 	g++ $(LDFLAGS) -o $@ $^
 
 bench.o: bench.cc
-	g++ $(CFLAGS) -c $<
+	g++ $(CXXFLAGS) -c $<
 
 .PHONY: json
 json:

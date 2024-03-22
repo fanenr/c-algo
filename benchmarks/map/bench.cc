@@ -4,8 +4,14 @@
 #include <cstring>
 #include <map>
 
-#define T 5
-#define N 3000000
+#define T 1UL
+#define N 10000000UL
+
+static void clear (void);
+
+static double bench_find (void);
+static double bench_insert (void);
+static double bench_remove (void);
 
 struct comp
 {
@@ -19,11 +25,6 @@ struct comp
 int ages[N];
 char *names[N];
 std::map<char *, int, comp> map;
-
-static void clear (void);
-static double bench_find (void);
-static double bench_insert (void);
-static double bench_remove (void);
 
 int
 main (void)
@@ -84,8 +85,9 @@ bench_insert (void)
   for (size_t i = 0; i < N; i++)
     {
       char *name = rand_string (rand_long (8, 17));
-      assert (name);
       int age = rand_long (1, 101);
+      assert (name);
+
       names[i] = name;
       ages[i] = age;
     }
@@ -111,6 +113,7 @@ bench_remove (void)
       long rmpos = rand_long (0, N);
       if (!names[rmpos])
         continue;
+
       map.erase (names[rmpos]);
       names[rmpos] = nullptr;
     }
