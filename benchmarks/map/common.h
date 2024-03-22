@@ -27,7 +27,7 @@ rand_long (long from, long to)
 static inline char *
 rand_string (size_t len)
 {
-  char *ret = malloc (sizeof (char) * (len + 1));
+  char *ret = (char *)malloc (sizeof (char) * (len + 1));
   if (!ret)
     return NULL;
   for (size_t i = 0; i < len; i++)
