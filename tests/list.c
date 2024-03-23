@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define T 1UL
 #define N 100000UL
@@ -19,19 +20,17 @@ typedef struct data data;
 struct data
 {
   list_node_t list_node;
-  int num;
+  char *str;
 };
 
 list_t list;
 
-#define data_list_node_new(data_num)                                          \
+#define data_list_node_new(data_str)                                          \
   ({                                                                          \
     data *new = malloc (sizeof (data));                                       \
-    new->num = (data_num);                                                    \
+    new->str = (data_str);                                                    \
     new;                                                                      \
   })
-
-static void data_list_free (list_t *list);
 
 int
 main (void)
@@ -54,16 +53,33 @@ main (void)
     }
 }
 
+static inline int
+comp (const list_node_t *a, const list_node_t *b)
+{
+  const data *da = container_of (a, data, list_node);
+  const data *db = container_of (b, data, list_node);
+  return strcmp (da->str, db->str);
+}
+
+static inline void
+dtor (list_node_t *n)
+{
+  data *d = container_of (n, data, list_node);
+  free (d->str);
+  free (d);
+}
+
 static inline void
 init (void)
 {
-  list_init (&list, NULL);
+  /* list_init (&list, NULL, NULL); */
+  list_init (&list, comp, dtor);
 }
 
 static inline void
 clear (void)
 {
-  data_list_free (&list);
+  list_free (&list);
 }
 
 static inline void
@@ -81,11 +97,10 @@ test_insert (void)
 {
   for (size_t i = 0; i < N; i++)
     {
+      char *str = rand_string (rand_long (8, 17));
       size_t index = rand_long (0, list.size + 1);
-      list_node_t *pos = list_at (&list, index);
-      int num = rand_long (0, N);
 
-      data *new = data_list_node_new (num);
+      data *new = data_list_node_new (str);
       list_node_t *node = list_insert_at (&list, index, &new->list_node);
       assert (node == &new->list_node);
     }
@@ -98,22 +113,6 @@ test_remove (void)
     {
       size_t index = rand_long (0, list.size);
       list_node_t *node = list_at (&list, index);
-      data *container = container_of (node, data, list_node);
       list_remove (&list, node);
-      free (container);
     }
-}
-
-static inline void
-data_list_free (list_t *list)
-{
-  list_node_t *curr, *next;
-  for (curr = list->head; curr;)
-    {
-      data *container = container_of (curr, data, list_node);
-      next = curr->next;
-      free (container);
-      curr = next;
-    }
-  list_init (list, list->comp_fn);
 }

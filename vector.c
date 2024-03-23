@@ -109,19 +109,17 @@ vector_remove (vector_t *vec, size_t pos)
   void *data = vec->data;
   size_t size = vec->size;
   size_t elem_size = vec->elem_size;
+  void *rm = data + pos * elem_size;
   vector_dtor_t *const elem_dtor = vec->elem_dtor;
 
   if (pos >= size)
     return;
 
-  void *rm = data + pos * elem_size;
-  void *elem_back = alloca (elem_size);
-
-  if (memcpy (elem_back, rm, elem_size) != elem_back)
-    return;
+  if (elem_dtor)
+    elem_dtor (rm);
 
   if (pos == size - 1)
-    goto dtor;
+    goto dec_size;
 
   void *rm_next = rm + elem_size;
   size_t len = (size - pos - 1) * elem_size;
@@ -129,9 +127,7 @@ vector_remove (vector_t *vec, size_t pos)
   if (memmove (rm, rm_next, len) != rm)
     return;
 
-dtor:
-  if (elem_dtor)
-    elem_dtor (elem_back);
+dec_size:
   vec->size--;
 }
 
