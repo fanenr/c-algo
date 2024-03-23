@@ -53,7 +53,7 @@ dtor (void *e)
 static inline void
 init (void)
 {
-  // vector_init (&vec, sizeof (char *), NULL, NULL);
+  /* vector_init (&vec, sizeof (char *), NULL, NULL); */
   vector_init (&vec, sizeof (char *), comp, dtor);
 }
 
