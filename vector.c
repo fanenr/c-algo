@@ -3,48 +3,19 @@
 #include <string.h>
 
 void
-vector_init (vector_t *vec, size_t elem_size)
+vector_init (vector_t *vec, size_t size, vector_comp_t *comp,
+             vector_dtor_t *dtor)
 {
-  *vec = (vector_t){ .elem_size = elem_size };
-}
-
-void
-vector_free (vector_t *vec)
-{
-  free (vec->data);
-  vec->data = NULL;
-  vec->size = vec->cap = 0;
-}
-
-void
-vector_remove (vector_t *vec, size_t pos)
-{
-  if (pos >= vec->size)
-    return;
-
-  if (pos == vec->size - 1)
-    goto ok;
-
-  size_t esize = vec->elem_size;
-  void *rmpos = vec->data + pos * esize;
-  size_t mvlen = (vec->size - pos - 1) * esize;
-
-  if (memmove (rmpos, rmpos + esize, mvlen) != rmpos)
-    return;
-
-ok:
-  vec->size--;
+  *vec = (vector_t){ .elem_size = size, .elem_comp = comp, .elem_dtor = dtor };
 }
 
 vector_t *
 vector_reserve (vector_t *vec, size_t cap)
 {
-  if (vec->cap >= cap)
-    return vec;
-
-  void *newdata;
   size_t newcap = vec->cap;
-  size_t esize = vec->elem_size;
+
+  if (newcap >= cap)
+    return vec;
 
   if (newcap < VECTOR_INIT_CAP)
     newcap = VECTOR_INIT_CAP;
@@ -52,12 +23,35 @@ vector_reserve (vector_t *vec, size_t cap)
   while (newcap < cap)
     newcap *= VECTOR_EXPAN_RATIO;
 
-  if (!(newdata = realloc (vec->data, newcap * esize)))
+  void *newdata;
+  size_t elem_size = vec->elem_size;
+
+  if (!(newdata = realloc (vec->data, newcap * elem_size)))
     return NULL;
 
   vec->data = newdata;
   vec->cap = newcap;
   return vec;
+}
+
+void *
+vector_find (const vector_t *vec, const void *target)
+{
+  void *curr = vec->data;
+  size_t elem_size = vec->elem_size;
+  vector_comp_t *const elem_comp = vec->elem_comp;
+
+  if (!elem_comp)
+    return NULL;
+
+  for (size_t size = vec->size; size; size--)
+    {
+      if (elem_comp (target, curr) == 0)
+        return curr;
+      curr += elem_size;
+    }
+
+  return NULL;
 }
 
 void *
@@ -71,12 +65,13 @@ vector_at (const vector_t *vec, size_t pos)
 void *
 vector_push_back (vector_t *vec)
 {
-  size_t esize = vec->elem_size;
+  size_t size = vec->size;
+  size_t elem_size = vec->elem_size;
 
-  if (!vector_reserve (vec, vec->size + 1))
+  if (!vector_reserve (vec, size + 1))
     return NULL;
 
-  void *end = vec->data + vec->size * esize;
+  void *end = vec->data + size * elem_size;
 
   vec->size++;
   return end;
@@ -85,22 +80,87 @@ vector_push_back (vector_t *vec)
 void *
 vector_insert (vector_t *vec, size_t pos)
 {
-  if (pos > vec->size)
+  size_t size = vec->size;
+
+  if (pos > size)
     return NULL;
 
-  if (pos == vec->size)
+  if (pos == size)
     return vector_push_back (vec);
 
-  if (!vector_reserve (vec, vec->size + 1))
+  if (!vector_reserve (vec, size + 1))
     return NULL;
 
-  size_t esize = vec->elem_size;
-  void *in = vec->data + pos * esize;
-  size_t len = (vec->size - pos) * esize;
+  size_t elem_size = vec->elem_size;
+  void *in = vec->data + pos * elem_size;
+  size_t len = (size - pos) * elem_size;
+  void *in_next = in + elem_size;
 
-  if (memmove (in + esize, in, len) != in + esize)
+  if (memmove (in_next, in, len) != in_next)
     return NULL;
 
   vec->size++;
   return in;
+}
+
+void
+vector_remove (vector_t *vec, size_t pos)
+{
+  void *data = vec->data;
+  size_t size = vec->size;
+  size_t elem_size = vec->elem_size;
+  vector_dtor_t *const elem_dtor = vec->elem_dtor;
+
+  if (pos >= size)
+    return;
+
+  void *rm = data + pos * elem_size;
+  void *elem_back = alloca (elem_size);
+
+  if (memcpy (elem_back, rm, elem_size) != elem_back)
+    return;
+
+  if (pos == size - 1)
+    goto dtor;
+
+  void *rm_next = rm + elem_size;
+  size_t len = (size - pos - 1) * elem_size;
+
+  if (memmove (rm, rm_next, len) != rm)
+    return;
+
+dtor:
+  if (elem_dtor)
+    elem_dtor (elem_back);
+  vec->size--;
+}
+
+void
+vector_sort (vector_t *vec)
+{
+  size_t size = vec->size;
+  vector_comp_t *elem_comp = vec->elem_comp;
+
+  if (size < 2 || !elem_comp)
+    return;
+
+  qsort (vec->data, size, vec->elem_size, elem_comp);
+}
+
+void
+vector_free (vector_t *vec)
+{
+  void *data = vec->data;
+  size_t elem_size = vec->elem_size;
+  vector_dtor_t *const elem_dtor = vec->elem_dtor;
+
+  if (elem_dtor)
+    {
+      void *rm = data - elem_size;
+      for (size_t size = vec->size; size; size--)
+        elem_dtor ((rm += elem_size));
+    }
+
+  free (data);
+  vector_init (vec, elem_size, vec->elem_comp, elem_dtor);
 }

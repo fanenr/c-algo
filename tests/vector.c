@@ -2,6 +2,8 @@
 #include "../common.h"
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define T 1UL
 #define N 100000UL
@@ -36,10 +38,23 @@ main (void)
     }
 }
 
+static inline int
+comp (const void *a, const void *b)
+{
+  return strcmp (*(const char **)a, *(const char **)b);
+}
+
+static inline void
+dtor (void *e)
+{
+  free (*(char **)e);
+}
+
 static inline void
 init (void)
 {
-  vector_init (&vec, sizeof (int));
+  // vector_init (&vec, sizeof (char *), NULL, NULL);
+  vector_init (&vec, sizeof (char *), comp, dtor);
 }
 
 static inline void
@@ -63,10 +78,10 @@ test_insert (void)
 {
   for (size_t i = 0; i < N; i++)
     {
+      char *str = rand_string (rand_long (8, 17));
       size_t pos = rand_long (0, vec.size + 1);
-      int *node = vector_insert (&vec, pos);
-      int num = rand_long (0, N);
-      *node = num;
+      char **node = vector_insert (&vec, pos);
+      *node = str;
     }
 }
 
