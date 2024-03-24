@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstring>
 #include <map>
+#include <stdlib.h>
 
 #define T 1UL
 #define N 10000000UL
@@ -115,6 +116,7 @@ bench_remove (void)
         continue;
 
       map.erase (names[rmpos]);
+      free ((void *)names[rmpos]);
       names[rmpos] = nullptr;
     }
   TIME_ED ();

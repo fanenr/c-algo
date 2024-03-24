@@ -12,6 +12,8 @@ test
 bench
 
 # other
+*.out
+prof.txt
 .gdb_history
 compile_commands.json
 
