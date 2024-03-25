@@ -5,13 +5,13 @@ include config.mk
 .PHONY: all
 all: bench
 
-bench: bench.o rbmap.o
+bench: bench.o rbtree.o
 	gcc $(LDFLAGS) -o $@ $^
 
-bench.o: bench.c rbmap.h
+bench.o: bench.c rbtree.h
 	gcc $(CFLAGS) -c $<
 
-rbmap.o: rbmap.c rbmap.h
+rbtree.o: rbtree.c rbtree.h
 	gcc $(CFLAGS) -c $<
 
 .PHONY: json

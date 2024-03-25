@@ -3,7 +3,7 @@ MODE = debug
 include config.mk
 export CFLAGS LDFLAGS
 
-targets := vector list hashmap avltree rbmap
+targets := vector list hashmap avltree rbtree
 objects := $(targets:%=%.o)
 export targets objects
 
