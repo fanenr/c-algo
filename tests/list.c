@@ -73,13 +73,13 @@ static inline void
 init (void)
 {
   /* list_init (&list, NULL, NULL); */
-  list_init (&list, comp, dtor);
+  list = LIST_INIT;
 }
 
 static inline void
 clear (void)
 {
-  list_free (&list);
+  list_free (&list, dtor);
 }
 
 static inline void
@@ -113,6 +113,6 @@ test_remove (void)
     {
       size_t index = rand_long (0, list.size);
       list_node_t *node = list_at (&list, index);
-      list_remove (&list, node);
+      list_remove (&list, node, dtor);
     }
 }

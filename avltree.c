@@ -181,37 +181,36 @@ balance:
 
 avltree_node_t *
 avltree_find (const avltree_t *tree, const avltree_node_t *target,
-              avltree_comp_t *node_comp)
+              avltree_comp_t *comp)
 {
   for (avltree_node_t *curr = tree->root; curr;)
     {
-      int comp = node_comp (target, curr);
+      int comp_ret = comp (target, curr);
 
-      if (comp == 0)
+      if (comp_ret == 0)
         return curr;
 
-      curr = comp < 0 ? curr->left : curr->right;
+      curr = comp_ret < 0 ? curr->left : curr->right;
     }
 
   return NULL;
 }
 
 avltree_node_t *
-avltree_insert (avltree_t *tree, avltree_node_t *node,
-                avltree_comp_t *node_comp)
+avltree_insert (avltree_t *tree, avltree_node_t *node, avltree_comp_t *comp)
 {
   avltree_node_t *parent = NULL;
   avltree_node_t **inpos = &tree->root;
 
   for (avltree_node_t *curr = tree->root; curr;)
     {
-      int comp = node_comp (node, curr);
+      int comp_ret = comp (node, curr);
 
-      if (comp == 0)
+      if (comp_ret == 0)
         return NULL;
 
       parent = curr;
-      inpos = comp < 0 ? &curr->left : &curr->right;
+      inpos = comp_ret < 0 ? &curr->left : &curr->right;
       curr = *inpos;
     }
 
@@ -221,19 +220,19 @@ avltree_insert (avltree_t *tree, avltree_node_t *node,
 }
 
 static inline void
-avltree_free_impl (avltree_node_t *node, avltree_dtor_t *node_dtor)
+avltree_free_impl (avltree_node_t *node, avltree_dtor_t *dtor)
 {
   if (!node)
     return;
 
-  avltree_free_impl (node->left, node_dtor);
-  avltree_free_impl (node->right, node_dtor);
-  node_dtor (node);
+  avltree_free_impl (node->left, dtor);
+  avltree_free_impl (node->right, dtor);
+  dtor (node);
 }
 
 void
-avltree_free (avltree_t *tree, avltree_dtor_t *node_dtor)
+avltree_free (avltree_t *tree, avltree_dtor_t *dtor)
 {
-  avltree_free_impl (tree->root, node_dtor);
+  avltree_free_impl (tree->root, dtor);
   *tree = AVLTREE_INIT;
 }
