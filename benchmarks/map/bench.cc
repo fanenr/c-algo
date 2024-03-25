@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <cstring>
 #include <map>
-#include <stdlib.h>
 
 #define T 1UL
 #define N 10000000UL
