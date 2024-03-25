@@ -1,7 +1,5 @@
 #include "avltree.h"
 
-#define BALANCE_CHECK(BF) (-2 < (BF) && (BF) < 2)
-
 #define HEIGHT_OF(NODE) ((NODE) ? (NODE)->height : -1)
 
 #define BALANCE_FACTOR_OF(NODE)                                               \
@@ -15,7 +13,7 @@ height_update (avltree_node_t *node)
   return (node->height = (lh > rh ? lh : rh) + 1);
 }
 
-static inline void
+static inline avltree_node_t *
 rotate_left (avltree_t *tree, avltree_node_t *node)
 {
   avltree_node_t *child = node->right;
@@ -25,18 +23,25 @@ rotate_left (avltree_t *tree, avltree_node_t *node)
   if ((node->right = child->left))
     node->right->parent = node;
 
-  if ((child->parent = parent))
-    repos = (node == parent->left) ? &parent->left : &parent->right;
-  *repos = child;
+  if (parent)
+    if (node == parent->left)
+      parent->left = child;
+    else
+      parent->right = child;
+  else
+    tree->root = child;
+  child->parent = parent;
 
   child->left = node;
   node->parent = child;
 
   height_update (node);
   height_update (child);
+
+  return child;
 }
 
-static inline void
+static inline avltree_node_t *
 rotate_right (avltree_t *tree, avltree_node_t *node)
 {
   avltree_node_t *child = node->left;
@@ -46,18 +51,25 @@ rotate_right (avltree_t *tree, avltree_node_t *node)
   if ((node->left = child->right))
     node->left->parent = node;
 
-  if ((child->parent = parent))
-    repos = (node == parent->left) ? &parent->left : &parent->right;
-  *repos = child;
+  if (parent)
+    if (node == parent->left)
+      parent->left = child;
+    else
+      parent->right = child;
+  else
+    tree->root = child;
+  child->parent = parent;
 
   child->right = node;
   node->parent = child;
 
   height_update (node);
   height_update (child);
+
+  return child;
 }
 
-static inline void
+static inline avltree_node_t *
 rotate (avltree_t *tree, avltree_node_t *node)
 {
   avltree_height_t bf = BALANCE_FACTOR_OF (node);
@@ -68,8 +80,7 @@ rotate (avltree_t *tree, avltree_node_t *node)
         return rotate_right (tree, node);
 
       rotate_left (tree, node->left);
-      rotate_right (tree, node);
-      return;
+      return rotate_right (tree, node);
     }
 
   if (bf < -1)
@@ -78,9 +89,10 @@ rotate (avltree_t *tree, avltree_node_t *node)
         return rotate_left (tree, node);
 
       rotate_right (tree, node->right);
-      rotate_left (tree, node);
-      return;
+      return rotate_left (tree, node);
     }
+
+  return node;
 }
 
 extern void
@@ -100,11 +112,9 @@ avltree_link (avltree_t *tree, avltree_node_t **inpos, avltree_node_t *parent,
       if (height == curr->height)
         break;
 
-      avltree_height_t bf = BALANCE_FACTOR_OF (curr);
-      if (BALANCE_CHECK (bf))
+      if (curr == rotate (tree, curr))
         continue;
 
-      rotate (tree, curr);
       curr = curr->parent;
     }
 
@@ -136,26 +146,29 @@ avltree_erase (avltree_t *tree, avltree_node_t *node)
       goto balance;
     }
 
-  avltree_node_t *next = parent = node->right;
-  avltree_node_t **rmpos2 = &next->right;
+  avltree_node_t *next = right;
+  for (avltree_node_t *temp; (temp = next->left);)
+    next = temp;
 
-  for (avltree_node_t *left; (left = next->left);)
-    {
-      rmpos2 = &next->left;
-      parent = next;
-      next = left;
-    }
-
+  parent = next->parent;
   avltree_node_t *child = next->right;
-  *next = *node;
-  *rmpos = next;
 
-  child ? child->parent = parent : 0;
-  *rmpos2 = child;
+  *rmpos = next;
+  *next = *node;
+  left->parent = next;
 
   if (next != right)
-    node->right->parent = next;
-  node->left->parent = next;
+    {
+      right->parent = next;
+      parent->left = child;
+      if (child)
+        child->parent = parent;
+    }
+  else
+    {
+      next->right = child;
+      parent = next;
+    }
 
 balance:
   for (avltree_node_t *curr = parent; curr; curr = curr->parent)
@@ -163,16 +176,13 @@ balance:
       avltree_height_t height = curr->height;
       height_update (curr);
 
-      avltree_height_t bf = BALANCE_FACTOR_OF (curr);
-
-      if (BALANCE_CHECK (bf))
+      if (curr == rotate (tree, curr))
         {
           if (height == curr->height)
             break;
           continue;
         }
 
-      rotate (tree, curr);
       curr = curr->parent;
     }
 

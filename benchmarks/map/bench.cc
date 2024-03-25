@@ -1,4 +1,5 @@
 #include "common.h"
+#include <assert.h>
 #include <cassert>
 #include <cstdio>
 #include <cstring>
@@ -16,7 +17,7 @@ static double bench_remove (void);
 struct comp
 {
   bool
-  operator() (char const *a, char const *b) const
+  operator() (char const *a, char const *b) const noexcept
   {
     return strcmp (a, b) < 0;
   }
@@ -67,12 +68,9 @@ bench_find (void)
     {
       if (!names[i])
         continue;
+
       auto const &found = map.find (names[i]);
-      if (found->second != ages[i])
-        {
-          printf ("find failed\n");
-          abort ();
-        }
+      assert (found->second == ages[i]);
     }
   TIME_ED ();
 
@@ -96,6 +94,7 @@ bench_insert (void)
   for (size_t i = 0; i < N; i++)
     {
       auto pair = map.emplace (names[i], ages[i]);
+
       if (!pair.second)
         names[i] = nullptr;
     }
@@ -116,6 +115,7 @@ bench_remove (void)
 
       map.erase (names[rmpos]);
       free ((void *)names[rmpos]);
+
       names[rmpos] = nullptr;
     }
   TIME_ED ();
