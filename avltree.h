@@ -43,7 +43,7 @@ extern avltree_node_t *avltree_find (const avltree_t *tree,
     attr_nonnull (1, 2, 3);
 
 extern avltree_node_t *avltree_insert (avltree_t *tree, avltree_node_t *node,
-                                       avltree_comp_t *node_comp)
+                                       avltree_comp_t *comp)
     attr_nonnull (1, 2, 3);
 
 extern void avltree_free (avltree_t *tree, avltree_dtor_t *dtor)

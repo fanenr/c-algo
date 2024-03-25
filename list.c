@@ -1,11 +1,5 @@
 #include "list.h"
 
-void
-list_init (list_t *list, list_comp_t *comp, list_dtor_t *dtor)
-{
-  *list = (list_t){ .node_comp = comp, .node_dtor = dtor };
-}
-
 list_node_t *
 list_at (const list_t *list, size_t index)
 {
@@ -101,14 +95,13 @@ list_insert_at (list_t *list, size_t index, list_node_t *node)
 }
 
 list_node_t *
-list_find (const list_t *list, const list_node_t *target)
+list_find (const list_t *list, const list_node_t *target, list_comp_t *comp)
 {
   list_node_t *curr = list->head;
-  list_comp_t *const node_comp = list->node_comp;
 
   for (size_t size = list->size; size; size--)
     {
-      if (node_comp (target, curr) == 0)
+      if (comp (target, curr) == 0)
         return curr;
       curr = curr->next;
     }
@@ -117,11 +110,10 @@ list_find (const list_t *list, const list_node_t *target)
 }
 
 void
-list_remove (list_t *list, list_node_t *node)
+list_remove (list_t *list, list_node_t *node, list_dtor_t *dtor)
 {
   list_node_t *prev = node->prev;
   list_node_t *next = node->next;
-  list_dtor_t *node_dtor = list->node_dtor;
 
   if (node == list->head)
     list->head = next;
@@ -133,26 +125,21 @@ list_remove (list_t *list, list_node_t *node)
   if (next)
     next->prev = prev;
 
-  if (node_dtor)
-    node_dtor (node);
+  dtor (node);
   list->size--;
 }
 
 void
-list_free (list_t *list)
+list_free (list_t *list, list_dtor_t *dtor)
 {
   list_node_t *curr = list->head, *next;
-  list_dtor_t *const node_dtor = list->node_dtor;
-
-  if (!node_dtor)
-    return;
 
   for (size_t size = list->size; size; size--)
     {
       next = curr->next;
-      node_dtor (curr);
+      dtor (curr);
       curr = next;
     }
 
-  list_init (list, list->node_comp, node_dtor);
+  *list = LIST_INIT;
 }
