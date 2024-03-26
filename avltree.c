@@ -17,7 +17,6 @@ static inline avltree_node_t *
 rotate_left (avltree_t *tree, avltree_node_t *node)
 {
   avltree_node_t *child = node->right;
-  avltree_node_t **repos = &tree->root;
   avltree_node_t *parent = node->parent;
 
   if ((node->right = child->left))
@@ -45,7 +44,6 @@ static inline avltree_node_t *
 rotate_right (avltree_t *tree, avltree_node_t *node)
 {
   avltree_node_t *child = node->left;
-  avltree_node_t **repos = &tree->root;
   avltree_node_t *parent = node->parent;
 
   if ((node->left = child->right))
@@ -124,13 +122,14 @@ avltree_link (avltree_t *tree, avltree_node_t **inpos, avltree_node_t *parent,
 void
 avltree_erase (avltree_t *tree, avltree_node_t *node)
 {
-  avltree_node_t *parent;
+  avltree_node_t **rmpos;
   avltree_node_t *left = node->left;
   avltree_node_t *right = node->right;
-  avltree_node_t **rmpos = &tree->root;
+  avltree_node_t *parent = node->parent;
+  avltree_node_t *child = left ? left : right;
 
-  if ((parent = node->parent))
-    rmpos = (node == parent->left) ? &parent->left : &parent->right;
+  rmpos = parent ? (node == parent->left) ? &parent->left : &parent->right
+                 : &tree->root;
 
   if (!left && !right)
     {
@@ -140,7 +139,6 @@ avltree_erase (avltree_t *tree, avltree_node_t *node)
 
   if (!left ^ !right)
     {
-      avltree_node_t *child = left ? left : right;
       child->parent = parent;
       *rmpos = child;
       goto balance;
@@ -150,8 +148,8 @@ avltree_erase (avltree_t *tree, avltree_node_t *node)
   for (avltree_node_t *temp; (temp = next->left);)
     next = temp;
 
+  child = next->right;
   parent = next->parent;
-  avltree_node_t *child = next->right;
 
   *rmpos = next;
   *next = *node;
@@ -159,15 +157,15 @@ avltree_erase (avltree_t *tree, avltree_node_t *node)
 
   if (next != right)
     {
-      right->parent = next;
       parent->left = child;
+      right->parent = next;
       if (child)
         child->parent = parent;
     }
   else
     {
-      next->right = child;
       parent = next;
+      next->right = child;
     }
 
 balance:
@@ -216,12 +214,15 @@ avltree_insert (avltree_t *tree, avltree_node_t *node, avltree_comp_t *comp)
     {
       int comp_ret = comp (node, curr);
 
-      if (comp_ret == 0)
-        return NULL;
+      if (comp_ret != 0)
+        {
+          parent = curr;
+          inpos = comp_ret < 0 ? &curr->left : &curr->right;
+          curr = *inpos;
+          continue;
+        }
 
-      parent = curr;
-      inpos = comp_ret < 0 ? &curr->left : &curr->right;
-      curr = *inpos;
+      return NULL;
     }
 
   avltree_link (tree, inpos, parent, node);

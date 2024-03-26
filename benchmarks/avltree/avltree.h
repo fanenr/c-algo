@@ -35,8 +35,6 @@ extern void avltree_link (avltree_t *tree, avltree_node_t **inpos,
 extern void avltree_erase (avltree_t *tree, avltree_node_t *node)
     attr_nonnull (1, 2);
 
-/* simple wrapper */
-
 extern avltree_node_t *avltree_find (const avltree_t *tree,
                                      const avltree_node_t *target,
                                      avltree_comp_t *comp)

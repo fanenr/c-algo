@@ -104,17 +104,21 @@ data_insert (avltree_t *tree, data *node)
 {
   avltree_node_t *parent = NULL;
   avltree_node_t **inpos = &tree->root;
+  avltree_node_t *tree_node = &node->tree_node;
 
   for (avltree_node_t *curr = tree->root; curr;)
     {
-      int comp_ret = comp (&node->tree_node, curr);
+      int comp_ret = comp (tree_node, curr);
 
-      if (comp_ret == 0)
-        return NULL;
+      if (comp_ret != 0)
+        {
+          parent = curr;
+          inpos = comp_ret < 0 ? &curr->left : &curr->right;
+          curr = *inpos;
+          continue;
+        }
 
-      parent = curr;
-      inpos = comp_ret < 0 ? &curr->left : &curr->right;
-      curr = *inpos;
+      return NULL;
     }
 
   avltree_link (tree, inpos, parent, &node->tree_node);
@@ -125,9 +129,11 @@ data_insert (avltree_t *tree, data *node)
 static inline data *
 data_find (avltree_t *tree, const data *target)
 {
+  const avltree_node_t *tree_node = &target->tree_node;
+
   for (avltree_node_t *curr = tree->root; curr;)
     {
-      int comp_ret = comp (&target->tree_node, curr);
+      int comp_ret = comp (tree_node, curr);
 
       if (comp_ret == 0)
         return container_of (curr, data, tree_node);
