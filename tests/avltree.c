@@ -191,7 +191,7 @@ test_remove (void)
 
   for (size_t i = 0; i < N; i++)
     {
-      /* long rmpos = i; */
+      // long rmpos = i;
       long rmpos = rand_long (0, N);
       if (!names[rmpos])
         continue;

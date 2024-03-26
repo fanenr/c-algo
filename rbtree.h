@@ -38,8 +38,6 @@ extern void rbtree_link (rbtree_t *tree, rbtree_node_t **inpos,
 extern void rbtree_erase (rbtree_t *tree, rbtree_node_t *node)
     attr_nonnull (1, 2);
 
-/* simple wrapper */
-
 extern rbtree_node_t *rbtree_insert (rbtree_t *tree, rbtree_node_t *node,
                                      rbtree_comp_t *comp)
     attr_nonnull (1, 2, 3);
