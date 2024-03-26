@@ -131,44 +131,35 @@ avltree_erase (avltree_t *tree, avltree_node_t *node)
   rmpos = parent ? (node == parent->left) ? &parent->left : &parent->right
                  : &tree->root;
 
-  if (!left && !right)
+  if (left && right)
     {
-      *rmpos = NULL;
-      goto balance;
-    }
+      avltree_node_t *next = right;
+      for (avltree_node_t *temp; (temp = next->left);)
+        next = temp;
 
-  if (!left ^ !right)
-    {
-      child->parent = parent;
-      *rmpos = child;
-      goto balance;
-    }
+      child = next->right;
+      parent = next->parent;
 
-  avltree_node_t *next = right;
-  for (avltree_node_t *temp; (temp = next->left);)
-    next = temp;
-
-  child = next->right;
-  parent = next->parent;
-
-  *rmpos = next;
-  *next = *node;
-  left->parent = next;
-
-  if (next != right)
-    {
-      parent->left = child;
+      left->parent = next;
       right->parent = next;
-      if (child)
-        child->parent = parent;
-    }
-  else
-    {
-      parent = next;
-      next->right = child;
+
+      *rmpos = next;
+      *next = *node;
+
+      if (next == right)
+        {
+          parent = next;
+          rmpos = &next->right;
+        }
+      else
+        rmpos = &parent->left;
     }
 
-balance:
+  *rmpos = child;
+
+  if (child)
+    child->parent = parent;
+
   for (avltree_node_t *curr = parent; curr; curr = curr->parent)
     {
       avltree_height_t height = curr->height;

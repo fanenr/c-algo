@@ -1,5 +1,5 @@
-#include "rbtree.h"
 #include "common.h"
+#include "rbtree.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -29,7 +29,7 @@ int ages[N];
 rbtree_t map;
 char *names[N];
 
-#define data_rbtree_node_new(data_key, data_val)                             \
+#define data_rbtree_node_new(data_key, data_val)                              \
   ({                                                                          \
     data *new = malloc (sizeof (data));                                       \
     new->key = (data_key);                                                    \
@@ -85,10 +85,9 @@ init (void)
 static inline void
 clear (void)
 {
-  rbtree_free (&map, dtor);
-
   memset (names, 0, sizeof (char *) * N);
   memset (ages, 0, sizeof (int) * N);
+  rbtree_free (&map, dtor);
 }
 
 static inline data *
@@ -96,17 +95,21 @@ data_insert (rbtree_t *tree, data *node)
 {
   rbtree_node_t *parent = NULL;
   rbtree_node_t **inpos = &tree->root;
+  rbtree_node_t *tree_node = &node->tree_node;
 
   for (rbtree_node_t *curr = tree->root; curr;)
     {
-      int comp_ret = comp (&node->tree_node, curr);
+      int comp_ret = comp (tree_node, curr);
 
-      if (comp_ret == 0)
-        return NULL;
+      if (comp_ret != 0)
+        {
+          parent = curr;
+          inpos = comp_ret < 0 ? &curr->left : &curr->right;
+          curr = *inpos;
+          continue;
+        }
 
-      parent = curr;
-      inpos = comp_ret < 0 ? &curr->left : &curr->right;
-      curr = *inpos;
+      return NULL;
     }
 
   rbtree_link (tree, inpos, parent, &node->tree_node);
@@ -117,9 +120,11 @@ data_insert (rbtree_t *tree, data *node)
 static inline data *
 data_find (rbtree_t *tree, const data *target)
 {
+  const rbtree_node_t *tree_node = &target->tree_node;
+
   for (rbtree_node_t *curr = tree->root; curr;)
     {
-      int comp_ret = comp (&target->tree_node, curr);
+      int comp_ret = comp (tree_node, curr);
 
       if (comp_ret == 0)
         return container_of (curr, data, tree_node);
@@ -144,12 +149,6 @@ bench_find (void)
 
       data *node = data_find (&map, &temp);
       assert (node->val == ages[i]);
-
-      if (node->val != ages[i])
-        {
-          printf ("find failed\n");
-          abort ();
-        }
     }
   TIME_ED ();
 
