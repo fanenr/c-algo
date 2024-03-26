@@ -54,13 +54,13 @@ static inline void
 init (void)
 {
   /* vector_init (&vec, sizeof (char *), NULL, NULL); */
-  vector_init (&vec, sizeof (char *), comp, dtor);
+  vec = VECTOR_INIT (sizeof (char *));
 }
 
 static inline void
 clear (void)
 {
-  vector_free (&vec);
+  vector_free (&vec, dtor);
 }
 
 static inline void
@@ -91,6 +91,7 @@ test_remove (void)
   for (size_t i = 0; i < N / 2; i++)
     {
       size_t pos = rand_long (0, vec.size);
-      vector_remove (&vec, pos);
+      dtor (vector_at (&vec, pos));
+      vector_erase (&vec, pos);
     }
 }

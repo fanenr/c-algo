@@ -113,6 +113,7 @@ test_remove (void)
     {
       size_t index = rand_long (0, list.size);
       list_node_t *node = list_at (&list, index);
-      list_remove (&list, node, dtor);
+      list_erase (&list, node);
+      dtor (node);
     }
 }

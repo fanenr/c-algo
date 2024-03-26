@@ -94,23 +94,8 @@ list_insert_at (list_t *list, size_t index, list_node_t *node)
   return list_insert_front (list, list_at (list, index), node);
 }
 
-list_node_t *
-list_find (const list_t *list, const list_node_t *target, list_comp_t *comp)
-{
-  list_node_t *curr = list->head;
-
-  for (size_t size = list->size; size; size--)
-    {
-      if (comp (target, curr) == 0)
-        return curr;
-      curr = curr->next;
-    }
-
-  return NULL;
-}
-
 void
-list_remove (list_t *list, list_node_t *node, list_dtor_t *dtor)
+list_erase (list_t *list, list_node_t *node)
 {
   list_node_t *prev = node->prev;
   list_node_t *next = node->next;
@@ -125,8 +110,22 @@ list_remove (list_t *list, list_node_t *node, list_dtor_t *dtor)
   if (next)
     next->prev = prev;
 
-  dtor (node);
   list->size--;
+}
+
+list_node_t *
+list_find (const list_t *list, const list_node_t *target, list_comp_t *comp)
+{
+  list_node_t *curr = list->head;
+
+  for (size_t size = list->size; size; size--)
+    {
+      if (comp (target, curr) == 0)
+        return curr;
+      curr = curr->next;
+    }
+
+  return NULL;
 }
 
 void

@@ -118,9 +118,9 @@ rbtree_erase (rbtree_t *tree, rbtree_node_t *node)
       for (rbtree_node_t *temp; (temp = next->left);)
         next = temp;
 
-      parent = next->parent;
       color = next->color;
       child = next->right;
+      parent = next->parent;
 
       left->parent = next;
       right->parent = next;
@@ -137,27 +137,21 @@ rbtree_erase (rbtree_t *tree, rbtree_node_t *node)
         rmpos = &parent->left;
     }
 
+  *rmpos = child;
+
   if (color == RBTREE_RED)
-    {
-      *rmpos = NULL;
-      goto ret;
-    }
+    goto ret;
 
   if (child)
     {
       child->color = RBTREE_BLACK;
       child->parent = parent;
-      *rmpos = child;
       goto ret;
     }
 
-  *rmpos = node;
-
-  for (rbtree_node_t *curr = node; curr;)
+  for (rbtree_node_t *curr = child; IS_BLACK (curr) && parent;
+       parent = curr->parent)
     {
-      if (!parent)
-        break;
-
       bool curr_left = (curr == parent->left);
       rbtree_node_t *bro = curr_left ? parent->right : parent->left;
 
@@ -186,7 +180,6 @@ rbtree_erase (rbtree_t *tree, rbtree_node_t *node)
               break;
             }
           curr = parent;
-          parent = curr->parent;
           continue;
         }
 
@@ -219,8 +212,6 @@ rbtree_erase (rbtree_t *tree, rbtree_node_t *node)
       parent->color = RBTREE_BLACK;
       break;
     }
-
-  *rmpos = NULL;
 
 ret:
   tree->size--;

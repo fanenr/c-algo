@@ -2,13 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-void
-vector_init (vector_t *vec, size_t size, vector_comp_t *comp,
-             vector_dtor_t *dtor)
-{
-  *vec = (vector_t){ .elem_size = size, .elem_comp = comp, .elem_dtor = dtor };
-}
-
 vector_t *
 vector_reserve (vector_t *vec, size_t cap)
 {
@@ -31,34 +24,6 @@ vector_reserve (vector_t *vec, size_t cap)
   vec->data = newdata;
   vec->cap = newcap;
   return vec;
-}
-
-void *
-vector_find (const vector_t *vec, const void *target)
-{
-  void *curr = vec->data;
-  size_t elem_size = vec->elem_size;
-  vector_comp_t *elem_comp = vec->elem_comp;
-
-  if (!elem_comp)
-    return NULL;
-
-  for (size_t size = vec->size; size; size--)
-    {
-      if (elem_comp (target, curr) == 0)
-        return curr;
-      curr += elem_size;
-    }
-
-  return NULL;
-}
-
-void *
-vector_at (const vector_t *vec, size_t pos)
-{
-  if (pos >= vec->size)
-    return NULL;
-  return vec->data + pos * vec->elem_size;
 }
 
 void *
@@ -98,18 +63,14 @@ vector_insert (vector_t *vec, size_t pos)
 }
 
 void
-vector_remove (vector_t *vec, size_t pos)
+vector_erase (vector_t *vec, size_t pos)
 {
   size_t size = vec->size;
   void *rm = vector_at (vec, pos);
   size_t elem_size = vec->elem_size;
-  vector_dtor_t *elem_dtor = vec->elem_dtor;
 
   if (!rm)
     return;
-
-  if (elem_dtor)
-    elem_dtor (rm);
 
   if (pos == size - 1)
     goto dec_size;
@@ -124,30 +85,41 @@ dec_size:
   vec->size--;
 }
 
-void
-vector_sort (vector_t *vec)
+void *
+vector_find (const vector_t *vec, const void *target, vector_comp_t *comp)
 {
-  size_t size = vec->size;
-  vector_comp_t *elem_comp = vec->elem_comp;
+  void *curr = vec->data;
+  size_t elem_size = vec->elem_size;
 
-  if (size > 1 && elem_comp)
-    qsort (vec->data, size, vec->elem_size, elem_comp);
+  for (size_t size = vec->size; size; size--)
+    {
+      if (comp (target, curr) == 0)
+        return curr;
+      curr += elem_size;
+    }
+
+  return NULL;
 }
 
 void
-vector_free (vector_t *vec)
+vector_sort (vector_t *vec, vector_comp_t *comp)
+{
+  size_t size = vec->size;
+
+  if (size > 1)
+    qsort (vec->data, size, vec->elem_size, comp);
+}
+
+void
+vector_free (vector_t *vec, vector_dtor_t *dtor)
 {
   void *data = vec->data;
   size_t elem_size = vec->elem_size;
-  vector_dtor_t *elem_dtor = vec->elem_dtor;
 
-  if (elem_dtor)
-    {
-      void *rm = data - elem_size;
-      for (size_t size = vec->size; size; size--)
-        elem_dtor ((rm += elem_size));
-    }
+  void *rm = data - elem_size;
+  for (size_t size = vec->size; size; size--)
+    dtor ((rm += elem_size));
 
   free (data);
-  vector_init (vec, elem_size, vec->elem_comp, elem_dtor);
+  *vec = VECTOR_INIT (vec->elem_size);
 }
