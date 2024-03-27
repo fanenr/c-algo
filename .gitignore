@@ -6,7 +6,7 @@ list
 vector
 rbtree
 avltree
-hashmap
+hashtable
 
 test
 bench
