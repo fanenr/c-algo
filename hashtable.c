@@ -1,6 +1,6 @@
 #include "hashtable.h"
 
-hashtable_t *
+void
 hashtable_move (hashtable_t *table, hashtable_t *origin)
 {
   size_t cap = table->cap;
@@ -10,30 +10,36 @@ hashtable_move (hashtable_t *table, hashtable_t *origin)
 
   for (size_t i = 0; i < ocap; i++)
     {
-      for (hashtable_node_t *curr = odata[i]; curr; curr = curr->next)
-        {
-          size_t index = curr->hash % cap;
-          hashtable_node_t *node = data[index];
+      hashtable_node_t *next;
+      hashtable_node_t *curr = odata[i];
 
-          if (!node)
+      for (; curr; curr = next)
+        {
+          next = curr->next;
+          size_t index = curr->hash % cap;
+          hashtable_node_t **head = data + index;
+          hashtable_node_t *tail = *head;
+
+          if (!tail)
             {
-              data[index] = curr;
+              curr->prev = curr->next = NULL;
+              *head = curr;
               continue;
             }
 
-          hashtable_node_t *tail = node;
           for (hashtable_node_t *temp; (temp = tail->next);)
             tail = temp;
 
+          curr->prev = tail;
+          curr->next = NULL;
           tail->next = curr;
         }
     }
 
   table->size = origin->size;
-  return table;
 }
 
-hashtable_node_t *
+void
 hashtable_insert (hashtable_t *table, size_t hash, hashtable_node_t *node)
 {
   node->hash = hash;
@@ -42,16 +48,16 @@ hashtable_insert (hashtable_t *table, size_t hash, hashtable_node_t *node)
   hashtable_node_t **data = table->data;
 
   size_t index = hash % table->cap;
-  hashtable_node_t *head = data[index];
+  hashtable_node_t **head = data + index;
+  hashtable_node_t *tail = *head;
 
-  if (!head)
+  if (!tail)
     {
-      data[index] = node;
       node->prev = NULL;
+      *head = node;
       goto inc_size;
     }
 
-  hashtable_node_t *tail = head;
   for (hashtable_node_t *temp; (temp = tail->next);)
     tail = temp;
 
@@ -60,7 +66,6 @@ hashtable_insert (hashtable_t *table, size_t hash, hashtable_node_t *node)
 
 inc_size:
   table->size++;
-  return node;
 }
 
 void
@@ -81,4 +86,23 @@ hashtable_erase (hashtable_t *table, hashtable_node_t *node)
     next->prev = prev;
 
   table->size--;
+}
+
+void
+hashtable_free (hashtable_t *table, hashtable_dtor_t *dtor)
+{
+  size_t cap = table->cap;
+  hashtable_node_t **data = table->data;
+
+  for (size_t i = 0; i < cap; i++)
+    {
+      hashtable_node_t *next;
+      hashtable_node_t *curr = data[i];
+
+      for (; curr; curr = next)
+        {
+          next = curr->next;
+          dtor (curr);
+        }
+    }
 }
