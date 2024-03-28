@@ -17,11 +17,13 @@ static void test_at (void);
 static void test_insert (void);
 static void test_remove (void);
 
-typedef struct data
+typedef struct data data;
+
+struct data
 {
   char *key;
   int val;
-} data;
+};
 
 array_t arr;
 

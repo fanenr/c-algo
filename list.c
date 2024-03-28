@@ -1,9 +1,9 @@
-#include "list.h"
+#include "list_ext.h"
 
 list_node_t *
 list_at (const list_t *list, size_t index)
 {
-  if (index >= list->size)
+  if (gcc_unlikely (index >= list->size))
     return NULL;
 
   list_node_t *ret = list->head;
@@ -13,7 +13,7 @@ list_at (const list_t *list, size_t index)
   return ret;
 }
 
-list_node_t *
+void
 list_push_back (list_t *list, list_node_t *node)
 {
   node->next = NULL;
@@ -26,10 +26,9 @@ list_push_back (list_t *list, list_node_t *node)
   list->tail = node;
 
   list->size++;
-  return node;
 }
 
-list_node_t *
+void
 list_push_front (list_t *list, list_node_t *node)
 {
   node->prev = NULL;
@@ -42,10 +41,9 @@ list_push_front (list_t *list, list_node_t *node)
   list->head = node;
 
   list->size++;
-  return node;
 }
 
-list_node_t *
+void
 list_insert_front (list_t *list, list_node_t *pos, list_node_t *node)
 {
   node->next = pos;
@@ -58,10 +56,9 @@ list_insert_front (list_t *list, list_node_t *pos, list_node_t *node)
   pos->prev = node;
 
   list->size++;
-  return node;
 }
 
-list_node_t *
+void
 list_insert_back (list_t *list, list_node_t *pos, list_node_t *node)
 {
   node->prev = pos;
@@ -74,16 +71,15 @@ list_insert_back (list_t *list, list_node_t *pos, list_node_t *node)
   pos->next = node;
 
   list->size++;
-  return node;
 }
 
-list_node_t *
+void
 list_insert_at (list_t *list, size_t index, list_node_t *node)
 {
   size_t size = list->size;
 
-  if (index > size)
-    return NULL;
+  if (gcc_unlikely (index > size))
+    return;
 
   if (index == size)
     return list_push_back (list, node);
@@ -91,7 +87,7 @@ list_insert_at (list_t *list, size_t index, list_node_t *node)
   if (index == 0)
     return list_push_front (list, node);
 
-  return list_insert_front (list, list_at (list, index), node);
+  list_insert_front (list, list_at (list, index), node);
 }
 
 void
@@ -113,6 +109,10 @@ list_erase (list_t *list, list_node_t *node)
   list->size--;
 }
 
+/* **************************************************************** */
+/*                               ext                                */
+/* **************************************************************** */
+
 list_node_t *
 list_find (const list_t *list, const list_node_t *target, list_comp_t *comp)
 {
@@ -129,16 +129,14 @@ list_find (const list_t *list, const list_node_t *target, list_comp_t *comp)
 }
 
 void
-list_free (list_t *list, list_dtor_t *dtor)
+list_for_each (list_t *list, list_visit_t *visit)
 {
   list_node_t *curr = list->head, *next;
 
   for (size_t size = list->size; size; size--)
     {
       next = curr->next;
-      dtor (curr);
+      visit (curr);
       curr = next;
     }
-
-  *list = LIST_INIT;
 }
