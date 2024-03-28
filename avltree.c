@@ -1,4 +1,4 @@
-#include "avltree.h"
+#include "avltree_ext.h"
 
 #define HEIGHT_OF(NODE) ((NODE) ? (NODE)->height : -1)
 
@@ -178,6 +178,10 @@ avltree_erase (avltree_t *tree, avltree_node_t *node)
   tree->size--;
 }
 
+/* **************************************************************** */
+/*                               ext                                */
+/* **************************************************************** */
+
 avltree_node_t *
 avltree_find (const avltree_t *tree, const avltree_node_t *target,
               avltree_comp_t *comp)
@@ -198,23 +202,22 @@ avltree_find (const avltree_t *tree, const avltree_node_t *target,
 avltree_node_t *
 avltree_insert (avltree_t *tree, avltree_node_t *node, avltree_comp_t *comp)
 {
+  int comp_ret = 0;
   avltree_node_t *parent = NULL;
-  avltree_node_t **inpos = &tree->root;
 
   for (avltree_node_t *curr = tree->root; curr;)
     {
-      int comp_ret = comp (node, curr);
+      comp_ret = comp (node, curr);
 
-      if (comp_ret != 0)
-        {
-          parent = curr;
-          inpos = comp_ret < 0 ? &curr->left : &curr->right;
-          curr = *inpos;
-          continue;
-        }
+      if (gcc_unlikely (comp_ret == 0))
+        return NULL;
 
-      return NULL;
+      parent = curr;
+      curr = comp_ret < 0 ? curr->left : curr->right;
     }
+
+  avltree_node_t **inpos
+      = comp_ret ? comp_ret < 0 ? &parent->left : &parent->right : &tree->root;
 
   avltree_link (tree, inpos, parent, node);
 
@@ -222,19 +225,21 @@ avltree_insert (avltree_t *tree, avltree_node_t *node, avltree_comp_t *comp)
 }
 
 static inline void
-avltree_free_impl (avltree_node_t *node, avltree_dtor_t *dtor)
+avltree_for_each_impl (avltree_node_t *node, avltree_visit_t *visit)
 {
-  if (!node)
-    return;
+  if (node)
+    {
+      avltree_node_t *left = node->left;
+      avltree_node_t *right = node->right;
 
-  avltree_free_impl (node->left, dtor);
-  avltree_free_impl (node->right, dtor);
-  dtor (node);
+      avltree_for_each_impl (left, visit);
+      visit (node);
+      avltree_for_each_impl (right, visit);
+    }
 }
 
 void
-avltree_free (avltree_t *tree, avltree_dtor_t *dtor)
+avltree_free (avltree_t *tree, avltree_visit_t *visit)
 {
-  avltree_free_impl (tree->root, dtor);
-  *tree = AVLTREE_INIT;
+  avltree_for_each_impl (tree->root, visit);
 }
