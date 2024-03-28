@@ -1,4 +1,5 @@
 #include "avltree.h"
+#include "avltree_ext.h"
 #include "common.h"
 
 #include <assert.h>
@@ -6,8 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define T 1UL
-#define N 10000000UL
+#define T 3UL
+#define N 1000000UL
 
 static void init (void);
 static void clear (void);
@@ -50,6 +51,7 @@ main (void)
   for (size_t i = 0; i < T; i++)
     {
       t_insert += bench_insert ();
+      t_find += bench_find ();
       t_remove += bench_remove ();
       t_find += bench_find ();
       clear ();
@@ -72,7 +74,6 @@ static inline void
 dtor (avltree_node_t *n)
 {
   data *d = container_of (n, data, tree_node);
-  free (d->key);
   free (d);
 }
 
@@ -85,9 +86,13 @@ init (void)
 static inline void
 clear (void)
 {
+  for (size_t i = 0; i < N; i++)
+    free (names[i]);
+  avltree_for_each (&map, dtor);
+  map = AVLTREE_INIT;
+
   memset (names, 0, sizeof (char *) * N);
   memset (ages, 0, sizeof (int) * N);
-  avltree_free (&map, dtor);
 }
 
 static inline data *
@@ -197,7 +202,6 @@ bench_remove (void)
 
       data *node = data_find (&map, &temp);
       avltree_erase (&map, &node->tree_node);
-      free (node->key);
       free (node);
 
       names[rmpos] = NULL;

@@ -5,8 +5,8 @@
 #include <cstring>
 #include <map>
 
-#define T 1UL
-#define N 10000000UL
+#define T 3UL
+#define N 1000000UL
 
 static void clear (void);
 
@@ -39,6 +39,7 @@ main (void)
   for (size_t i = 0; i < T; i++)
     {
       t_insert += bench_insert ();
+      t_find += bench_find ();
       t_remove += bench_remove ();
       t_find += bench_find ();
       clear ();
@@ -114,7 +115,6 @@ bench_remove (void)
         continue;
 
       map.erase (names[rmpos]);
-      free ((void *)names[rmpos]);
 
       names[rmpos] = nullptr;
     }

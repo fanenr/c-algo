@@ -1,14 +1,13 @@
 #include "common.h"
-#include "rbtree.h"
-#include "rbtree_ext.h"
+#include "hashtable.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define T 3UL
-#define N 1000000UL
+#define T 1UL
+#define N 10000000UL
 
 static void init (void);
 static void clear (void);
@@ -21,16 +20,16 @@ typedef struct data data;
 
 struct data
 {
-  rbtree_node_t tree_node;
+  hashtable_node_t hash_node;
   char *key;
   int val;
 };
 
 int ages[N];
-rbtree_t map;
 char *names[N];
+hashtable_t map;
 
-#define data_rbtree_node_new(data_key, data_val)                              \
+#define data_hashtable_node_new(data_key, data_val)                           \
   ({                                                                          \
     data *new = malloc (sizeof (data));                                       \
     new->key = (data_key);                                                    \
@@ -62,25 +61,24 @@ main (void)
   printf ("find: %lf\n", t_find / T);
 }
 
-static inline int
-comp (const rbtree_node_t *a, const rbtree_node_t *b)
+static inline size_t
+hash (const char *key)
 {
-  const data *da = container_of (a, data, tree_node);
-  const data *db = container_of (b, data, tree_node);
-  return strcmp (da->key, db->key);
+  return (size_t)key;
 }
 
-static inline void
-dtor (rbtree_node_t *n)
+static inline int
+comp (const hashtable_node_t *a, const hashtable_node_t *b)
 {
-  data *d = container_of (n, data, tree_node);
-  free (d);
+  const data *da = container_of (a, data, hash_node);
+  const data *db = container_of (b, data, hash_node);
+  return strcmp (da->key, db->key);
 }
 
 static void
 init (void)
 {
-  map = RBTREE_INIT;
+  map = HASHTABLE_INIT;
 }
 
 static inline void
@@ -88,54 +86,53 @@ clear (void)
 {
   for (size_t i = 0; i < N; i++)
     free (names[i]);
-  rbtree_for_each (&map, dtor);
-  map = RBTREE_INIT;
+  free (map.data);
+  map = HASHTABLE_INIT;
 
   memset (names, 0, sizeof (char *) * N);
   memset (ages, 0, sizeof (int) * N);
 }
 
 static inline data *
-data_insert (rbtree_t *tree, data *node)
+data_insert (hashtable_t *ht, data *node)
 {
-  rbtree_node_t *parent = NULL;
-  rbtree_node_t **inpos = &tree->root;
-  rbtree_node_t *tree_node = &node->tree_node;
+#define HT_INIT_CAP 8
+#define HT_EXPAN_RATIO 2
+#define HT_LOAD_FACTOR 0.8
 
-  for (rbtree_node_t *curr = tree->root; curr;)
+  if (ht->size >= ht->cap * HT_LOAD_FACTOR)
     {
-      int comp_ret = comp (tree_node, curr);
-
-      if (comp_ret != 0)
-        {
-          parent = curr;
-          inpos = comp_ret < 0 ? &curr->left : &curr->right;
-          curr = *inpos;
-          continue;
-        }
-
-      return NULL;
+      size_t newcap = ht->cap * HT_EXPAN_RATIO;
+      if (newcap < HT_INIT_CAP)
+        newcap = HT_INIT_CAP;
+      hashtable_node_t **newdata
+          = calloc (newcap, sizeof (hashtable_node_t *));
+      hashtable_move (newdata, newcap, ht);
+      free (ht->data);
+      ht->cap = newcap;
+      ht->data = newdata;
     }
 
-  rbtree_link (tree, inpos, parent, &node->tree_node);
+#undef HT_LOAD_FACTOR
+#undef HT_EXPAN_RATIO
+#undef HT_INIT_CAP
+
+  hashtable_insert (ht, hash (node->key), &node->hash_node);
 
   return node;
 }
 
 static inline data *
-data_find (rbtree_t *tree, const data *target)
+data_find (hashtable_t *ht, const data *target)
 {
-  const rbtree_node_t *tree_node = &target->tree_node;
+  const hashtable_node_t *hash_node = &target->hash_node;
+  size_t hash = hash_node->hash;
 
-  for (rbtree_node_t *curr = tree->root; curr;)
-    {
-      int comp_ret = comp (tree_node, curr);
+  hashtable_node_t *head = hashtable_head (ht, hash);
 
-      if (comp_ret == 0)
-        return container_of (curr, data, tree_node);
-
-      curr = comp_ret < 0 ? curr->left : curr->right;
-    }
+  for (hashtable_node_t *curr = head; curr; curr = curr->next)
+    if (hash == curr->hash && comp (hash_node, curr) == 0)
+      return container_of (curr, data, hash_node);
 
   return NULL;
 }
@@ -151,6 +148,7 @@ bench_find (void)
         continue;
 
       temp.key = names[i];
+      temp.hash_node.hash = hash (names[i]);
 
       data *node = data_find (&map, &temp);
       assert (node->val == ages[i]);
@@ -176,7 +174,7 @@ bench_insert (void)
   TIME_ST ();
   for (size_t i = 0; i < N; i++)
     {
-      data *new = data_rbtree_node_new (names[i], ages[i]);
+      data *new = data_hashtable_node_new (names[i], ages[i]);
       data *node = data_insert (&map, new);
 
       if (!node)
@@ -199,9 +197,10 @@ bench_remove (void)
         continue;
 
       temp.key = names[rmpos];
+      temp.hash_node.hash = hash (names[rmpos]);
 
       data *node = data_find (&map, &temp);
-      rbtree_erase (&map, &node->tree_node);
+      hashtable_erase (&map, &node->hash_node);
       free (node);
 
       names[rmpos] = NULL;

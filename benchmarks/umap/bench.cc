@@ -1,25 +1,40 @@
 #include "common.h"
-#include "hashmap.h"
 #include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstdio>
+#include <cstring>
+#include <unordered_map>
 
-#define T 5UL
-#define N 1000000UL
-
-hashmap map;
-int ages[N];
-char *names[N];
+#define T 1UL
+#define N 10000000UL
 
 static void clear (void);
+
 static double bench_find (void);
 static double bench_insert (void);
 static double bench_remove (void);
 
-static size_t si_hash (const char **key);
-static int si_comp (const char **a, const char **b);
-HASHMAP_DEF_ALL (si, char *, int, si_hash, si_comp);
+struct hash
+{
+  size_t
+  operator() (char const *s) const noexcept
+  {
+    return (size_t)s;
+  }
+};
+
+struct comp
+{
+  bool
+  operator() (char const *a, char const *b) const noexcept
+  {
+    return strcmp (a, b) == 0;
+  }
+};
+
+int ages[N];
+char *names[N];
+std::unordered_map<char *, int, hash, comp> map;
 
 int
 main (void)
@@ -33,6 +48,7 @@ main (void)
   for (size_t i = 0; i < T; i++)
     {
       t_insert += bench_insert ();
+      t_find += bench_find ();
       t_remove += bench_remove ();
       t_find += bench_find ();
       clear ();
@@ -43,28 +59,12 @@ main (void)
   printf ("find: %lf\n", t_find / T);
 }
 
-static inline size_t
-si_hash (const char **key)
-{
-  const char *str = *key;
-  size_t hash = 0;
-  for (size_t len = strlen (str); len; len--)
-    hash += str[len - 1];
-  return hash;
-}
-
-static inline int
-si_comp (const char **a, const char **b)
-{
-  return strcmp (*a, *b);
-}
-
 static inline void
 clear (void)
 {
   for (size_t i = 0; i < N; i++)
     free (names[i]);
-  hashmap_free (&map);
+  map.clear ();
 
   memset (names, 0, sizeof (char *) * N);
   memset (ages, 0, sizeof (int) * N);
@@ -78,12 +78,9 @@ bench_find (void)
     {
       if (!names[i])
         continue;
-      si_hashmap_n *node = si_hashmap_find (&map, names[i]);
-      if (node->val != ages[i])
-        {
-          printf ("find failed\n");
-          abort ();
-        }
+
+      auto const &found = map.find (names[i]);
+      assert (found->second == ages[i]);
     }
   TIME_ED ();
 
@@ -96,8 +93,9 @@ bench_insert (void)
   for (size_t i = 0; i < N; i++)
     {
       char *name = rand_string (rand_long (8, 17));
-      assert (name);
       int age = rand_long (1, 101);
+      assert (name);
+
       names[i] = name;
       ages[i] = age;
     }
@@ -105,9 +103,10 @@ bench_insert (void)
   TIME_ST ();
   for (size_t i = 0; i < N; i++)
     {
-      si_hashmap_n *node = si_hashmap_insert (&map, names[i], ages[i]);
-      if (!node)
-        names[i] = NULL;
+      auto pair = map.emplace (names[i], ages[i]);
+
+      if (!pair.second)
+        names[i] = nullptr;
     }
   TIME_ED ();
 
@@ -124,8 +123,9 @@ bench_remove (void)
       if (!names[rmpos])
         continue;
 
-      si_hashmap_remove (&map, names[rmpos]);
-      names[rmpos] = NULL;
+      map.erase (names[rmpos]);
+
+      names[rmpos] = nullptr;
     }
   TIME_ED ();
 

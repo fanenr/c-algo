@@ -5,14 +5,11 @@ include config.mk
 .PHONY: all
 all: bench
 
-bench: bench.o hashmap.o
-	gcc $(LDFLAGS) -o $@ $^
+bench: bench.o
+	g++ $(LDFLAGS) -o $@ $^
 
-bench.o: bench.c hashmap.h
-	gcc $(CFLAGS) -c $<
-
-hashmap.o: hashmap.c hashmap.h
-	gcc $(CFLAGS) -c $<
+bench.o: bench.cc
+	g++ $(CXXFLAGS) -c $<
 
 .PHONY: json
 json:
