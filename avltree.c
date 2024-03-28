@@ -239,7 +239,7 @@ avltree_for_each_impl (avltree_node_t *node, avltree_visit_t *visit)
 }
 
 void
-avltree_free (avltree_t *tree, avltree_visit_t *visit)
+avltree_for_each (avltree_t *tree, avltree_visit_t *visit)
 {
   avltree_for_each_impl (tree->root, visit);
 }
