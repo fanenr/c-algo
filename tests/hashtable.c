@@ -1,5 +1,6 @@
 #include "../hashtable.h"
 #include "../common.h"
+#include "../hashtable_ext.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -7,7 +8,7 @@
 #include <string.h>
 
 #define T 1UL
-#define N 100000UL
+#define N 1000000UL
 
 static void init (void);
 static void clear (void);
@@ -63,10 +64,13 @@ main (void)
 static inline size_t
 hash (const char *key)
 {
-  size_t hash = 0;
-  for (size_t len = strlen (key); len; len--)
-    hash += key[len - 1];
-  return hash;
+  /*
+    size_t hash = 0;
+    for (size_t len = strlen (key); len; len--)
+      hash += key[len - 1];
+    return hash;
+  */
+  return (size_t)key;
 }
 
 static inline int
@@ -88,49 +92,54 @@ dtor (hashtable_node_t *n)
 static void
 init (void)
 {
-  size_t cap = 8;
-  hashtable_node_t **data = calloc (cap, sizeof (hashtable_node_t *));
-  assert (data);
-  map = HASHTABLE_INIT (cap, data);
+  map = HASHTABLE_INIT;
 }
 
 static inline void
 clear (void)
 {
-  hashtable_free (&map, dtor);
+  hashtable_for_each (&map, dtor);
   free (map.data);
-
   memset (names, 0, sizeof (char *) * N);
   memset (ages, 0, sizeof (int) * N);
 }
 
 static inline data *
-data_insert (hashtable_t *table, data *node)
+data_insert (hashtable_t *ht, data *node)
 {
-  if (table->size >= table->cap * 0.8)
+#define HT_INIT_CAP 8
+#define HT_EXPAN_RATIO 2
+#define HT_LOAD_FACTOR 0.8
+
+  if (ht->size >= ht->cap * HT_LOAD_FACTOR)
     {
-      size_t newcap = table->cap * 2;
+      size_t newcap = ht->cap * HT_EXPAN_RATIO;
+      if (newcap < HT_INIT_CAP)
+        newcap = HT_INIT_CAP;
       hashtable_node_t **newdata
           = calloc (newcap, sizeof (hashtable_node_t *));
-      assert (newdata);
-      hashtable_t temp = HASHTABLE_INIT (newcap, newdata);
-      hashtable_move (&temp, table);
-      free (table->data);
-      *table = temp;
+      hashtable_move (newdata, newcap, ht);
+      free (ht->data);
+      ht->cap = newcap;
+      ht->data = newdata;
     }
 
-  hashtable_insert (table, hash (node->key), &node->hash_node);
+#undef HT_LOAD_FACTOR
+#undef HT_EXPAN_RATIO
+#undef HT_INIT_CAP
+
+  hashtable_insert (ht, hash (node->key), &node->hash_node);
 
   return node;
 }
 
 static inline data *
-data_find (hashtable_t *table, const data *target)
+data_find (hashtable_t *ht, const data *target)
 {
   const hashtable_node_t *hash_node = &target->hash_node;
   size_t hash = hash_node->hash;
 
-  hashtable_node_t *head = hashtable_head (table, hash);
+  hashtable_node_t *head = hashtable_head (ht, hash);
 
   for (hashtable_node_t *curr = head; curr; curr = curr->next)
     if (hash == curr->hash && comp (hash_node, curr) == 0)
