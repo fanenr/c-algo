@@ -1,5 +1,7 @@
 #include "../list.h"
 #include "../common.h"
+#include "../list_ext.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,15 +22,17 @@ typedef struct data data;
 struct data
 {
   list_node_t list_node;
-  char *str;
+  char *key;
+  int val;
 };
 
 list_t list;
 
-#define data_list_node_new(data_str)                                          \
+#define data_node_new(data_key, data_val)                                     \
   ({                                                                          \
     data *new = malloc (sizeof (data));                                       \
-    new->str = (data_str);                                                    \
+    new->key = (data_key);                                                    \
+    new->val = (data_val);                                                    \
     new;                                                                      \
   })
 
@@ -44,6 +48,8 @@ main (void)
       test_insert ();
       printf ("size: %lu\n", list.size);
 
+      test_at ();
+
       test_remove ();
       printf ("size: %lu\n", list.size);
 
@@ -58,28 +64,27 @@ comp (const list_node_t *a, const list_node_t *b)
 {
   const data *da = container_of (a, data, list_node);
   const data *db = container_of (b, data, list_node);
-  return strcmp (da->str, db->str);
+  return strcmp (da->key, db->key);
 }
 
 static inline void
 dtor (list_node_t *n)
 {
   data *d = container_of (n, data, list_node);
-  free (d->str);
+  free (d->key);
   free (d);
 }
 
 static inline void
 init (void)
 {
-  /* list_init (&list, NULL, NULL); */
   list = LIST_INIT;
 }
 
 static inline void
 clear (void)
 {
-  list_free (&list, dtor);
+  list_for_each (&list, dtor);
 }
 
 static inline void
@@ -88,7 +93,8 @@ test_at (void)
   for (size_t i = 0; i < list.size; i++)
     {
       list_node_t *node = list_at (&list, i);
-      assert (node);
+      data *d = container_of (node, data, list_node);
+      assert (d->key);
     }
 }
 
@@ -97,12 +103,13 @@ test_insert (void)
 {
   for (size_t i = 0; i < N; i++)
     {
-      char *str = rand_string (rand_long (8, 17));
+      char *key = rand_string (rand_long (8, 17));
       size_t index = rand_long (0, list.size + 1);
+      int val = rand_long (0, 101);
+      assert (key);
 
-      data *new = data_list_node_new (str);
-      list_node_t *node = list_insert_at (&list, index, &new->list_node);
-      assert (node == &new->list_node);
+      data *new = data_node_new (key, val);
+      list_insert_at (&list, index, &new->list_node);
     }
 }
 

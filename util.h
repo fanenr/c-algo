@@ -5,9 +5,9 @@
 
 #define gcc_unlikely(exp) __builtin_expect (!!(exp), 0)
 
-#define gcc_memcpy(dest, src, n) __builtin_memcpy ((dest), (src), n)
+#define gcc_memcpy(dest, src, n) __builtin_memcpy ((dest), (src), (n))
 
-#define gcc_memmove(dest, src, n) __builtin_memmove ((dest), (src), n)
+#define gcc_memmove(dest, src, n) __builtin_memmove ((dest), (src), (n))
 
 #define gcc_same_type(a, b)                                                   \
   __builtin_types_compatible_p (typeof (a), typeof (b))
