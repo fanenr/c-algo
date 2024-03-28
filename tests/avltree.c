@@ -1,5 +1,7 @@
 #include "../avltree.h"
+#include "../avltree_ext.h"
 #include "../common.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -93,8 +95,7 @@ init (void)
 static inline void
 clear (void)
 {
-  avltree_free (&map, dtor);
-
+  avltree_for_each (&map, dtor);
   memset (names, 0, sizeof (char *) * N);
   memset (ages, 0, sizeof (int) * N);
 }
