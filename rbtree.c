@@ -1,9 +1,8 @@
-#include "rbtree.h"
-#include <stdbool.h>
+#include "rbtree_ext.h"
 
-#define IS_RED(NODE) ((NODE) ? (NODE)->color == RBTREE_RED : false)
+#define IS_RED(NODE) ((NODE) ? (NODE)->color == RBTREE_RED : 0)
 
-#define IS_BLACK(NODE) ((NODE) ? (NODE)->color == RBTREE_BLACK : true)
+#define IS_BLACK(NODE) ((NODE) ? (NODE)->color == RBTREE_BLACK : 1)
 
 static inline void
 rotate_left (rbtree_t *tree, rbtree_node_t *node)
@@ -64,8 +63,8 @@ rbtree_link (rbtree_t *tree, rbtree_node_t **inpos, rbtree_node_t *parent,
         break;
 
       rbtree_node_t *gprnt = parent->parent;
-      bool curr_left = (curr == parent->left);
-      bool prnt_left = (parent == gprnt->left);
+      int curr_left = (curr == parent->left);
+      int prnt_left = (parent == gprnt->left);
       rbtree_node_t *uncle = prnt_left ? gprnt->right : gprnt->left;
 
       if (IS_RED (uncle))
@@ -152,7 +151,7 @@ rbtree_erase (rbtree_t *tree, rbtree_node_t *node)
   for (rbtree_node_t *curr = child; IS_BLACK (curr) && parent;
        parent = curr->parent)
     {
-      bool curr_left = (curr == parent->left);
+      int curr_left = (curr == parent->left);
       rbtree_node_t *bro = curr_left ? parent->right : parent->left;
 
       if (IS_RED (bro))
@@ -219,28 +218,9 @@ ret:
     tree->root->color = RBTREE_BLACK;
 }
 
-rbtree_node_t *
-rbtree_insert (rbtree_t *tree, rbtree_node_t *node, rbtree_comp_t *comp)
-{
-  rbtree_node_t *parent = NULL;
-  rbtree_node_t **inpos = &tree->root;
-
-  for (rbtree_node_t *curr = tree->root; curr;)
-    {
-      int comp_ret = comp (node, curr);
-
-      if (comp_ret == 0)
-        return NULL;
-
-      parent = curr;
-      inpos = comp_ret < 0 ? &curr->left : &curr->right;
-      curr = *inpos;
-    }
-
-  rbtree_link (tree, inpos, parent, node);
-
-  return node;
-}
+/* **************************************************************** */
+/*                               ext                                */
+/* **************************************************************** */
 
 rbtree_node_t *
 rbtree_find (const rbtree_t *tree, const rbtree_node_t *target,
@@ -259,20 +239,47 @@ rbtree_find (const rbtree_t *tree, const rbtree_node_t *target,
   return NULL;
 }
 
-static inline void
-rbtree_free_impl (rbtree_node_t *node, rbtree_dtor_t *dtor)
+rbtree_node_t *
+rbtree_insert (rbtree_t *tree, rbtree_node_t *node, rbtree_comp_t *comp)
 {
-  if (!node)
-    return;
+  int comp_ret = 0;
+  rbtree_node_t *parent = NULL;
 
-  rbtree_free_impl (node->left, dtor);
-  rbtree_free_impl (node->right, dtor);
-  dtor (node);
+  for (rbtree_node_t *curr = tree->root; curr;)
+    {
+      comp_ret = comp (node, curr);
+
+      if (gcc_unlikely (comp_ret == 0))
+        return NULL;
+
+      parent = curr;
+      curr = comp_ret < 0 ? curr->left : curr->right;
+    }
+
+  rbtree_node_t **inpos
+      = comp_ret ? comp_ret < 0 ? &parent->left : &parent->right : &tree->root;
+
+  rbtree_link (tree, inpos, parent, node);
+
+  return node;
+}
+
+static inline void
+rbtree_for_each_impl (rbtree_node_t *node, rbtree_visit_t *visit)
+{
+  if (node)
+    {
+      rbtree_node_t *left = node->left;
+      rbtree_node_t *right = node->right;
+
+      rbtree_for_each_impl (left, visit);
+      visit (node);
+      rbtree_for_each_impl (right, visit);
+    }
 }
 
 void
-rbtree_free (rbtree_t *tree, rbtree_dtor_t *dtor)
+rbtree_for_each (rbtree_t *tree, rbtree_visit_t *visit)
 {
-  rbtree_free_impl (tree->root, dtor);
-  *tree = RBTREE_INIT;
+  rbtree_for_each_impl (tree->root, visit);
 }

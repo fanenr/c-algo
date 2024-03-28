@@ -8,9 +8,6 @@ typedef int rbtree_color_t;
 typedef struct rbtree_t rbtree_t;
 typedef struct rbtree_node_t rbtree_node_t;
 
-typedef void rbtree_dtor_t (rbtree_node_t *n);
-typedef int rbtree_comp_t (const rbtree_node_t *a, const rbtree_node_t *b);
-
 #define RBTREE_RED 0
 #define RBTREE_BLACK 1
 
@@ -36,17 +33,6 @@ extern void rbtree_link (rbtree_t *tree, rbtree_node_t **inpos,
     attr_nonnull (1, 2, 4);
 
 extern void rbtree_erase (rbtree_t *tree, rbtree_node_t *node)
-    attr_nonnull (1, 2);
-
-extern rbtree_node_t *rbtree_insert (rbtree_t *tree, rbtree_node_t *node,
-                                     rbtree_comp_t *comp)
-    attr_nonnull (1, 2, 3);
-
-extern rbtree_node_t *rbtree_find (const rbtree_t *tree,
-                                   const rbtree_node_t *target,
-                                   rbtree_comp_t *comp) attr_nonnull (1, 2, 3);
-
-extern void rbtree_free (rbtree_t *tree, rbtree_dtor_t *dtor)
     attr_nonnull (1, 2);
 
 #endif

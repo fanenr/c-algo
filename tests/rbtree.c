@@ -1,5 +1,7 @@
 #include "../rbtree.h"
 #include "../common.h"
+#include "../rbtree_ext.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,8 +90,7 @@ init (void)
 static inline void
 clear (void)
 {
-  rbtree_free (&map, dtor);
-
+  rbtree_for_each (&map, dtor);
   memset (names, 0, sizeof (char *) * N);
   memset (ages, 0, sizeof (int) * N);
 }
