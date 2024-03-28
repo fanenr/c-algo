@@ -1,12 +1,10 @@
-#include "hashtable.h"
+#include "hashtable_ext.h"
 
 void
-hashtable_move (hashtable_t *table, hashtable_t *origin)
+hashtable_move (hashtable_node_t **data, size_t cap, hashtable_t *old)
 {
-  size_t cap = table->cap;
-  size_t ocap = origin->cap;
-  hashtable_node_t **data = table->data;
-  hashtable_node_t **odata = origin->data;
+  size_t ocap = old->cap;
+  hashtable_node_t **odata = old->data;
 
   for (size_t i = 0; i < ocap; i++)
     {
@@ -35,19 +33,17 @@ hashtable_move (hashtable_t *table, hashtable_t *origin)
           tail->next = curr;
         }
     }
-
-  table->size = origin->size;
 }
 
 void
-hashtable_insert (hashtable_t *table, size_t hash, hashtable_node_t *node)
+hashtable_insert (hashtable_t *ht, size_t hash, hashtable_node_t *node)
 {
   node->hash = hash;
   node->next = NULL;
 
-  hashtable_node_t **data = table->data;
+  hashtable_node_t **data = ht->data;
 
-  size_t index = hash % table->cap;
+  size_t index = hash % ht->cap;
   hashtable_node_t **head = data + index;
   hashtable_node_t *tail = *head;
 
@@ -65,17 +61,17 @@ hashtable_insert (hashtable_t *table, size_t hash, hashtable_node_t *node)
   tail->next = node;
 
 inc_size:
-  table->size++;
+  ht->size++;
 }
 
 void
-hashtable_erase (hashtable_t *table, hashtable_node_t *node)
+hashtable_erase (hashtable_t *ht, hashtable_node_t *node)
 {
   hashtable_node_t *next = node->next;
   hashtable_node_t *prev = node->prev;
 
-  size_t index = node->hash % table->cap;
-  hashtable_node_t **head = table->data + index;
+  size_t index = node->hash % ht->cap;
+  hashtable_node_t **head = ht->data + index;
 
   if (node == *head)
     *head = next;
@@ -85,14 +81,32 @@ hashtable_erase (hashtable_t *table, hashtable_node_t *node)
   if (next)
     next->prev = prev;
 
-  table->size--;
+  ht->size--;
+}
+
+/* **************************************************************** */
+/*                               ext                                */
+/* **************************************************************** */
+
+hashtable_node_t *
+hashtable_find (const hashtable_t *ht, const hashtable_node_t *target,
+                hashtable_comp_t *comp)
+{
+  size_t hash = target->hash;
+  hashtable_node_t *head = hashtable_head (ht, hash);
+
+  for (hashtable_node_t *curr = head; curr; curr = curr->next)
+    if (hash == curr->hash && comp (target, curr) == 0)
+      return curr;
+
+  return NULL;
 }
 
 void
-hashtable_free (hashtable_t *table, hashtable_dtor_t *dtor)
+hashtable_for_each (hashtable_t *ht, hashtable_visit_t *visit)
 {
-  size_t cap = table->cap;
-  hashtable_node_t **data = table->data;
+  size_t cap = ht->cap;
+  hashtable_node_t **data = ht->data;
 
   for (size_t i = 0; i < cap; i++)
     {
@@ -102,7 +116,7 @@ hashtable_free (hashtable_t *table, hashtable_dtor_t *dtor)
       for (; curr; curr = next)
         {
           next = curr->next;
-          dtor (curr);
+          visit (curr);
         }
     }
 }

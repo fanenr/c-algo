@@ -97,8 +97,9 @@ arr_insert (array_t *arr, size_t pos, const data *elem)
 
   if (arr->size >= arr->cap)
     {
-      size_t newcap = arr->cap;
-      newcap = newcap ? newcap * ARR_EXPAN_RATIO : ARR_INIT_CAP;
+      size_t newcap = arr->cap * ARR_EXPAN_RATIO;
+      if (newcap < ARR_INIT_CAP)
+        newcap = ARR_INIT_CAP;
       void *newdata = realloc (arr->data, newcap * arr->elem_size);
       arr->data = newdata;
       arr->cap = newcap;
