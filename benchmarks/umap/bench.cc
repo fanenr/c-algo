@@ -2,11 +2,12 @@
 #include <assert.h>
 #include <cassert>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <unordered_map>
 
 #define T 1UL
-#define N 10000000UL
+#define N 300000UL
 
 static void clear (void);
 
@@ -19,7 +20,10 @@ struct hash
   size_t
   operator() (char const *s) const noexcept
   {
-    return (size_t)s;
+    size_t hash = 0;
+    for (size_t len = strlen (s); len; len--)
+      hash += s[len - 1];
+    return hash;
   }
 };
 
@@ -123,8 +127,10 @@ bench_remove (void)
       if (!names[rmpos])
         continue;
 
-      map.erase (names[rmpos]);
+      auto const &iter = map.find (names[rmpos]);
+      map.erase (iter);
 
+      free (names[rmpos]);
       names[rmpos] = nullptr;
     }
   TIME_ED ();
