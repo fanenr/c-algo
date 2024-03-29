@@ -11,25 +11,27 @@ struct hashtable_t
 {
   size_t cap;
   size_t size;
-  hashtable_node_t **buckets;
+  hashtable_node_t **slots;
 };
 
 struct hashtable_node_t
 {
   size_t hash;
+  hashtable_node_t *prev;
   hashtable_node_t *next;
 };
 
 #define HASHTABLE_INIT                                                        \
   (hashtable_t) {}
 
-#define hashtable_head(ht, hash) ((ht)->buckets[(hash) % (ht)->cap])
+#define hashtable_head(ht, hash) ((ht)->slots[(hash) % (ht)->cap])
 
-extern void hashtable_rehash (hashtable_node_t **buckets, size_t cap,
-                              hashtable_t *old) attr_nonnull (1, 3);
+extern void hashtable_rehash (hashtable_node_t **slots, size_t cap,
+                              hashtable_t *ht) attr_nonnull (1, 3);
 
-extern void hashtable_insert (hashtable_t *ht, hashtable_node_t *node)
-    attr_nonnull (1, 2);
+extern void hashtable_link (hashtable_t *ht, hashtable_node_t **inpos,
+                            hashtable_node_t *prev, hashtable_node_t *node)
+    attr_nonnull (1, 2, 4);
 
 extern void hashtable_erase (hashtable_t *ht, hashtable_node_t *node)
     attr_nonnull (1, 2);
