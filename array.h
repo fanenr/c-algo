@@ -18,7 +18,7 @@ struct array_t
   (array_t) {}
 
 #define array_at(arr, pos)                                                    \
-  (pos < (arr)->size ? (arr)->data + (pos) * (arr)->elem_size : NULL)
+  ((pos) < (arr)->size ? (arr)->data + (pos) * (arr)->elem_size : NULL)
 
 extern void *array_insert (array_t *arr, size_t pos) attr_nonnull (1);
 

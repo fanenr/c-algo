@@ -1,3 +1,4 @@
+PG   =
 MODE = release
 
 include config.mk
@@ -6,15 +7,15 @@ include config.mk
 all: bench
 
 bench: bench.o
-	g++ $(LDFLAGS) -o $@ $^
+	g++ $(PG) $(LDFLAGS) -o $@ $^
 
 bench.o: bench.cc
-	g++ $(CXXFLAGS) -c $<
-
-.PHONY: json
-json:
-	make clean && bear -- make test
+	g++ $(PG) $(CXXFLAGS) -c $<
 
 .PHONY: clean
 clean:
 	-rm -f *.o bench
+
+.PHONY: json
+json: clean
+	bear -- make

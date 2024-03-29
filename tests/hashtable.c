@@ -99,7 +99,7 @@ static inline void
 clear (void)
 {
   hashtable_for_each (&map, dtor);
-  free (map.data);
+  free (map.buckets);
   memset (names, 0, sizeof (char *) * N);
   memset (ages, 0, sizeof (int) * N);
 }
@@ -109,26 +109,26 @@ data_insert (hashtable_t *ht, data *node)
 {
 #define HT_INIT_CAP 8
 #define HT_EXPAN_RATIO 2
-#define HT_LOAD_FACTOR 0.8
+#define HT_LOAD_FACTOR 0.75
 
   if (ht->size >= ht->cap * HT_LOAD_FACTOR)
     {
       size_t newcap = ht->cap * HT_EXPAN_RATIO;
       if (newcap < HT_INIT_CAP)
         newcap = HT_INIT_CAP;
-      hashtable_node_t **newdata
+      hashtable_node_t **newbkts
           = calloc (newcap, sizeof (hashtable_node_t *));
-      hashtable_move (newdata, newcap, ht);
-      free (ht->data);
+      hashtable_rehash (newbkts, newcap, ht);
+      free (ht->buckets);
       ht->cap = newcap;
-      ht->data = newdata;
+      ht->buckets = newbkts;
     }
 
 #undef HT_LOAD_FACTOR
 #undef HT_EXPAN_RATIO
 #undef HT_INIT_CAP
 
-  hashtable_insert (ht, hash (node->key), &node->hash_node);
+  hashtable_insert (ht, &node->hash_node);
 
   return node;
 }

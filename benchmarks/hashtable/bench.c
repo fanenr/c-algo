@@ -1,5 +1,6 @@
 #include "common.h"
 #include "hashtable.h"
+#include "hashtable_ext.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -7,7 +8,7 @@
 #include <string.h>
 
 #define T 1UL
-#define N 10000000UL
+#define N 300000UL
 
 static void init (void);
 static void clear (void);
@@ -28,14 +29,6 @@ struct data
 int ages[N];
 char *names[N];
 hashtable_t map;
-
-#define data_hashtable_node_new(data_key, data_val)                           \
-  ({                                                                          \
-    data *new = malloc (sizeof (data));                                       \
-    new->key = (data_key);                                                    \
-    new->val = (data_val);                                                    \
-    new;                                                                      \
-  })
 
 int
 main (void)
@@ -64,18 +57,13 @@ main (void)
 static inline size_t
 hash (const char *key)
 {
-  return (size_t)key;
+  size_t hash = 0;
+  for (size_t len = strlen (key); len; len--)
+    hash += key[len - 1];
+  return hash;
 }
 
-static inline int
-comp (const hashtable_node_t *a, const hashtable_node_t *b)
-{
-  const data *da = container_of (a, data, hash_node);
-  const data *db = container_of (b, data, hash_node);
-  return strcmp (da->key, db->key);
-}
-
-static void
+static inline void
 init (void)
 {
   map = HASHTABLE_INIT;
@@ -86,7 +74,8 @@ clear (void)
 {
   for (size_t i = 0; i < N; i++)
     free (names[i]);
-  free (map.data);
+  hashtable_for_each (&map, (hashtable_visit_t *)free);
+  free (map.buckets);
   map = HASHTABLE_INIT;
 
   memset (names, 0, sizeof (char *) * N);
@@ -94,8 +83,13 @@ clear (void)
 }
 
 static inline data *
-data_insert (hashtable_t *ht, data *node)
+data_insert (hashtable_t *ht, char *key, int val)
 {
+  data *node = malloc (sizeof (data));
+  node->hash_node.hash = hash (key);
+  node->key = key;
+  node->val = val;
+
 #define HT_INIT_CAP 8
 #define HT_EXPAN_RATIO 2
 #define HT_LOAD_FACTOR 0.8
@@ -105,34 +99,38 @@ data_insert (hashtable_t *ht, data *node)
       size_t newcap = ht->cap * HT_EXPAN_RATIO;
       if (newcap < HT_INIT_CAP)
         newcap = HT_INIT_CAP;
-      hashtable_node_t **newdata
+      hashtable_node_t **newbkts
           = calloc (newcap, sizeof (hashtable_node_t *));
-      hashtable_move (newdata, newcap, ht);
-      free (ht->data);
+      hashtable_rehash (newbkts, newcap, ht);
+      free (ht->buckets);
       ht->cap = newcap;
-      ht->data = newdata;
+      ht->buckets = newbkts;
     }
 
 #undef HT_LOAD_FACTOR
 #undef HT_EXPAN_RATIO
 #undef HT_INIT_CAP
 
-  hashtable_insert (ht, hash (node->key), &node->hash_node);
+  hashtable_insert (ht, &node->hash_node);
 
   return node;
 }
 
 static inline data *
-data_find (hashtable_t *ht, const data *target)
+data_find (const hashtable_t *ht, const char *key)
 {
-  const hashtable_node_t *hash_node = &target->hash_node;
-  size_t hash = hash_node->hash;
-
-  hashtable_node_t *head = hashtable_head (ht, hash);
+  size_t code = hash (key);
+  hashtable_node_t *head = hashtable_head (ht, code);
 
   for (hashtable_node_t *curr = head; curr; curr = curr->next)
-    if (hash == curr->hash && comp (hash_node, curr) == 0)
-      return container_of (curr, data, hash_node);
+    {
+      if (code == curr->hash)
+        {
+          data *curr_data = container_of (curr, data, hash_node);
+          if (strcmp (key, curr_data->key) == 0)
+            return curr_data;
+        }
+    }
 
   return NULL;
 }
@@ -141,16 +139,12 @@ static inline double
 bench_find (void)
 {
   TIME_ST ();
-  data temp;
   for (size_t i = 0; i < N; i++)
     {
       if (!names[i])
         continue;
 
-      temp.key = names[i];
-      temp.hash_node.hash = hash (names[i]);
-
-      data *node = data_find (&map, &temp);
+      data *node = data_find (&map, names[i]);
       assert (node->val == ages[i]);
     }
   TIME_ED ();
@@ -174,8 +168,7 @@ bench_insert (void)
   TIME_ST ();
   for (size_t i = 0; i < N; i++)
     {
-      data *new = data_hashtable_node_new (names[i], ages[i]);
-      data *node = data_insert (&map, new);
+      data *node = data_insert (&map, names[i], ages[i]);
 
       if (!node)
         names[i] = NULL;
@@ -189,20 +182,17 @@ static inline double
 bench_remove (void)
 {
   TIME_ST ();
-  data temp;
   for (size_t i = 0; i < N / 2; i++)
     {
       long rmpos = rand_long (0, N);
       if (!names[rmpos])
         continue;
 
-      temp.key = names[rmpos];
-      temp.hash_node.hash = hash (names[rmpos]);
-
-      data *node = data_find (&map, &temp);
+      data *node = data_find (&map, names[rmpos]);
       hashtable_erase (&map, &node->hash_node);
       free (node);
 
+      free (names[rmpos]);
       names[rmpos] = NULL;
     }
   TIME_ED ();
