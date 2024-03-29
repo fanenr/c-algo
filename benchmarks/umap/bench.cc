@@ -69,9 +69,6 @@ clear (void)
   for (size_t i = 0; i < N; i++)
     free (names[i]);
   map.clear ();
-
-  memset (names, 0, sizeof (char *) * N);
-  memset (ages, 0, sizeof (int) * N);
 }
 
 static inline double
@@ -107,10 +104,14 @@ bench_insert (void)
   TIME_ST ();
   for (size_t i = 0; i < N; i++)
     {
-      auto pair = map.emplace (names[i], ages[i]);
+      char *key = names[i];
+      auto pair = map.emplace (key, ages[i]);
 
       if (!pair.second)
-        names[i] = nullptr;
+        {
+          free (key);
+          names[i] = nullptr;
+        }
     }
   TIME_ED ();
 
@@ -127,10 +128,11 @@ bench_remove (void)
       if (!names[rmpos])
         continue;
 
-      auto const &iter = map.find (names[rmpos]);
+      char *key = names[rmpos];
+      auto const &iter = map.find (key);
       map.erase (iter);
 
-      free (names[rmpos]);
+      free (key);
       names[rmpos] = nullptr;
     }
   TIME_ED ();

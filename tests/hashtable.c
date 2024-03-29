@@ -8,7 +8,10 @@
 #include <string.h>
 
 #define T 1UL
-#define N 1000000UL
+#define N 100000UL
+
+#define RM_ALL 0
+#define USE_EXT 1
 
 static void init (void);
 static void clear (void);
@@ -22,21 +25,13 @@ typedef struct data data;
 struct data
 {
   hashtable_node_t hash_node;
-  char *key;
+  const char *key;
   int val;
 };
 
 int ages[N];
 char *names[N];
 hashtable_t map;
-
-#define data_hashtable_node_new(data_key, data_val)                           \
-  ({                                                                          \
-    data *new = malloc (sizeof (data));                                       \
-    new->key = (data_key);                                                    \
-    new->val = (data_val);                                                    \
-    new;                                                                      \
-  })
 
 int
 main (void)
@@ -64,13 +59,10 @@ main (void)
 static inline size_t
 hash (const char *key)
 {
-  /*
-    size_t hash = 0;
-    for (size_t len = strlen (key); len; len--)
-      hash += key[len - 1];
-    return hash;
-  */
-  return (size_t)key;
+  size_t hash = 0;
+  for (size_t len = strlen (key); len; len--)
+    hash += key[len - 1];
+  return hash;
 }
 
 static inline int
@@ -85,7 +77,7 @@ static inline void
 dtor (hashtable_node_t *n)
 {
   data *d = container_of (n, data, hash_node);
-  free (d->key);
+  free ((char *)d->key);
   free (d);
 }
 
@@ -99,50 +91,75 @@ static inline void
 clear (void)
 {
   hashtable_for_each (&map, dtor);
-  free (map.buckets);
-  memset (names, 0, sizeof (char *) * N);
-  memset (ages, 0, sizeof (int) * N);
+  free (map.slots);
 }
 
-static inline data *
-data_insert (hashtable_t *ht, data *node)
+static inline void
+hashtable_expand (hashtable_t *ht)
 {
 #define HT_INIT_CAP 8
 #define HT_EXPAN_RATIO 2
-#define HT_LOAD_FACTOR 0.75
+#define HT_LOAD_FACTOR 0.8
 
-  if (ht->size >= ht->cap * HT_LOAD_FACTOR)
-    {
-      size_t newcap = ht->cap * HT_EXPAN_RATIO;
-      if (newcap < HT_INIT_CAP)
-        newcap = HT_INIT_CAP;
-      hashtable_node_t **newbkts
-          = calloc (newcap, sizeof (hashtable_node_t *));
-      hashtable_rehash (newbkts, newcap, ht);
-      free (ht->buckets);
-      ht->cap = newcap;
-      ht->buckets = newbkts;
-    }
+  if (ht->size < ht->cap * HT_LOAD_FACTOR)
+    return;
+
+  size_t newcap = ht->cap * HT_EXPAN_RATIO;
+  if (newcap < HT_INIT_CAP)
+    newcap = HT_INIT_CAP;
+
+  hashtable_node_t **newslots = calloc (newcap, sizeof (hashtable_node_t *));
+  hashtable_rehash (newslots, newcap, ht);
+  free (ht->slots);
+
+  ht->slots = newslots;
+  ht->cap = newcap;
 
 #undef HT_LOAD_FACTOR
 #undef HT_EXPAN_RATIO
 #undef HT_INIT_CAP
-
-  hashtable_insert (ht, &node->hash_node);
-
-  return node;
 }
 
 static inline data *
-data_find (hashtable_t *ht, const data *target)
+data_hashtable_insert (hashtable_t *ht, char *key, int val)
 {
-  const hashtable_node_t *hash_node = &target->hash_node;
-  size_t hash = hash_node->hash;
+  size_t code = hash (key);
 
-  hashtable_node_t *head = hashtable_head (ht, hash);
+  data *new = malloc (sizeof (data));
+  new->hash_node.hash = code;
+  new->key = key;
+  new->val = val;
+
+  hashtable_node_t *prev = NULL;
+  hashtable_node_t *hash_node = &new->hash_node;
+  hashtable_node_t **head = ht->slots + code % ht->cap;
+
+  for (hashtable_node_t *curr = *head; curr; curr = curr->next)
+    {
+      if (code == curr->hash && comp (hash_node, curr) == 0)
+        {
+          free (new);
+          return NULL;
+        }
+      prev = curr;
+    }
+
+  hashtable_node_t **inpos = prev ? &prev->next : head;
+  hashtable_link (ht, inpos, prev, hash_node);
+  return new;
+}
+
+static inline data *
+data_hashtable_find (hashtable_t *ht, const char *key)
+{
+  size_t code = hash (key);
+  data temp = (data){ .hash_node.hash = code, .key = (char *)key };
+
+  const hashtable_node_t *target = &temp.hash_node;
+  hashtable_node_t *head = hashtable_head (ht, code);
 
   for (hashtable_node_t *curr = head; curr; curr = curr->next)
-    if (hash == curr->hash && comp (hash_node, curr) == 0)
+    if (code == curr->hash && comp (target, curr) == 0)
       return container_of (curr, data, hash_node);
 
   return NULL;
@@ -151,20 +168,33 @@ data_find (hashtable_t *ht, const data *target)
 static inline void
 test_find (void)
 {
-  data temp;
-
   for (size_t i = 0; i < N; i++)
     {
       if (!names[i])
         continue;
 
-      temp.key = names[i];
-      temp.hash_node.hash = hash (names[i]);
+      char *key = names[i];
 
-      data *node = data_find (&map, &temp);
-      assert (node->val == ages[i]);
+#if USE_EXT
+      data temp = { .hash_node.hash = hash (key), .key = key };
+      hashtable_node_t *node = hashtable_find (&map, &temp.hash_node, comp);
+      data *d = container_of (node, data, hash_node);
+#else
+      data *d = data_hashtable_find (&map, key);
+#endif
+
+      assert (d->val == ages[i]);
     }
 }
+
+#define data_new(data_key, data_val, hash_code)                               \
+  ({                                                                          \
+    data *new = malloc (sizeof (data));                                       \
+    new->hash_node.hash = (hash_code);                                        \
+    new->key = (data_key);                                                    \
+    new->val = (data_val);                                                    \
+    new;                                                                      \
+  })
 
 static inline void
 test_insert (void)
@@ -181,33 +211,52 @@ test_insert (void)
 
   for (size_t i = 0; i < N; i++)
     {
-      data *new = data_hashtable_node_new (names[i], ages[i]);
-      data *node = data_insert (&map, new);
+      hashtable_expand (&map);
+
+      char *key = names[i];
+
+#if USE_EXT
+      data *new = data_new (key, ages[i], hash (key));
+      hashtable_node_t *node = hashtable_insert (&map, &new->hash_node, comp);
+#else
+      data *node = data_hashtable_insert (&map, key, ages[i]);
+#endif
 
       if (!node)
-        names[i] = NULL;
+        {
+          free (names[i]);
+          names[i] = NULL;
+        }
     }
 }
 
 static inline void
 test_remove (void)
 {
-  data temp;
-
   for (size_t i = 0; i < N; i++)
     {
-      // long rmpos = i;
+#if RM_ALL
+      long rmpos = i;
+#else
       long rmpos = rand_long (0, N);
+#endif
+
       if (!names[rmpos])
         continue;
 
-      temp.key = names[rmpos];
-      temp.hash_node.hash = hash (names[rmpos]);
+      char *key = names[rmpos];
 
-      data *node = data_find (&map, &temp);
-      hashtable_erase (&map, &node->hash_node);
-      free (node->key);
-      free (node);
+#ifdef USE_EXT
+      data temp = { .hash_node.hash = hash (key), .key = key };
+
+      hashtable_node_t *node = hashtable_find (&map, &temp.hash_node, comp);
+      hashtable_erase (&map, node);
+      dtor (node);
+#else
+      data *d = data_hashtable_find (&map, key);
+      hashtable_erase (&map, &d->hash_node);
+      dtor (&d->hash_node);
+#endif
 
       names[rmpos] = NULL;
     }
