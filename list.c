@@ -87,7 +87,11 @@ list_insert_at (list_t *list, size_t index, list_node_t *node)
   if (index == 0)
     return list_push_front (list, node);
 
-  list_insert_front (list, list_at (list, index), node);
+  list_node_t *old = list->head;
+  for (; index; index--)
+    old = old->next;
+
+  list_insert_front (list, old, node);
 }
 
 void
