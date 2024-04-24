@@ -7,6 +7,7 @@ ifeq ($(MODE), debug)
 	LTO_LDFLAGS  =
 	LTO_CFLAGS   =
 	OPT_LEVEL    = -Og
+	ANALYZER     = -fanalyzer
 
 	DBG_LDFLAGS  = -g
 	DBG_CFLAGS   = -ggdb3
@@ -19,6 +20,7 @@ ifeq ($(MODE), release)
 	LTO_LDFLAGS  = -flto
 	LTO_CFLAGS   = -flto
 	OPT_LEVEL    = -O2
+	ANALYZER     =
 
 	DBG_LDFLAGS  =
 	DBG_CFLAGS   =
@@ -28,7 +30,7 @@ ifeq ($(MODE), release)
 endif
 
 CFLAGS   = $(WARN) $(NOWARN) $(OPT_LEVEL) $(DBG_CFLAGS) $(LTO_CFLAGS) \
-          $(CSTD) $(ASAN_CFLAGS)
+          $(CSTD) $(ASAN_CFLAGS) $(ANALYZER)
 
 CXXFLAGS = $(WARN) $(NOWARN) $(OPT_LEVEL) $(DBG_CFLAGS) $(LTO_CFLAGS) \
           $(CXXSTD) $(ASAN_CFLAGS)
