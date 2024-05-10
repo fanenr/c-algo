@@ -23,28 +23,22 @@ array_insert (array_t *arr, size_t pos)
   return in;
 }
 
-void
-array_erase (array_t *arr, size_t pos)
+void *
+array_push_front (array_t *arr)
 {
-  size_t size = arr->size;
+  if (gcc_unlikely (arr->size >= arr->cap))
+    return NULL;
 
-  if (gcc_unlikely (pos >= arr->size))
-    return;
-
-  void *rm = array_at (arr, pos);
   size_t elem_size = arr->elem_size;
+  void *data = arr->data;
+  size_t len = arr->size * elem_size;
+  void *next = data + elem_size;
 
-  if (pos == size - 1)
-    goto dec_size;
+  if (gcc_memmove (next, data, len) != next)
+    return NULL;
 
-  void *next = rm + elem_size;
-  size_t len = (size - pos - 1) * elem_size;
-
-  if (gcc_memmove (rm, next, len) != rm)
-    return;
-
-dec_size:
-  arr->size--;
+  arr->size++;
+  return data;
 }
 
 void *
@@ -53,6 +47,52 @@ array_push_back (array_t *arr)
   if (gcc_unlikely (arr->size >= arr->cap))
     return NULL;
   return arr->data + arr->elem_size * arr->size++;
+}
+
+void
+array_erase (array_t *arr, size_t pos)
+{
+  size_t size = arr->size;
+
+  if (gcc_unlikely (pos >= arr->size))
+    return;
+
+  if (pos == size - 1)
+    goto dec_size;
+
+  size_t elem_size = arr->elem_size;
+  void *rm = arr->data + pos * elem_size;
+  size_t len = (size - pos - 1) * elem_size;
+  void *next = rm + elem_size;
+
+  if (gcc_memmove (rm, next, len) != rm)
+    return;
+
+dec_size:
+  arr->size--;
+}
+
+void
+array_pop_front (array_t *arr)
+{
+  size_t size = arr->size;
+
+  if (gcc_unlikely (!size))
+    return;
+
+  if (size == 1)
+    goto dec_size;
+
+  size_t elem_size = arr->elem_size;
+  void *data = arr->data;
+  size_t len = (size - 1) * elem_size;
+  void *next = data + elem_size;
+
+  if (gcc_memmove (data, next, len) != data)
+    return;
+
+dec_size:
+  arr->size--;
 }
 
 void

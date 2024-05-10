@@ -20,11 +20,20 @@ struct array_t
 #define array_at(arr, pos)                                                    \
   ((pos) < (arr)->size ? (arr)->data + (pos) * (arr)->elem_size : NULL)
 
+#define array_first(arr) ((arr)->size ? (arr)->data : NULL)
+
+#define array_last(arr)                                                       \
+  ((arr)->size ? (arr)->data + ((arr)->size - 1) * (arr)->elem_size : NULL)
+
 extern void *array_insert (array_t *arr, size_t pos) attr_nonnull (1);
+
+extern void *array_push_front (array_t *arr) attr_nonnull (1);
+
+extern void *array_push_back (array_t *arr) attr_nonnull (1);
 
 extern void array_erase (array_t *arr, size_t pos) attr_nonnull (1);
 
-extern void *array_push_back (array_t *arr) attr_nonnull (1);
+extern void array_pop_front (array_t *arr) attr_nonnull (1);
 
 extern void array_pop_back (array_t *arr) attr_nonnull (1);
 
