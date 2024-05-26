@@ -1,6 +1,5 @@
 #include "../hashtable.h"
 #include "../common.h"
-#include "../hashtable_ext.h"
 
 #include <assert.h>
 #include <stdio.h>

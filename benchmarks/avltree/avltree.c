@@ -1,4 +1,4 @@
-#include "avltree_ext.h"
+#include "avltree.h"
 
 #define HEIGHT_OF(NODE) ((NODE) ? (NODE)->height : -1)
 

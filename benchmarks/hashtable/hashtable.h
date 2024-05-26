@@ -36,4 +36,24 @@ extern void hashtable_link (hashtable_t *ht, hashtable_node_t **inpos,
 extern void hashtable_erase (hashtable_t *ht, hashtable_node_t *node)
     attr_nonnull (1, 2);
 
+/* **************************************************************** */
+/*                               ext                                */
+/* **************************************************************** */
+
+typedef int hashtable_comp_t (const hashtable_node_t *a,
+                              const hashtable_node_t *b);
+typedef void hashtable_visit_t (hashtable_node_t *n);
+
+extern hashtable_node_t *hashtable_find (const hashtable_t *ht,
+                                         const hashtable_node_t *target,
+                                         hashtable_comp_t *comp)
+    attr_nonnull (1, 2, 3);
+
+extern hashtable_node_t *hashtable_insert (hashtable_t *ht,
+                                           hashtable_node_t *node,
+                                           hashtable_comp_t *comp)
+    attr_nonnull (1, 2, 3);
+
+extern void hashtable_for_each (hashtable_t *ht, hashtable_visit_t *visit)
+    attr_nonnull (1, 2);
 #endif

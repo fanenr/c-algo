@@ -1,4 +1,4 @@
-#include "array_ext.h"
+#include "array.h"
 
 void *
 array_insert (array_t *arr, size_t pos)
