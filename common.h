@@ -21,7 +21,9 @@ rand_init (void)
 static inline long
 rand_long (long from, long to)
 {
-  return from != to ? rand () % (to - from) + from : to;
+  if (from >= to)
+    return 0;
+  return rand () % (to - from) + from;
 }
 
 static inline char *

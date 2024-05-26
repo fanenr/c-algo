@@ -1,4 +1,4 @@
-#include "hashtable_ext.h"
+#include "hashtable.h"
 
 void
 hashtable_rehash (hashtable_node_t **slots, size_t cap, hashtable_t *ht)

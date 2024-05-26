@@ -1,6 +1,5 @@
 #include "common.h"
 #include "rbtree.h"
-#include "rbtree_ext.h"
 
 #include <assert.h>
 #include <stdio.h>

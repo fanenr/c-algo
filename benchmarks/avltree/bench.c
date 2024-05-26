@@ -1,5 +1,4 @@
 #include "avltree.h"
-#include "avltree_ext.h"
 #include "common.h"
 
 #include <assert.h>

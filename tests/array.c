@@ -1,5 +1,4 @@
 #include "../array.h"
-#include "../array_ext.h"
 #include "../common.h"
 
 #include <assert.h>

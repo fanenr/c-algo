@@ -1,4 +1,4 @@
-#include "rbtree_ext.h"
+#include "rbtree.h"
 
 #define IS_RED(NODE) ((NODE) ? (NODE)->color == RBTREE_RED : 0)
 
