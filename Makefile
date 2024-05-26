@@ -11,7 +11,7 @@ export targets objects
 all: $(objects)
 
 $(objects): %.o: %.c %.h
-	gcc $(CFLAGS) -c $< 
+	gcc $(CFLAGS) -c $<
 
 .PHONY: test run
 test: $(objects)
@@ -21,8 +21,8 @@ run: $(objects)
 	cd tests && make run
 
 .PHONY: json
-json:
-	make clean && bear -- make test
+json: clean
+	bear -- make test
 
 .PHONY: clean
 clean:
