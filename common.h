@@ -1,6 +1,7 @@
 #ifndef TIME_H
 #define TIME_H
 
+#include <assert.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -21,8 +22,7 @@ rand_init (void)
 static inline long
 rand_long (long from, long to)
 {
-  if (from >= to)
-    return 0;
+  assert (from < to);
   return rand () % (to - from) + from;
 }
 
@@ -31,7 +31,7 @@ rand_string (size_t len)
 {
   char *ret;
 
-  if (!(ret = malloc (len + 1)))
+  if (!(ret = (char *)malloc (len + 1)))
     return NULL;
 
   for (size_t i = 0; i < len; i++)

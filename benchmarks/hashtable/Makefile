@@ -15,11 +15,10 @@ bench.o: bench.c hashtable.h
 hashtable.o: hashtable.c hashtable.h
 	gcc $(PG) $(CFLAGS) -c $<
 
+.PHONY: json
+json: clean
+	bear -- make test
 
 .PHONY: clean
 clean:
 	-rm -f *.o bench
-
-.PHONY: json
-json: clean
-	bear -- make test

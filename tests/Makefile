@@ -1,4 +1,4 @@
-tasks := $(targets:%=run_%)
+tests := $(targets:%=run_%)
 
 .PHONY: all
 all: $(targets)
@@ -12,10 +12,10 @@ $(objects): %.o: %.c ../%.h
 $(objects:%=../%): ../%.o: ../%.c ../%.h
 	cd .. && make $(subst ../,,$@)
 
-.PHONY: run $(tasks)
-run: $(tasks)
+.PHONY: run $(tests)
+run: $(tests)
 
-$(tasks): run_%: %
+$(tests): run_%: %
 	./$<
 	@echo "$< test passed"
 

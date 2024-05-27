@@ -90,7 +90,7 @@ static inline void
 clear (void)
 {
   hashtable_for_each (&map, dtor);
-  free (map.slots);
+  free (map.data);
 }
 
 static inline void
@@ -107,11 +107,11 @@ hashtable_expand (hashtable_t *ht)
   if (newcap < HT_INIT_CAP)
     newcap = HT_INIT_CAP;
 
-  hashtable_node_t **newslots = calloc (newcap, sizeof (hashtable_node_t *));
-  hashtable_rehash (newslots, newcap, ht);
-  free (ht->slots);
+  hashtable_node_t **newdata = calloc (newcap, sizeof (hashtable_node_t *));
+  hashtable_rehash (newdata, newcap, ht);
+  free (ht->data);
 
-  ht->slots = newslots;
+  ht->data = newdata;
   ht->cap = newcap;
 
 #undef HT_LOAD_FACTOR
@@ -131,7 +131,7 @@ data_hashtable_insert (hashtable_t *ht, char *key, int val)
 
   hashtable_node_t *prev = NULL;
   hashtable_node_t *hash_node = &new->hash_node;
-  hashtable_node_t **head = ht->slots + code % ht->cap;
+  hashtable_node_t **head = ht->data + code % ht->cap;
 
   for (hashtable_node_t *curr = *head; curr; curr = curr->next)
     {
