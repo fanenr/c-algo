@@ -68,7 +68,7 @@ static inline void
 init (void)
 {
   arr = ARRAY_INIT;
-  arr.elem_size = sizeof (data);
+  arr.element = sizeof (data);
 }
 
 static inline void
@@ -99,7 +99,7 @@ arr_insert (array_t *arr, size_t pos, const data *elem)
       size_t newcap = arr->cap * ARR_EXPAN_RATIO;
       if (newcap < ARR_INIT_CAP)
         newcap = ARR_INIT_CAP;
-      void *newdata = realloc (arr->data, newcap * arr->elem_size);
+      void *newdata = realloc (arr->data, newcap * arr->element);
       arr->data = newdata;
       arr->cap = newcap;
     }
