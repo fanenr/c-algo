@@ -19,19 +19,19 @@ struct array_t
   void *data;
   size_t cap;
   size_t size;
-  size_t elem_size;
+  size_t element;
 };
 
 #define ARRAY_INIT                                                            \
   (array_t) {}
 
 #define array_at(arr, pos)                                                    \
-  ((pos) < (arr)->size ? (arr)->data + (pos) * (arr)->elem_size : NULL)
+  ((pos) < (arr)->size ? (arr)->data + (pos) * (arr)->element : NULL)
 
 #define array_first(arr) ((arr)->size ? (arr)->data : NULL)
 
 #define array_last(arr)                                                       \
-  ((arr)->size ? (arr)->data + ((arr)->size - 1) * (arr)->elem_size : NULL)
+  ((arr)->size ? (arr)->data + ((arr)->size - 1) * (arr)->element : NULL)
 
 extern void *array_insert (array_t *arr, size_t pos) attr_nonnull (1);
 
