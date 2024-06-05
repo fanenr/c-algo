@@ -1,5 +1,8 @@
 #include "hashtable.h"
 
+#define gcc_likely(exp) __builtin_expect (!!(exp), 1)
+#define gcc_unlikely(exp) __builtin_expect (!!(exp), 0)
+
 void
 hashtable_rehash (hashtable_node_t **data, size_t cap, hashtable_t *ht)
 {

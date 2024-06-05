@@ -1,7 +1,9 @@
 #include "rbtree.h"
 
-#define IS_RED(NODE) ((NODE) ? (NODE)->color == RBTREE_RED : 0)
+#define gcc_likely(exp) __builtin_expect (!!(exp), 1)
+#define gcc_unlikely(exp) __builtin_expect (!!(exp), 0)
 
+#define IS_RED(NODE) ((NODE) ? (NODE)->color == RBTREE_RED : 0)
 #define IS_BLACK(NODE) ((NODE) ? (NODE)->color == RBTREE_BLACK : 1)
 
 static inline void

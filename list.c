@@ -1,5 +1,8 @@
 #include "list.h"
 
+#define gcc_likely(exp) __builtin_expect (!!(exp), 1)
+#define gcc_unlikely(exp) __builtin_expect (!!(exp), 0)
+
 list_node_t *
 list_at (const list_t *list, size_t index)
 {
