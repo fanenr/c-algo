@@ -1,15 +1,16 @@
 #include "avltree.h"
 
-#define HEIGHT_OF(NODE) ((NODE) ? (NODE)->height : -1)
+#define gcc_likely(exp) __builtin_expect (!!(exp), 1)
+#define gcc_unlikely(exp) __builtin_expect (!!(exp), 0)
 
-#define BALANCE_FACTOR_OF(NODE)                                               \
-  ((NODE) ? HEIGHT_OF ((NODE)->left) - HEIGHT_OF ((NODE)->right) : 0)
+#define H_OF(NODE) ((NODE) ? (NODE)->height : -1)
+#define BF_OF(NODE) ((NODE) ? H_OF ((NODE)->left) - H_OF ((NODE)->right) : 0)
 
 static inline avltree_height_t
 height_update (avltree_node_t *node)
 {
-  avltree_height_t lh = HEIGHT_OF (node->left);
-  avltree_height_t rh = HEIGHT_OF (node->right);
+  avltree_height_t lh = H_OF (node->left);
+  avltree_height_t rh = H_OF (node->right);
   return (node->height = (lh > rh ? lh : rh) + 1);
 }
 
@@ -70,11 +71,11 @@ rotate_right (avltree_t *tree, avltree_node_t *node)
 static inline avltree_node_t *
 rotate (avltree_t *tree, avltree_node_t *node)
 {
-  avltree_height_t bf = BALANCE_FACTOR_OF (node);
+  avltree_height_t bf = BF_OF (node);
 
   if (bf > 1)
     {
-      if (BALANCE_FACTOR_OF (node->left) >= 0)
+      if (BF_OF (node->left) >= 0)
         return rotate_right (tree, node);
 
       rotate_left (tree, node->left);
@@ -83,7 +84,7 @@ rotate (avltree_t *tree, avltree_node_t *node)
 
   if (bf < -1)
     {
-      if (BALANCE_FACTOR_OF (node->right) <= 0)
+      if (BF_OF (node->right) <= 0)
         return rotate_left (tree, node);
 
       rotate_right (tree, node->right);

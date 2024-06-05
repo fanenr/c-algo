@@ -3,13 +3,9 @@
 
 #include <stddef.h>
 
-#define gcc_likely(exp) __builtin_expect (!!(exp), 1)
-#define gcc_unlikely(exp) __builtin_expect (!!(exp), 0)
-#define gcc_memcpy(dest, src, n) __builtin_memcpy ((dest), (src), (n))
-#define gcc_memmove(dest, src, n) __builtin_memmove ((dest), (src), (n))
-
 #define container_of(ptr, type, member)                                       \
   ((type *)((void *)(ptr) - offsetof (type, member)))
+
 #define attr_nonnull(...) __attribute__ ((nonnull (__VA_ARGS__)))
 
 typedef int avltree_height_t;
@@ -45,6 +41,7 @@ extern void avltree_erase (avltree_t *tree, avltree_node_t *node)
 /* **************************************************************** */
 
 typedef void avltree_visit_t (avltree_node_t *n);
+
 typedef int avltree_comp_t (const avltree_node_t *a, const avltree_node_t *b);
 
 extern avltree_node_t *avltree_find (const avltree_t *tree,
