@@ -1,7 +1,7 @@
 #include "hashtable.h"
 
-#define gcc_likely(exp) __builtin_expect (!!(exp), 1)
-#define gcc_unlikely(exp) __builtin_expect (!!(exp), 0)
+#define likely(exp) __builtin_expect (!!(exp), 1)
+#define unlikely(exp) __builtin_expect (!!(exp), 0)
 
 void
 hashtable_rehash (hashtable_node_t **data, size_t cap, hashtable_t *ht)
@@ -82,7 +82,7 @@ hashtable_insert (hashtable_t *ht, hashtable_node_t *node,
 
   for (hashtable_node_t *curr = *head; curr; curr = curr->next)
     {
-      if (gcc_unlikely (hash == curr->hash && comp (node, curr) == 0))
+      if (unlikely (hash == curr->hash && comp (node, curr) == 0))
         return NULL;
       prev = curr;
     }
@@ -93,7 +93,7 @@ hashtable_insert (hashtable_t *ht, hashtable_node_t *node,
 }
 
 void
-hashtable_for_each (hashtable_t *ht, hashtable_visit_t *visit)
+hashtable_visit (hashtable_t *ht, hashtable_visit_t *visit)
 {
   size_t cap = ht->cap;
   hashtable_node_t **data = ht->data;

@@ -87,11 +87,11 @@ clear (void)
 {
   for (size_t i = 0; i < N; i++)
     free (names[i]);
-  rbtree_for_each (&map, dtor);
+  rbtree_visit (&map, dtor);
   map = RBTREE_INIT;
 
-  memset (names, 0, sizeof (char *) * N);
   memset (ages, 0, sizeof (int) * N);
+  memset (names, 0, sizeof (char *) * N);
 }
 
 static inline data *

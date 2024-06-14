@@ -89,7 +89,7 @@ init (void)
 static inline void
 clear (void)
 {
-  hashtable_for_each (&map, dtor);
+  hashtable_visit (&map, dtor);
   free (map.data);
   map = HASHTABLE_INIT;
 }

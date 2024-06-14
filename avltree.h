@@ -53,7 +53,7 @@ extern avltree_node_t *avltree_insert (avltree_t *tree, avltree_node_t *node,
                                        avltree_comp_t *comp)
     attr_nonnull (1, 2, 3);
 
-extern void avltree_for_each (avltree_t *tree, avltree_visit_t *visit)
+extern void avltree_visit (avltree_t *tree, avltree_visit_t *visit)
     attr_nonnull (1, 2);
 
 #endif

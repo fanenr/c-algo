@@ -94,9 +94,9 @@ init (void)
 static inline void
 clear (void)
 {
-  avltree_for_each (&map, dtor);
-  memset (names, 0, sizeof (char *) * N);
+  avltree_visit (&map, dtor);
   memset (ages, 0, sizeof (int) * N);
+  memset (names, 0, sizeof (char *) * N);
 }
 
 static inline data *
