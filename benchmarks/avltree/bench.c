@@ -87,11 +87,11 @@ clear (void)
 {
   for (size_t i = 0; i < N; i++)
     free (names[i]);
-  avltree_for_each (&map, dtor);
+  avltree_visit (&map, dtor);
   map = AVLTREE_INIT;
 
-  memset (names, 0, sizeof (char *) * N);
   memset (ages, 0, sizeof (int) * N);
+  memset (names, 0, sizeof (char *) * N);
 }
 
 static inline data *

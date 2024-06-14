@@ -55,7 +55,7 @@ extern rbtree_node_t *rbtree_insert (rbtree_t *tree, rbtree_node_t *node,
                                      rbtree_comp_t *comp)
     attr_nonnull (1, 2, 3);
 
-extern void rbtree_for_each (rbtree_t *tree, rbtree_visit_t *visit)
+extern void rbtree_visit (rbtree_t *tree, rbtree_visit_t *visit)
     attr_nonnull (1, 2);
 
 #endif

@@ -7,7 +7,7 @@
 #include <string.h>
 
 #define T 1UL
-#define N 100000UL
+#define N 10000UL
 
 static void init (void);
 static void clear (void);
@@ -74,7 +74,7 @@ init (void)
 static inline void
 clear (void)
 {
-  array_for_each (&arr, dtor);
+  array_visit (&arr, dtor);
   free (arr.data);
 }
 

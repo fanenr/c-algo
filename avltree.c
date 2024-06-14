@@ -1,7 +1,7 @@
 #include "avltree.h"
 
-#define gcc_likely(exp) __builtin_expect (!!(exp), 1)
-#define gcc_unlikely(exp) __builtin_expect (!!(exp), 0)
+#define likely(exp) __builtin_expect (!!(exp), 1)
+#define unlikely(exp) __builtin_expect (!!(exp), 0)
 
 #define H_OF(NODE) ((NODE) ? (NODE)->height : -1)
 #define BF_OF(NODE) ((NODE) ? H_OF ((NODE)->left) - H_OF ((NODE)->right) : 0)
@@ -210,7 +210,7 @@ avltree_insert (avltree_t *tree, avltree_node_t *node, avltree_comp_t *comp)
     {
       comp_ret = comp (node, curr);
 
-      if (gcc_unlikely (comp_ret == 0))
+      if (unlikely (comp_ret == 0))
         return NULL;
 
       parent = curr;
@@ -226,21 +226,21 @@ avltree_insert (avltree_t *tree, avltree_node_t *node, avltree_comp_t *comp)
 }
 
 static inline void
-avltree_for_each_impl (avltree_node_t *node, avltree_visit_t *visit)
+avltree_visit_impl (avltree_node_t *node, avltree_visit_t *visit)
 {
   if (node)
     {
       avltree_node_t *left = node->left;
       avltree_node_t *right = node->right;
 
-      avltree_for_each_impl (left, visit);
+      avltree_visit_impl (left, visit);
       visit (node);
-      avltree_for_each_impl (right, visit);
+      avltree_visit_impl (right, visit);
     }
 }
 
 void
-avltree_for_each (avltree_t *tree, avltree_visit_t *visit)
+avltree_visit (avltree_t *tree, avltree_visit_t *visit)
 {
-  avltree_for_each_impl (tree->root, visit);
+  avltree_visit_impl (tree->root, visit);
 }

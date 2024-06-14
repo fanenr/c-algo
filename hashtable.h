@@ -59,7 +59,7 @@ extern hashtable_node_t *hashtable_insert (hashtable_t *ht,
                                            hashtable_comp_t *comp)
     attr_nonnull (1, 2, 3);
 
-extern void hashtable_for_each (hashtable_t *ht, hashtable_visit_t *visit)
+extern void hashtable_visit (hashtable_t *ht, hashtable_visit_t *visit)
     attr_nonnull (1, 2);
 
 #endif

@@ -1,12 +1,12 @@
 #include "list.h"
 
-#define gcc_likely(exp) __builtin_expect (!!(exp), 1)
-#define gcc_unlikely(exp) __builtin_expect (!!(exp), 0)
+#define likely(exp) __builtin_expect (!!(exp), 1)
+#define unlikely(exp) __builtin_expect (!!(exp), 0)
 
 list_node_t *
 list_at (const list_t *list, size_t index)
 {
-  if (gcc_unlikely (index >= list->size))
+  if (unlikely (index >= list->size))
     return NULL;
 
   list_node_t *ret = list->head;
@@ -51,7 +51,7 @@ list_insert_at (list_t *list, size_t index, list_node_t *node)
 {
   size_t size = list->size;
 
-  if (gcc_unlikely (index > size))
+  if (unlikely (index > size))
     return;
 
   if (index == size)
@@ -160,7 +160,7 @@ list_find (const list_t *list, const list_node_t *target, list_comp_t *comp)
 }
 
 void
-list_for_each (list_t *list, list_visit_t *visit)
+list_visit (list_t *list, list_visit_t *visit)
 {
   list_node_t *curr = list->head, *next;
 
