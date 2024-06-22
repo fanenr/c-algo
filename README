@@ -1,0 +1,5 @@
+Commonly used intrusive data structure implementations.
+
+Usage: see tests dir
+
+Each data structure contains only one .h and .c file, and all implementations do not depend on libc.
