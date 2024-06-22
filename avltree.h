@@ -36,6 +36,16 @@ extern void avltree_link (avltree_t *tree, avltree_node_t **inpos,
 extern void avltree_erase (avltree_t *tree, avltree_node_t *node)
     attr_nonnull (1, 2);
 
+extern avltree_node_t *avltree_last (const avltree_t *tree) attr_nonnull (1);
+
+extern avltree_node_t *avltree_first (const avltree_t *tree) attr_nonnull (1);
+
+extern avltree_node_t *avltree_next (const avltree_node_t *node)
+    attr_nonnull (1);
+
+extern avltree_node_t *avltree_prev (const avltree_node_t *node)
+    attr_nonnull (1);
+
 /* **************************************************************** */
 /*                               ext                                */
 /* **************************************************************** */
@@ -53,7 +63,7 @@ extern avltree_node_t *avltree_insert (avltree_t *tree, avltree_node_t *node,
                                        avltree_comp_t *comp)
     attr_nonnull (1, 2, 3);
 
-extern void avltree_visit (avltree_t *tree, avltree_visit_t *visit)
+extern void avltree_visit (avltree_t *tree, avltree_visit_t *func)
     attr_nonnull (1, 2);
 
 #endif

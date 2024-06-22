@@ -179,6 +179,60 @@ avltree_erase (avltree_t *tree, avltree_node_t *node)
   tree->size--;
 }
 
+avltree_node_t *
+avltree_last (const avltree_t *tree)
+{
+  avltree_node_t *last;
+
+  if ((last = tree->root))
+    for (avltree_node_t *right; (right = last->right);)
+      last = right;
+
+  return last;
+}
+
+avltree_node_t *
+avltree_first (const avltree_t *tree)
+{
+  avltree_node_t *first;
+
+  if ((first = tree->root))
+    for (avltree_node_t *left; (left = first->left);)
+      first = left;
+
+  return first;
+}
+
+avltree_node_t *
+avltree_next (const avltree_node_t *node)
+{
+  avltree_node_t *next;
+
+  if ((next = node->right))
+    for (avltree_node_t *left; (left = next->left);)
+      next = left;
+  else
+    for (; (next = node->parent) && node != next->left;)
+      node = next;
+
+  return next;
+}
+
+avltree_node_t *
+avltree_prev (const avltree_node_t *node)
+{
+  avltree_node_t *prev;
+
+  if ((prev = node->left))
+    for (avltree_node_t *right; (right = prev->right);)
+      prev = right;
+  else
+    for (; (prev = node->parent) && node != prev->right;)
+      node = prev;
+
+  return prev;
+}
+
 /* **************************************************************** */
 /*                               ext                                */
 /* **************************************************************** */
@@ -226,21 +280,21 @@ avltree_insert (avltree_t *tree, avltree_node_t *node, avltree_comp_t *comp)
 }
 
 static inline void
-avltree_visit_impl (avltree_node_t *node, avltree_visit_t *visit)
+avltree_visit_impl (avltree_node_t *node, avltree_visit_t *func)
 {
   if (node)
     {
       avltree_node_t *left = node->left;
       avltree_node_t *right = node->right;
 
-      avltree_visit_impl (left, visit);
-      visit (node);
-      avltree_visit_impl (right, visit);
+      avltree_visit_impl (left, func);
+      func (node);
+      avltree_visit_impl (right, func);
     }
 }
 
 void
-avltree_visit (avltree_t *tree, avltree_visit_t *visit)
+avltree_visit (avltree_t *tree, avltree_visit_t *func)
 {
-  avltree_visit_impl (tree->root, visit);
+  avltree_visit_impl (tree->root, func);
 }

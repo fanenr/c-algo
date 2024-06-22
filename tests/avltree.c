@@ -15,6 +15,7 @@ static void clear (void);
 static void test_find (void);
 static void test_insert (void);
 static void test_remove (void);
+static void test_foreach (void);
 
 static int height_of (const avltree_node_t *root);
 static void check_bf (const avltree_node_t *node);
@@ -23,7 +24,7 @@ typedef struct data data;
 
 struct data
 {
-  avltree_node_t tree_node;
+  avltree_node_t node;
   char *key;
   int val;
 };
@@ -72,15 +73,15 @@ main (void)
 static inline int
 comp (const avltree_node_t *a, const avltree_node_t *b)
 {
-  const data *da = container_of (a, data, tree_node);
-  const data *db = container_of (b, data, tree_node);
+  const data *da = container_of (a, data, node);
+  const data *db = container_of (b, data, node);
   return strcmp (da->key, db->key);
 }
 
 static inline void
 dtor (avltree_node_t *n)
 {
-  data *d = container_of (n, data, tree_node);
+  data *d = container_of (n, data, node);
   free (d->key);
   free (d);
 }
@@ -104,7 +105,7 @@ data_insert (avltree_t *tree, data *node)
 {
   avltree_node_t *parent = NULL;
   avltree_node_t **inpos = &tree->root;
-  avltree_node_t *tree_node = &node->tree_node;
+  avltree_node_t *tree_node = &node->node;
 
   for (avltree_node_t *curr = tree->root; curr;)
     {
@@ -121,7 +122,7 @@ data_insert (avltree_t *tree, data *node)
       return NULL;
     }
 
-  avltree_link (tree, inpos, parent, &node->tree_node);
+  avltree_link (tree, inpos, parent, &node->node);
 
   return node;
 }
@@ -129,14 +130,14 @@ data_insert (avltree_t *tree, data *node)
 static inline data *
 data_find (avltree_t *tree, const data *target)
 {
-  const avltree_node_t *tree_node = &target->tree_node;
+  const avltree_node_t *tree_node = &target->node;
 
   for (avltree_node_t *curr = tree->root; curr;)
     {
       int comp_ret = comp (tree_node, curr);
 
       if (comp_ret == 0)
-        return container_of (curr, data, tree_node);
+        return container_of (curr, data, node);
 
       curr = comp_ret < 0 ? curr->left : curr->right;
     }
@@ -199,11 +200,29 @@ test_remove (void)
       temp.key = names[rmpos];
 
       data *node = data_find (&map, &temp);
-      avltree_erase (&map, &node->tree_node);
+      avltree_erase (&map, &node->node);
       free (node->key);
       free (node);
 
       names[rmpos] = NULL;
+    }
+}
+
+static inline void
+test_foreach (void)
+{
+  for (avltree_node_t *curr = avltree_first (&map); curr;
+       curr = avltree_next (curr))
+    {
+      data *pd = container_of (curr, data, node);
+      assert (pd->key);
+    }
+
+  for (avltree_node_t *curr = avltree_last (&map); curr;
+       curr = avltree_prev (curr))
+    {
+      data *pd = container_of (curr, data, node);
+      assert (pd->key);
     }
 }
 
