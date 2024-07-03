@@ -258,6 +258,7 @@ avltree_node_t *
 avltree_insert (avltree_t *tree, avltree_node_t *node, avltree_comp_t *comp)
 {
   int comp_ret = 0;
+  avltree_node_t **inpos;
   avltree_node_t *parent = NULL;
 
   for (avltree_node_t *curr = tree->root; curr;)
@@ -271,8 +272,8 @@ avltree_insert (avltree_t *tree, avltree_node_t *node, avltree_comp_t *comp)
       curr = comp_ret < 0 ? curr->left : curr->right;
     }
 
-  avltree_node_t **inpos
-      = comp_ret ? comp_ret < 0 ? &parent->left : &parent->right : &tree->root;
+  inpos = comp_ret ? (comp_ret < 0 ? &parent->left : &parent->right)
+                   : &tree->root;
 
   avltree_link (tree, inpos, parent, node);
 
