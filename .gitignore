@@ -4,6 +4,7 @@
 # exe file
 list
 array
+bitmap
 rbtree
 avltree
 hashtable
