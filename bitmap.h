@@ -26,20 +26,20 @@ struct bitmap_t
 #define BITMAP_INIT                                                           \
   (bitmap_t) {}
 
-extern void bitmap_zero (bitmap_t *map);
-extern void bitmap_fill (bitmap_t *map);
+extern void bitmap_zero (bitmap_t *map) attr_nonnull (1);
+extern void bitmap_fill (bitmap_t *map) attr_nonnull (1);
 
-extern void bitmap_set (bitmap_t *map, size_t pos);
-extern void bitmap_flip (bitmap_t *map, size_t pos);
-extern void bitmap_clear (bitmap_t *map, size_t pos);
+extern void bitmap_set (bitmap_t *map, size_t pos) attr_nonnull (1);
+extern void bitmap_flip (bitmap_t *map, size_t pos) attr_nonnull (1);
+extern void bitmap_clear (bitmap_t *map, size_t pos) attr_nonnull (1);
 
 /* if @pos >= @map->nbits, -1 is returned. */
-extern int bitmap_at (const bitmap_t *map, size_t pos);
+extern int bitmap_at (const bitmap_t *map, size_t pos) attr_nonnull (1);
 
 /* if no 0-bits in @map, BITMAP_NONE is returned. */
-extern size_t bitmap_find_first0 (bitmap_t *map);
+extern size_t bitmap_find_first0 (const bitmap_t *map) attr_nonnull (1);
 
 /* if no 1-bits in @map, BITMAP_NONE is returned. */
-extern size_t bitmap_find_first1 (bitmap_t *map);
+extern size_t bitmap_find_first1 (const bitmap_t *map) attr_nonnull (1);
 
 #endif
