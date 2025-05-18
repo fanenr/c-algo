@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #define container_of(ptr, type, member)                                       \
-  ((type *)((void *)(ptr) - offsetof (type, member)))
+  ((type *) ((void *) (ptr) - offsetof (type, member)))
 
 #define attr_nonnull(...) __attribute__ ((nonnull (__VA_ARGS__)))
 
@@ -30,7 +30,7 @@ struct avltree_node_t
   (avltree_t) {}
 
 extern void avltree_link (avltree_t *tree, avltree_node_t **inpos,
-                          avltree_node_t *parent, avltree_node_t *node)
+			  avltree_node_t *parent, avltree_node_t *node)
     attr_nonnull (1, 2, 4);
 
 extern void avltree_erase (avltree_t *tree, avltree_node_t *node)
@@ -55,12 +55,12 @@ typedef void avltree_visit_t (avltree_node_t *n);
 typedef int avltree_comp_t (const avltree_node_t *a, const avltree_node_t *b);
 
 extern avltree_node_t *avltree_find (const avltree_t *tree,
-                                     const avltree_node_t *target,
-                                     avltree_comp_t *comp)
+				     const avltree_node_t *target,
+				     avltree_comp_t *comp)
     attr_nonnull (1, 2, 3);
 
 extern avltree_node_t *avltree_insert (avltree_t *tree, avltree_node_t *node,
-                                       avltree_comp_t *comp)
+				       avltree_comp_t *comp)
     attr_nonnull (1, 2, 3);
 
 extern void avltree_visit (avltree_t *tree, avltree_visit_t *func)

@@ -76,7 +76,7 @@ static inline void
 dtor (hashtable_node_t *n)
 {
   data *d = container_of (n, data, hash_node);
-  free ((char *)d->key);
+  free ((char *) d->key);
   free (d);
 }
 
@@ -137,10 +137,10 @@ data_hashtable_insert (hashtable_t *ht, char *key, int val)
   for (hashtable_node_t *curr = *head; curr; curr = curr->next)
     {
       if (code == curr->hash && comp (hash_node, curr) == 0)
-        {
-          free (new);
-          return NULL;
-        }
+	{
+	  free (new);
+	  return NULL;
+	}
       prev = curr;
     }
 
@@ -153,7 +153,7 @@ static inline data *
 data_hashtable_find (hashtable_t *ht, const char *key)
 {
   size_t code = hash (key);
-  data temp = (data){ .hash_node.hash = code, .key = (char *)key };
+  data temp = (data) { .hash_node.hash = code, .key = (char *) key };
 
   const hashtable_node_t *target = &temp.hash_node;
   hashtable_node_t *head = hashtable_head (ht, code);
@@ -172,7 +172,7 @@ bench_find (void)
   for (size_t i = 0; i < N; i++)
     {
       if (!names[i])
-        continue;
+	continue;
 
       char *key = names[i];
 
@@ -228,10 +228,10 @@ bench_insert (void)
 #endif
 
       if (!node)
-        {
-          free (names[i]);
-          names[i] = NULL;
-        }
+	{
+	  free (names[i]);
+	  names[i] = NULL;
+	}
     }
   TIME_ED ();
 
@@ -246,7 +246,7 @@ bench_remove (void)
     {
       long rmpos = rand_long (0, N);
       if (!names[rmpos])
-        continue;
+	continue;
 
       char *key = names[rmpos];
 

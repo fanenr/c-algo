@@ -67,7 +67,7 @@ bench_find (void)
   for (size_t i = 0; i < N; i++)
     {
       if (!names[i])
-        continue;
+	continue;
 
       auto const &found = map.find (names[i]);
       assert (found->second == ages[i]);
@@ -96,7 +96,7 @@ bench_insert (void)
       auto pair = map.emplace (names[i], ages[i]);
 
       if (!pair.second)
-        names[i] = nullptr;
+	names[i] = nullptr;
     }
   TIME_ED ();
 
@@ -111,7 +111,7 @@ bench_remove (void)
     {
       long rmpos = rand_long (0, N);
       if (!names[rmpos])
-        continue;
+	continue;
 
       map.erase (names[rmpos]);
 

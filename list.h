@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #define container_of(ptr, type, member)                                       \
-  ((type *)((void *)(ptr) - offsetof (type, member)))
+  ((type *) ((void *) (ptr) - offsetof (type, member)))
 
 #define attr_nonnull(...) __attribute__ ((nonnull (__VA_ARGS__)))
 
@@ -40,10 +40,10 @@ extern void list_insert_at (list_t *list, size_t index, list_node_t *node)
     attr_nonnull (1, 3);
 
 extern void list_insert_front (list_t *list, list_node_t *pos,
-                               list_node_t *node) attr_nonnull (1, 2, 3);
+			       list_node_t *node) attr_nonnull (1, 2, 3);
 
 extern void list_insert_back (list_t *list, list_node_t *pos,
-                              list_node_t *node) attr_nonnull (1, 2, 3);
+			      list_node_t *node) attr_nonnull (1, 2, 3);
 
 extern void list_erase (list_t *list, list_node_t *node) attr_nonnull (1, 2);
 
@@ -62,7 +62,7 @@ typedef void list_visit_t (list_node_t *n);
 typedef int list_comp_t (const list_node_t *a, const list_node_t *b);
 
 extern list_node_t *list_find (const list_t *list, const list_node_t *target,
-                               list_comp_t *comp) attr_nonnull (1, 2, 3);
+			       list_comp_t *comp) attr_nonnull (1, 2, 3);
 
 extern void list_visit (list_t *list, list_visit_t *visit) attr_nonnull (1, 2);
 

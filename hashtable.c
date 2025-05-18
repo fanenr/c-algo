@@ -12,18 +12,18 @@ hashtable_rehash (hashtable_node_t **data, size_t cap, hashtable_t *ht)
   for (size_t i = 0; i < ht_cap; i++)
     for (hashtable_node_t **head, *next, *curr = *ht_data++; curr; curr = next)
       {
-        next = curr->next;
-        head = data + curr->hash % cap;
-        if ((curr->next = *head))
-          (*head)->prev = curr;
-        curr->prev = NULL;
-        *head = curr;
+	next = curr->next;
+	head = data + curr->hash % cap;
+	if ((curr->next = *head))
+	  (*head)->prev = curr;
+	curr->prev = NULL;
+	*head = curr;
       }
 }
 
 void
 hashtable_link (hashtable_t *ht, hashtable_node_t **inpos,
-                hashtable_node_t *prev, hashtable_node_t *node)
+		hashtable_node_t *prev, hashtable_node_t *node)
 {
   hashtable_node_t *next = *inpos;
   node->prev = prev;
@@ -60,7 +60,7 @@ hashtable_erase (hashtable_t *ht, hashtable_node_t *node)
 
 hashtable_node_t *
 hashtable_find (const hashtable_t *ht, const hashtable_node_t *target,
-                hashtable_comp_t *comp)
+		hashtable_comp_t *comp)
 {
   size_t hash = target->hash;
 
@@ -74,7 +74,7 @@ hashtable_find (const hashtable_t *ht, const hashtable_node_t *target,
 
 hashtable_node_t *
 hashtable_insert (hashtable_t *ht, hashtable_node_t *node,
-                  hashtable_comp_t *comp)
+		  hashtable_comp_t *comp)
 {
   size_t hash = node->hash;
   hashtable_node_t *prev = NULL;
@@ -83,7 +83,7 @@ hashtable_insert (hashtable_t *ht, hashtable_node_t *node,
   for (hashtable_node_t *curr = *head; curr; curr = curr->next)
     {
       if (unlikely (hash == curr->hash && comp (node, curr) == 0))
-        return NULL;
+	return NULL;
       prev = curr;
     }
 
@@ -101,7 +101,7 @@ hashtable_visit (hashtable_t *ht, hashtable_visit_t *visit)
   for (size_t i = 0; i < cap; i++)
     for (hashtable_node_t *next, *curr = *data++; curr; curr = next)
       {
-        next = curr->next;
-        visit (curr);
+	next = curr->next;
+	visit (curr);
       }
 }

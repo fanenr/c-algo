@@ -112,12 +112,12 @@ data_insert (avltree_t *tree, data *node)
       int comp_ret = comp (tree_node, curr);
 
       if (comp_ret != 0)
-        {
-          parent = curr;
-          inpos = comp_ret < 0 ? &curr->left : &curr->right;
-          curr = *inpos;
-          continue;
-        }
+	{
+	  parent = curr;
+	  inpos = comp_ret < 0 ? &curr->left : &curr->right;
+	  curr = *inpos;
+	  continue;
+	}
 
       return NULL;
     }
@@ -137,7 +137,7 @@ data_find (avltree_t *tree, const data *target)
       int comp_ret = comp (tree_node, curr);
 
       if (comp_ret == 0)
-        return container_of (curr, data, node);
+	return container_of (curr, data, node);
 
       curr = comp_ret < 0 ? curr->left : curr->right;
     }
@@ -153,7 +153,7 @@ test_find (void)
   for (size_t i = 0; i < N; i++)
     {
       if (!names[i])
-        continue;
+	continue;
 
       temp.key = names[i];
 
@@ -181,7 +181,7 @@ test_insert (void)
       data *node = data_insert (&map, new);
 
       if (!node)
-        names[i] = NULL;
+	names[i] = NULL;
     }
 }
 
@@ -195,7 +195,7 @@ test_remove (void)
       // long rmpos = i;
       long rmpos = rand_long (0, N);
       if (!names[rmpos])
-        continue;
+	continue;
 
       temp.key = names[rmpos];
 

@@ -152,7 +152,7 @@ list_find (const list_t *list, const list_node_t *target, list_comp_t *comp)
   for (size_t size = list->size; size; size--)
     {
       if (comp (target, curr) == 0)
-        return curr;
+	return curr;
       curr = curr->next;
     }
 

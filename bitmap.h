@@ -21,7 +21,7 @@ struct bitmap_t
   size_t nbits;
 };
 
-#define BITMAP_NONE ((size_t) - 1)
+#define BITMAP_NONE ((size_t) -1)
 
 #define BITMAP_INIT                                                           \
   (bitmap_t) {}
